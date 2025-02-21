@@ -1,0 +1,15 @@
+{% extends 'main/site.html' %}
+
+{% block title%}{{ title }}{% endblock %}
+
+{% block content%}
+    <div class="features">
+        <h1>{{ title }}</h1>
+        <p>Общая информация</p>
+        <a class="btn btn-warning" class="fi fi-rr-arrow-small-left"></a>
+        <a class="btn btn-warning" class="fi fi-rr-arrow-small-right"></a>
+        <a class="btn btn-warning" href="{% url 'person' %}">Участники</a>
+        <button class="btn btn-warning">Жанры фильмов</button>
+        <button class="btn btn-warning">Участники фильмов</button>
+    </div>
+{% endblock %}
