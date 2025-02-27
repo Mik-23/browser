@@ -18,7 +18,7 @@ jobs:
 
       - name: Build Docker image
         run: |
-          docker build -t your_docker_image_name .
+          docker build -t browser .
 
       - name: Run Docker container
         run: |
