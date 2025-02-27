@@ -34,5 +34,5 @@ jobs:
 
       - name: Stop and remove container
         run: |
-          docker stop your_container_name
-          docker rm your_container_name
+          docker stop my_browser 
+          docker rm my_browser 
