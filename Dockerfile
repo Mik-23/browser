@@ -13,4 +13,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 RUN python manage.py collectstatic --noinput
 
 # Запускаем Gunicorn
-CMD ["gunicorn", "--bind", "158.160.133.169:8000", "porno_chrome.wsgi:application"]
+CMD ["gunicorn", "--bind", "10.0.0.28:8000", "porno_chrome.wsgi:application"]
