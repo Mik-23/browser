@@ -22,7 +22,7 @@ jobs:
 
       - name: Run Docker container
         run: |
-          docker run -d --name my_browser -p 80:80 browser
+          docker run -d --name my_browser -p 8000:8000 browser
 
       - name: Wait for the application to start
         run: |
