@@ -18,6 +18,9 @@ jobs:
          with:
            ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+       - name: Debug
+         run: echo "SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}"
+
        - name: Deploy to server
          run: |
            ssh username@your_server_ip "cd /path/to/your/project && git pull && docker-compose up --build -d"
