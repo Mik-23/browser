@@ -1,38 +1,23 @@
-name: Deploy Django Project
+name: Deploy to Yandex Cloud
 
-on:
-  push:
-    branches:
-      - main  # Укажите вашу основную ветку
+   on:
+     push:
+       branches:
+         - main  # или ваша основная ветка
 
-jobs:
-  build:
-    runs-on: ubuntu-latest
+   jobs:
+     deploy:
+       runs-on: ubuntu-latest
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+       steps:
+       - name: Checkout code
+         uses: actions/checkout@v2
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v1
+       - name: Set up SSH
+         uses: webfactory/ssh-agent@v0.5.3
+         with:
+           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Build Docker image
-        run: |
-          docker build -t browser .
-
-      - name: Run Docker container
-        run: |
-          docker run -d --name my_browser -p 8000:8000 browser
-
-      - name: Wait for the application to start
-        run: |
-          sleep 10  # Дайте время приложению на запуск
-
-      - name: Get logs
-        run: |
-          docker logs my_browser
-
-      - name: Stop and remove container
-        run: |
-          docker stop my_browser 
-          docker rm my_browser 
+       - name: Deploy to server
+         run: |
+           ssh username@your_server_ip "cd /path/to/your/project && git pull && docker-compose up --build -d"
