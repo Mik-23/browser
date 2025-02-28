@@ -1,16 +1,11 @@
 FROM python:3.12
 
-# Устанавливаем рабочую директорию
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+
 WORKDIR /app
 
-# Копируем файлы проекта
-COPY . .
-
-# Устанавливаем зависимости
+COPY requirements.txt /app/
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Собираем статические файлы
-RUN python manage.py collectstatic --noinput
-
-# Запускаем Gunicorn
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "porno_chrome.wsgi:application"]
+COPY . /app/
