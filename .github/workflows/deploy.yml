@@ -1,11 +1,11 @@
 name: Deploy to Yandex Cloud
 
-   on:
-     push:
-       branches:
+on:
+   push:
+      branches:
          - main  # или ваша основная ветка
 
-   jobs:
+jobs:
      deploy:
        runs-on: ubuntu-latest
 
