@@ -23,4 +23,4 @@ jobs:
 
        - name: Deploy to server
          run: |
-           ssh ${{ secrets.USERNAME }}"@${{ secrets.SERVER_IP }}" "cd /path/to/your/project && git pull && docker-compose up --build -d"
+           ssh ${{ secrets.USERNAME }}@$158.160.133.169 "cd /path/to/your/project && git pull && docker-compose up --build -d"
