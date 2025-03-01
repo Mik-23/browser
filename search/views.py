@@ -35,7 +35,6 @@ def search_view(request):
     folderid = config('FOLDERID')
     api_key = config('API_KEY')  # Замените на ваш API-ключ
     query = request.GET.get('query', '')
-    print('FOLDERID', folderid)
     print('ПОИСКОВЫЙ ЗАПРОС',query)
     encoded_query = quote(query.encode('utf-8'))
     page = request.GET.get('page', 1)  # Текущая страница (по умолчанию 1)
@@ -51,7 +50,6 @@ def search_view(request):
         url = f'https://yandex.ru/search/xml/html?folderid={folderid}&apikey={api_key}&query={keyword} {encoded_query}&offset={offset}'
         cache_key = f'search_results_{encoded_query}_{offset}'
         response = requests.get(url)
-        print(response.text)
         # Создаем список для хранения результатов
         if response.status_code == 200:
             # Если ip адреса нет в списке
