@@ -39,4 +39,4 @@ jobs:
            
        - name: Fetch logs
          run: |
-           ssh ${{ secrets.USERNAME }}@158.160.133.169 "cd /home/mikmaster/browser && git pull && docker-compose logs -f
+           ssh ${{ secrets.USERNAME }}@158.160.133.169 "cd /home/mikmaster/browser && git pull && docker-compose logs -f"
