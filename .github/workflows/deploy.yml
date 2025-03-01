@@ -39,4 +39,4 @@ jobs:
            
        - name: Fetch logs
          run: |
-           scp ${{ secrets.USERNAME }}@158.160.133.169:/path/to/your/logfile.log ./logs/logfile.log
+           docker-compose logs -f
