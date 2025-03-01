@@ -21,6 +21,11 @@ jobs:
          with:
            ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+       - name: Add server to known_hosts
+         run: |
+           mkdir -p ~/.ssh
+           ssh-keyscan -H 158.160.133.169 >> ~/.ssh/known_hosts
+
        - name: Deploy to server
          run: |
            ssh ${{ secrets.USERNAME }}@158.160.133.169 "cd /home/username/browser && git pull && docker-compose up --build -d"
