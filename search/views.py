@@ -50,7 +50,7 @@ def search_view(request):
         url = f'https://yandex.ru/search/xml/html?folderid={folderid}&apikey={api_key}&query={keyword} {encoded_query}&offset={offset}'
         cache_key = f'search_results_{encoded_query}_{offset}'
         response = requests.get(url)
-        #print(response.text)
+        print(response.text)
         # Создаем список для хранения результатов
         if response.status_code == 200:
             # Если ip адреса нет в списке
