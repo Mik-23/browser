@@ -31,4 +31,4 @@ jobs:
 
        - name: Deploy to server
          run: |
-           ssh ${{ secrets.USERNAME }}@158.160.133.169 "cd /home/username/browser && git pull && docker-compose up --build -d"
+           ssh ${{ secrets.USERNAME }}@158.160.133.169 "cd /home/username && git pull && docker-compose up --build -d"
