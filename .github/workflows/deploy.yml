@@ -16,9 +16,6 @@ jobs:
        - name: Debug
          run: echo "SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}"
 
-       - name: List SSH keys
-         run: ssh-add -l
-
        - name: Set up SSH
          uses: webfactory/ssh-agent@v0.9.0
          with:
@@ -28,6 +25,9 @@ jobs:
          run: |
            mkdir -p ~/.ssh
            ssh-keyscan -H 158.160.133.169 >> ~/.ssh/known_hosts
+
+       - name: Add SSH key to agent
+         run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
 
        - name: Deploy to server
          run: |
