@@ -31,7 +31,7 @@ jobs:
 
        - name: Stop Nginx
          run: |
-           ssh ${{ secrets.USERNAME }}@158.160.133.169 "cd /home/mikmaster sudo systemctl stop nginx"
+           ssh ${{ secrets.USERNAME }}@158.160.133.169 "sudo systemctl stop nginx"
 
        - name: Delete docker image
          run: |
