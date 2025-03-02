@@ -43,14 +43,16 @@ def search_view(request):
     except ValueError:
         page_number = 1
     offset = (page_number - 1) * 10
+    # Создаём кортеж с ключевыми словами для поиска
     keywords = ('porno', 'порно', 'порнография')
+     # Создаем список для хранения результатов
     results = []
     flag = True
     for keyword in keywords:
+        # Используем каждое ключевое слово для своей итерации цикла
         url = f'https://yandex.ru/search/xml/html?folderid={folderid}&apikey={api_key}&query={keyword} {encoded_query}&offset={offset}'
         cache_key = f'search_results_{encoded_query}_{offset}'
         response = requests.get(url)
-        # Создаем список для хранения результатов
         if response.status_code == 200:
             # Если ip адреса нет в списке
             if 'Запрос пришёл с IP-адреса' in response.text and 'не входящего в список разрешённых для данного пользователя' in response.text:
@@ -66,7 +68,7 @@ def search_view(request):
             logging.info("Время запроса: %.2f секунд", time.time() - start_time)
             # Извлечение всех ссылок и заголовков
             for item in tuple(soup.find_all('a')):  # Предположительно, ссылки представлены в теге <a>
-                print(item)
+                # print(item)
                 link = item.get('href')  # Извлекаем URL из атрибута href
                 # print('LINK', link)
                 title = item.text  # Извлекаем текст ссылки
@@ -99,10 +101,9 @@ def search_view(request):
             print(f"Error: {response.status_code} - {response.text}")
 
     if not flag:
-        print('123')
         return HttpResponse("Error occurred", status=response.status_code)
     else:
-        print(results)
+        # print(results)
         return render(request, 'search/result.html',
                       {'results': results, 'query': query, 'page': page_number, 'total_results': len_results})
 
