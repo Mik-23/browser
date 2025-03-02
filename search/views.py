@@ -68,7 +68,7 @@ def search_view(request):
             logging.info("Время запроса: %.2f секунд", time.time() - start_time)
             # Извлечение всех ссылок и заголовков
             for item in tuple(soup.find_all('a')):  # Предположительно, ссылки представлены в теге <a>
-                # print(item)
+                print(item)
                 link = item.get('href')  # Извлекаем URL из атрибута href
                 # print('LINK', link)
                 title = item.text  # Извлекаем текст ссылки
@@ -103,7 +103,7 @@ def search_view(request):
     if not flag:
         return HttpResponse("Error occurred", status=response.status_code)
     else:
-        # print(results)
+        print(results)
         return render(request, 'search/result.html',
                       {'results': results, 'query': query, 'page': page_number, 'total_results': len_results})
 
