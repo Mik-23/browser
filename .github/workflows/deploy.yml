@@ -40,6 +40,10 @@ jobs:
        - name: Deploy to server
          run: |
            ssh ${{ secrets.USERNAME }}@158.160.133.169 "cd /home/mikmaster/browser && git pull && docker-compose up --build -d"
+
+       - name: Restart Nginx
+         run: |
+           ssh ${{ secrets.USERNAME }}@158.160.133.169 "sudo systemctl restart nginx"
            
        - name: Fetch logs
          run: |
