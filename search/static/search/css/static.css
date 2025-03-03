@@ -42,20 +42,20 @@ button:hover {
 
 .results-container li {
     margin-bottom: 40px;
-    color: #FFFAFA; /* Цвет текста для элементов <li> */
+    color: #FFFAFA;
 }
 
 .results-container li a {
     text-decoration: none;
-    color: #FFFAFA; /* Цвет текста для ссылок внутри <li> */
+    color: #FFFAFA;
 }
 
 .results-container h3 {
-    color: #6495ED; /* Цвет текста для заголовков <h3> */
+    color: #6495ED;
 }
 
 .results-container h3 a {
-    color: #6495ED; /* Цвет текста для <a> внутри <h3> */
+    color: #6495ED;
 }
 
 .results-container a:hover {
