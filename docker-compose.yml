@@ -19,4 +19,14 @@ services:
         - web
       ports:
         - "80:80"
+
+   collectstatic:
+         build:
+           context: .
+           dockerfile: Dockerfile
+         command: python manage.py collectstatic --noinput
+         volumes:
+            - ./staticfiles:/app/staticfiles
+         depends_on:
+            - web
  
