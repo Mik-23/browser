@@ -6,8 +6,6 @@ services:
       command: gunicorn porno_chrome.wsgi:application --bind 0.0.0.0:8000 --timeout 120
       ports:
          - "8000:8000"
-      volumes:
-         - static_volume:/app/staticfiles
          
    nginx:
       image: nginx:1.25.3
@@ -15,13 +13,10 @@ services:
          - ./nginx.conf:/etc/nginx/nginx.conf:ro
          - ./configs:/etc/nginx/conf.d:ro
          - ./data:/data/:ro  # Убедитесь, что здесь есть путь к статическим файлам
-         - static_volume:/app/staticfiles:ro
+         - ./staticfiles:/app/staticfiles:ro
 
       depends_on:
         - web
       ports:
         - "80:80"
-
-volumes:
-   static_volume:
  
