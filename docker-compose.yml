@@ -23,7 +23,7 @@ services:
    collectstatic:
          build:
            context: .
-           dockerfile: Dockerfile
+           dockerfile: Dockerfile_collectstatic
          command: python manage.py collectstatic --noinput
          volumes:
             - ./staticfiles:/app/staticfiles
