@@ -15,10 +15,13 @@ services:
          - ./nginx.conf:/etc/nginx/nginx.conf:ro
          - ./configs:/etc/nginx/conf.d:ro
          - ./data:/data/:ro  # Убедитесь, что здесь есть путь к статическим файлам
+         - static_volume:/app/staticfiles/
          
 
       depends_on:
         - web
       ports:
         - "80:80"
+volumes:
+  static_volume:
  
