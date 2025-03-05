@@ -13,10 +13,12 @@ services:
       image: nginx:1.25.3
       volumes:
          - ./nginx.conf:/etc/nginx/nginx.conf:ro
-         - ./staticfiles:/app/staticfiles
+         - static_volume:/app/staticfiles/
          
       depends_on:
         - web
       ports:
         - "80:80"
-
+        
+volumes:
+      static_volume:
