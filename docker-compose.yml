@@ -16,12 +16,8 @@ services:
          - ./staticfiles:/app/staticfiles/
          - /etc/letsencrypt/live/porno-chrum.com/fullchain.pem:/etc/ssl/certs/fullchain.pem
          - /etc/letsencrypt/live/porno-chrum.com/privkey.pem:/etc/ssl/private/privkey.pem
-         - www-html:/var/www/html
          
       depends_on:
         - web
       ports:
         - "80:80"
-
-volumes:
-      www-html:
