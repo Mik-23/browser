@@ -14,8 +14,9 @@ services:
       volumes:
          - ./nginx.conf:/etc/nginx/nginx.conf:ro
          - ./staticfiles:/app/staticfiles/
-         #- /etc/letsencrypt/live/porno-chrum.com/fullchain.pem:/etc/ssl/certs/fullchain.pem
-         #- /etc/letsencrypt/live/porno-chrum.com/privkey.pem:/etc/ssl/private/privkey.pem
+         - /etc/ssl/certs/porno-chrum.crt:/etc/ssl/certs/porno-chrum.crt
+         - /etc/ssl/private/private.key:/etc/ssl/private/privkey.key
+         - /etc/ssl/certs/intermediate.crt:/etc/ssl/certs/intermediate.crt
          
       depends_on:
         - web
