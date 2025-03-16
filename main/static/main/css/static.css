@@ -3,13 +3,23 @@ body {
 }
 
 h1 {
+    float: top;
     background: #2c2c2c;
-    width: 210vh;
+    width: 20%;
     padding: 0.5%;
+    height: 0vh;
+    width: 210vh;
     color: #FFFFE0;
     text-align: center;
-    margin-top: 180px;
+    margin-top: 190px;
     font-size: 50px;
+}
+
+h2 {
+    float: right;
+    width: 50vh;
+    padding: 0px;
+    margin-top: -180px;
 }
 
 ul {
