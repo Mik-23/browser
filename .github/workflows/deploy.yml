@@ -35,6 +35,7 @@ jobs:
 
      logs:
        runs-on: ubuntu-latest
+       needs: deploy
        
        steps:
        - name: Fetch logs
