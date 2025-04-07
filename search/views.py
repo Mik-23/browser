@@ -162,7 +162,7 @@ def video_view(request):
             # Извлекаем текст ссылки
             title = item.text
             if ('yandex.ru' not in link and 'rutube.ru' not in link and '/video/preview' not in link
-                and '/search?text' in link
+                and '/search?text' not in link
                 and ('video' in link or 'video' in title
                 or 'видео' in link or 'видео' in title
                 or 'Video' in link or 'Video' in title
