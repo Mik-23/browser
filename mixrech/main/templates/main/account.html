@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Регистрация и Вход</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+<h2>Регистрация</h2>
+<form id="register-form">
+    <input type="text" id="register-username" placeholder="Логин" required>
+    <input type="password" id="register-password" placeholder="Пароль" required>
+    <input type="email" id="register-email" placeholder="Почта" required>
+    <button type="submit">Зарегистрироваться</button>
+</form>
+
+<h2>Вход</h2>
+<form id="login-form">
+    <input type="text" id="login-username" placeholder="Логин" required>
+    <input type="password" id="login-password" placeholder="Пароль" required>
+    <button type="submit">Войти</button>
+</form>
+
+<script>
+$(document).ready(function() {
+    // Обработка регистрации
+    $('#register-form').on('submit', function(e) {
+        e.preventDefault();
+        const username = $('#register-username').val();
+        const password = $('#register-password').val();
+        const email = $('#register-email').val();
+
+        $.ajax({
+            url: '/api/register/',  // Убедитесь, что этот URL соответствует вашему маршруту
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ username, password, email }),
+            success: function(response) {
+                alert('Пользователь зарегистрирован!');
+            },
+            error: function(xhr) {
+                alert('Ошибка регистрации: ' + xhr.responseText);
+            }
+        });
+    });
+
+    // Обработка входа
+    $('#login-form').on('submit', function(e) {
+        e.preventDefault();
+        const username = $('#login-username').val();
+        const password = $('#login-password').val();
+
+        $.ajax({
+            url: '/api/token/',  // Убедитесь, что этот URL соответствует вашему маршруту
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({ username, password }),
+            success: function(response) {
+                alert('Вход выполнен!);
+                // Здесь можно сохранить токен в localStorage или sessionStorage
+            },
+            error: function(xhr) {
+                alert('Ошибка входа: ' + xhr.responseText);
+            }
+        });
+    });
+});
+</script>
+
+</body>
+</html>
