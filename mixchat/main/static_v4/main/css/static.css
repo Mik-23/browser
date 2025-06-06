@@ -16,7 +16,7 @@ body {
 
         .messages {
             max-height: 400px;
-            overflow-y: auto;
+            overflow: auto;
             border: 1px solid #ccc;
             padding: 10px;
             margin-bottom: 15px;
@@ -50,25 +50,34 @@ body {
            color: white
         }
 
+        .media-container img {
+            width: 42px; /* Установите желаемую ширину */
+            height: 42px; /* Установите желаемую высоту */
+        }
+
         .message-message-list li {
             list-style-type: none;
-            text-align: center; /* Выравнивание текста вправо */
-            margin: 15px 0; /* Отступы между сообщениями */
+            text-align: left; /* Выравнивание текста вправо */
+            margin: 15px auto; /* Отступы между сообщениями */
             font-size: 20px;
             color: #E0FFFF;
             border: none; /* Граница вокруг сообщения */
             border-radius: 5px; /* Закругление углов */
             padding: 10px;
             background-color: #3a3a3a;
-            width: 500px;
+            max-width: 600px; /* Максимальная ширина сообщения */
+            width: 100%;
             margin-left: auto; /* Центрируем по горизонтали */
             margin-right: auto;
         }
+
+
 
         #messageContent {
             width: 200px; /* Установите желаемую ширину */
             margin-left: 600px;
         }
+
 
         .chat-list li {
             font-size: 20px;
@@ -76,6 +85,10 @@ body {
             color: #E0FFFF;
             margin: 15px 0;
         }
+
+        .logout-container button{
+            margin-right: 600px;
+            }
 
         input[type="text"],
         input[type="email"],
