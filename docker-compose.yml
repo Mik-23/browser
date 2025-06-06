@@ -9,21 +9,13 @@ services:
       ports:
          - "8000:8000"
 
-   mixremail:
-      build: ./mixrech
-      command: gunicorn mixremail.wsgi:application --bind 0.0.0.0:8000 --timeout 120
-      volumes:
-      - .:/app
-      ports:
-         - "8001:8001"
-
    mixchat:
       build: ./mixrech
       command: gunicorn mixchat.wsgi:application --bind 0.0.0.0:8000 --timeout 120
       volumes:
       - .:/app
       ports:
-         - "8002:8002"
+         - "8001:8001"
          
    nginx:
       image: nginx:1.25.3
