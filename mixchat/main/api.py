@@ -16,6 +16,7 @@ from .serialazers import (UserSerializer, LoginSerializer, SendMessageSerializer
 
 
 class RegisterView(generics.CreateAPIView):
+    # Регистрация пользователя
     queryset = User.objects.all()
     serializer_class = UserSerializer
 
@@ -32,6 +33,7 @@ class RegisterView(generics.CreateAPIView):
 
 
 class LoginView(generics.GenericAPIView):
+    # Вход в систему
     serializer_class = LoginSerializer
 
     def post(self, request, *args, **kwargs):
@@ -49,6 +51,7 @@ class LoginView(generics.GenericAPIView):
 
 
 class LogoutView(APIView):
+    # Выход из системы
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
@@ -77,13 +80,16 @@ class SendMessageView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         print(request.data)
         serializer.is_valid(raise_exception=True)
+        # Получаем текущего пользователя
         sender_id = request.user.id
+        # Получаем отправителя
         recipient_id = serializer.validated_data['recipient_id']
         print('Отправитель', sender_id)
         print('Получатель', recipient_id)
         content = serializer.validated_data['content']
         chat_id = serializer.validated_data['chat_id']
         print('ID чата', chat_id)
+        # Получаем файлы фото, видео и аудио
         image_file = request.FILES.get('image')
         video_file = request.FILES.get('video')
         audio_file = request.FILES.get('audio')
@@ -94,16 +100,20 @@ class SendMessageView(generics.GenericAPIView):
             recipient_id=recipient_id,
             chat_id=chat_id,
         )
+      
+        # Сохраняем фото в БД если оно есть
         if image_file:
             message.image.save(image_file.name, image_file)
         else:
             message.image = None
 
+        # Сохраняем видео в БД если оно есть
         if video_file:
             message.video.save(video_file.name, video_file)
         else:
             message.video = None
 
+        # Сохраняем аудио в БД если оно есть
         if audio_file:
             message.audio.save(audio_file.name, audio_file)
         else:
@@ -174,6 +184,7 @@ class GetChatsView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        # Выбираем список чатов, где есть текущий пользователь
         chats = Chat.objects.filter(
         Q(user_id_1=request.user.id) |
         Q(user_id_2=request.user.id))
