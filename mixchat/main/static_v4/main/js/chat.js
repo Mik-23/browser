@@ -94,6 +94,7 @@ function openChat(userId) {
         if (data.chat_id) {
             // Если чат существует, открываем его
             currentChatId = data.chat_id;
+            console.log(selectUser(userId))
             loadMessages(currentChatId);
         } else {
             // Если чат не существует, создаем новый
@@ -120,8 +121,86 @@ function loadMessages(chatId) {
     .then(data => {
         data.messages.forEach(message => {
             const li = document.createElement('li');
-            li.textContent = `${message.sender_id}: ${message.content}`; // Отображение сообщения
+            const messageContainer = document.createElement('div');
+            console.log(message)
+            // Добавляем текстовое сообщение, если есть
+            if (message.content) {
+                const textSpan = document.createElement('span');
+                textSpan.textContent = `${message.sender_id}: ${message.content}`;
+                messageContainer.appendChild(textSpan);
+            }
+
+            // Проверяем наличие изображения
+            if (message.image) {
+                const messageWrapper = document.createElement('div');
+                messageWrapper.style.display = 'flex'; // горизонтальное расположение
+                messageWrapper.style.alignItems = 'center'; // по вертикали по центру
+                messageWrapper.style.marginBottom = '10px';
+
+                const img = document.createElement('img');
+                img.src = message.image;
+                img.style.maxWidth = '200px'; // Ограничение ширины для удобства
+                img.style.height = 'auto';
+                img.style.display = 'block'; // Чтобы изображение было на отдельной строке
+                img.alt = `${message.sender_id}`;
+
+                const senderName = document.createElement('span');
+                senderName.textContent = message.sender_id; // или другое поле с именем
+                senderName.style.fontSize = '14px';
+                senderName.style.fontWeight = 'bold';
+
+                // Добавляем изображение и имя в контейнер
+                messageWrapper.appendChild(senderName);
+                messageWrapper.appendChild(img);
+
+                messageContainer.appendChild(messageWrapper);
+            }
+
+            if (message.video) {
+                const mediaWrapper = document.createElement('div');
+                mediaWrapper.style.display = 'flex';
+                mediaWrapper.style.alignItems = 'center';
+
+                const video = document.createElement('video');
+                video.src = message.video;
+                video.controls = true;
+                video.style.maxWidth = '300px';
+                video.style.height = 'auto';
+                video.style.marginRight = '10px';
+
+                const senderName = document.createElement('span');
+                senderName.textContent = message.sender_name; // или другое поле
+                senderName.style.fontSize = '14px';
+
+                mediaWrapper.appendChild(video);
+                mediaWrapper.appendChild(senderName);
+
+                messageContainer.appendChild(mediaWrapper);
+            }
+
+            // Для аудио
+            if (message.audio) {
+                const mediaWrapper = document.createElement('div');
+                mediaWrapper.style.display = 'flex';
+                mediaWrapper.style.alignItems = 'center';
+
+                const audio = document.createElement('audio');
+                audio.src = message.audio;
+                audio.controls = true;
+                audio.style.marginRight = '10px';
+
+                const senderName = document.createElement('span');
+                senderName.textContent = message.sender_name;
+
+                mediaWrapper.appendChild(audio);
+                mediaWrapper.appendChild(senderName);
+
+                messageContainer.appendChild(mediaWrapper);
+            }
+
+            li.appendChild(messageContainer);
             messageList.appendChild(li);
+            console.log(messageList)
         });
         messageList.scrollTop = messageList.scrollHeight;
     })
@@ -152,22 +231,46 @@ function createChat(senderId, recipientId) {
 // Обработчик события для отправки сообщения
 document.getElementById('sendMessageButton').addEventListener('click', () => {
    const content = document.getElementById('messageContent').value;
+   const image = document.getElementById('imageInput').value;
+   const video = document.getElementById('videoInput').value;
+   const audio = document.getElementById('audioInput').value;
 
+   const formData = new FormData();
+   formData.append('content', content);
+   // Добавляем файлы, если они выбраны
+   if (imageInput.files.length > 0) {
+       for (let i = 0; i < imageInput.files.length; i++) {
+           formData.append('image', imageInput.files[i]);
+       }
+   }
+   if (videoInput.files.length > 0) {
+       for (let i = 0; i < videoInput.files.length; i++) {
+           formData.append('video', videoInput.files[i]);
+       }
+   }
+   if (audioInput.files.length > 0) {
+       for (let i = 0; i < audioInput.files.length; i++) {
+           formData.append('audio', audioInput.files[i]);
+       }
+   }
+   // Добавляем остальные параметры
+   formData.append('recipient_id', selectedUserId);
+   formData.append('chat_id', currentChatId);
+   console.log(currentChatId)
    fetch('/api/send_message/', {
        method: 'POST',
        headers: {
-           'Content-Type': 'application/json',
            'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
        },
-       body: JSON.stringify({
-           content,
-           recipient_id: selectedUserId, // Используем ID выбранного пользователя
-           chat_id: currentChatId
-       })
+       body: formData
    })
-   .then(response => response.json())
+   .then(response => response.text)
    .then(data => {
        document.getElementById('messageContent').value = ''; // Очистить поле ввода
+       document.getElementById('imageInput').value = '';
+       document.getElementById('videoInput').value = '';
+       document.getElementById('audioInput').value = '';
+       console.log(data)
        loadMessages(currentChatId); // Обновить чат с выбранным пользователем после отправки сообщения
    })
    .catch(error => console.error('Ошибка:', error));
@@ -192,12 +295,23 @@ function fetchChats() {
 // Функция для отображения списка чатов
 function displayChats(chats) {
     const chatList = document.getElementById('chats');
+    console.log(chatList)
     chatList.innerHTML = ''; // Очистить список
-
+    const numSenderId = Number(senderId)
     chats.forEach(chat => {
         const li = document.createElement('li');
         li.textContent = `Чат с ${chat.username}`; // Имя пользователя в чате
-        li.onclick = () => openChat(chat.user_id_2); // Открытие чата при клике
+        console.log(typeof chat.user_id_1)
+        console.log(typeof chat.user_id_2)
+        console.log(typeof numSenderId)
+        console.log(chat.user_id_1 === chat.user_id_2 && chat.user_id_1 === numSenderId)
+        if (chat.user_id_1 < numSenderId && chat.user_id_2 === numSenderId) {
+            li.onclick = () => openChat(chat.user_id_1); // Открытие чата при клике
+        } else if (chat.user_id_1 === numSenderId && chat.user_id_2 > numSenderId) {
+            li.onclick = () => openChat(chat.user_id_2);
+        } else if (chat.user_id_1 === chat.user_id_2 && chat.user_id_1 === numSenderId) {
+            li.onclick = () => openChat(chat.user_id_1);
+        }
         chatList.appendChild(li);
     });
 }
