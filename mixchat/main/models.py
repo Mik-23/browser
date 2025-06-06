@@ -28,6 +28,9 @@ class Message(models.Model):
     sender = models.ForeignKey(User, on_delete=models.CASCADE, related_name='sent_messages')
     recipient = models.ForeignKey(User, on_delete=models.CASCADE, related_name='received_messages')
     content = models.TextField("Текст")
+    image = models.ImageField(upload_to='messages/images/', null=True, blank=True)
+    video = models.FileField(upload_to='messages/videos/', null=True, blank=True)
+    audio = models.FileField(upload_to='messages/audios/', null=True, blank=True)
     timestamp = models.DateTimeField("Дата", auto_now=True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
 
