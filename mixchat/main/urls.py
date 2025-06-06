@@ -6,7 +6,9 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 urlpatterns = [
     path('chat', views.chat, name='home'),
     path('auth_in_chat', views.auth_in_chat, name='auth_in_chat'),
-    path('api/register/', api.RegisterView.as_view(), name='register'),
+    path('register_in_chat', views.register_in_chat, name='register_in_chat'),
+    path('successfully', views.successfully, name='successfully'),
+    path('api/reg/', api.RegisterView.as_view(), name='reg'),
     path('api/send_message/', api.SendMessageView.as_view(), name='send_message'),
     path('api/search_user/', api.SearchUserView.as_view(), name='search_user'),
     path('api/get_one_chat/', api.GetOneChatView.as_view(), name='get_one_chat'),
@@ -17,4 +19,6 @@ urlpatterns = [
     path('api/subscribe_to_channel/', api.SubscribeToChannelView.as_view(), name='subscribe_to_channel'),
     path('api/send_message_to_channel/', api.SendMessageToChannelView.as_view(), name='send_message_to_channel'),
     path('api/login/', api.LoginView.as_view(), name='login'),
+    path('api/logout/', api.LogoutView.as_view(), name='logout'),
+    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
     ]
