@@ -29,8 +29,19 @@ class LoginSerializer(serializers.ModelSerializer):
 
 class SendMessageSerializer(serializers.Serializer):
     recipient_id = serializers.IntegerField()
-    content = serializers.CharField(max_length=200)
+    content = serializers.CharField(max_length=200, required=False, allow_blank=True)
     chat_id = serializers.IntegerField()
+    image = serializers.ImageField(required=False, allow_null=True)
+    video = serializers.FileField(required=False, allow_null=True)
+    audio = serializers.FileField(required=False, allow_null=True)
+
+    def validate(self, data):
+        # Проверяем, что хотя бы одно из полей content, image, video или audio заполнено
+        if not (data.get('content') or data.get('image') or data.get('video') or data.get('audio')):
+            raise serializers.ValidationError(
+                "Должно быть заполнено хотя бы одно из полей: content, image, video или audio."
+            )
+        return data
 
 
 class SearchUserSerializer(serializers.Serializer):
