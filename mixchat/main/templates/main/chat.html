@@ -30,18 +30,43 @@
 
     <!-- Список сообщений -->
     <div id="message" class="message-list active">
-        <h2 class="message-align">Сообщения ({{ messages|length }})</h2>
+        <h2 class="message-align">Сообщения</h2>
         <ul class="message-message-list"></ul> <!-- Здесь будут отображаться сообщения -->
     </div>
 
     <!-- Поле для ввода сообщения -->
     <div id="chatWindow" style="display: none;">
         <ul class="message-message-list"></ul>
-        <input type="text" id="messageContent" placeholder="Введите сообщение...">
+        <div class="media-container">
+            <input type="text" id="messageContent" placeholder="Введите сообщение...">
+            <label for="imageInput" class="file-label">
+                <img src="{% static 'main/png/image.png' %}">
+            </label>
+            <input type="file" id="imageInput" accept="image/*" multiple style="display: none;"/>
+            <label for="videoInput" class="file-label">
+                <img src="{% static 'main/png/video.png' %}">
+            </label>
+            <input type="file" id="videoInput" accept="video/*" multiple style="display: none;"/>
+            <label for="audioInput" class="file-label">
+                <img src="{% static 'main/png/audio.png' %}">
+            </label>
+            <input type="file" id="audioInput" accept="audio/*" multiple style="display: none;"/>
+        </div>
         <button id="sendMessageButton">Отправить</button>
     </div>
 
+    <form id="logout-form" style="position: fixed; top: 10px; right: 10px;">
+      <button type="submit">Выйти</button>
+    </form>
 
+<script src="{% static 'main/js/logout_redirect.js' %}"></script>
+
+<script>
+document.getElementById('logout-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    logoutUser(); // Вызов функции входа
+});
+</script>
 
 <script src="{% static 'main/js/chat.js' %}"></script>
 
