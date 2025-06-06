@@ -10,7 +10,7 @@ services:
          - "8000:8000"
 
    mixchat:
-      build: ./mixrech
+      build: ./mixchat
       command: gunicorn mixchat.wsgi:application --bind 0.0.0.0:8000 --timeout 120
       volumes:
       - .:/app
