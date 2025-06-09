@@ -4,7 +4,7 @@ services:
    mixrech:
       build: ./mixrech
       environment:
-      - PYTHONPATH ./mixrech
+      - PYTHONPATH=./mixrech
       command: gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120
       volumes:
       - .:/app
@@ -14,7 +14,7 @@ services:
    mixchat:
       build: ./mixchat
       environment:
-      - PYTHONPATH ./mixchat
+      - PYTHONPATH=./mixchat
       command: gunicorn mixchat.wsgi:application --bind 0.0.0.0:8000 --timeout 120
       volumes:
       - .:/app
