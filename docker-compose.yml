@@ -3,7 +3,9 @@ version: '3.8'
 services:
    mixrech:
       build: ./mixrech
-      command: PYTHONPATH ./mixrech gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120
+      environment:
+      - PYTHONPATH ./mixrech
+      command: gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120
       volumes:
       - .:/app
       ports:
@@ -11,7 +13,9 @@ services:
 
    mixchat:
       build: ./mixchat
-      command: PYTHONPATH  ./mixchat gunicorn mixchat.wsgi:application --bind 0.0.0.0:8000 --timeout 120
+      environment:
+      - PYTHONPATH ./mixchat
+      command: gunicorn mixchat.wsgi:application --bind 0.0.0.0:8000 --timeout 120
       volumes:
       - .:/app
       ports:
