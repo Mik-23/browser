@@ -27,7 +27,8 @@ services:
          - /etc/ssl/certs/intermediate.crt:/etc/ssl/certs/intermediate.crt
          
       depends_on:
-        - web
+        - mixrech
+        - mixchat
       ports:
         - "80:80"
         - "443:443"
