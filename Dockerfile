@@ -9,5 +9,4 @@ WORKDIR /app
 COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --upgrade pip
-RUN rm -rf /app/staticfiles
-RUN python manage.py collectstatic --noinput
+RUN python manage.py collectstatic --noinput --verbosity 3
