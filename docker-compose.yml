@@ -14,9 +14,9 @@ services:
       volumes:
          - ./nginx.conf:/etc/nginx/nginx.conf:ro
          - ./staticfiles:/app/staticfiles/
-         - /etc/ssl/certs/mixrech.crt:/etc/ssl/certs/mixrech.crt
-         - /etc/ssl/private/private.key:/etc/ssl/private/privkey.key
-         - /etc/ssl/certs/intermediate.crt:/etc/ssl/certs/intermediate.crt
+         - /etc/letsencrypt/live/mixrech.com/fullchain.pem:/etc/ssl/certs/mixrech.crt
+         - /etc/letsencrypt/live/mixrech.com/privkey.pem:/etc/ssl/private/privkey.key
+         - /etc/letsencrypt/live/mixrech.com/fullchain.pem:/etc/ssl/certs/intermediate.crt
          
       depends_on:
         - mixrech
