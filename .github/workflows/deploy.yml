@@ -28,7 +28,7 @@ jobs:
            ssh-keyscan -H 158.160.133.169 >> ~/.ssh/known_hosts
 
        - name: Add SSH key to agent
-         run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
+         run: echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519 chmod 600 ~/.ssh/id_ed25519 ssh-add ~/.ssh/id_ed25519
 
        - name: Deploy to server
          run: |
