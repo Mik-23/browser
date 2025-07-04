@@ -4,7 +4,7 @@ ENV PYTHONDONTWRITEBYTECODE 1
 ENV PYTHONUNBUFFERED 1
 ENV DJANGO_SETTINGS_MODULE='mixchat.settings'
 
-WORKDIR /app
+WORKDIR /mixchat
 
 COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
