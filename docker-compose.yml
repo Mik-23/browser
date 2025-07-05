@@ -6,9 +6,6 @@ services:
       command: gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120
       volumes:
       - .:/app
-      - media_data:/mixchat/main/media_v4
-      environment:
-      - MEDIA_ROOT=/mixchat/main/media_v4
       ports:
          - "8000:8000"
 
@@ -17,6 +14,9 @@ services:
       command: gunicorn mixchat.wsgi:application --bind 0.0.0.0:8001 --timeout 120
       volumes:
       - .:/app
+      - media_data:/mixchat/main/media_v4
+      environment:
+      - MEDIA_ROOT=/mixchat/main/media_v4
       ports:
          - "8001:8001"
          
@@ -37,5 +37,5 @@ services:
         - "80:80"
         - "443:443"
 
-   volumes:
-      media_data:
+volumes:
+   media_data:
