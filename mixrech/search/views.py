@@ -99,7 +99,7 @@ def image_view(request):
     api_key = config('API_KEY')  # Замените на ваш API-ключ
     query = request.GET.get('query', '')
     page = request.GET.get('page', 1)
-    print('ПОИСКОЫЙ ЗАПРОС КАРТИНКИ', query)
+    print('ПОИСКОВЫЙ ЗАПРОС КАРТИНКИ', query)
     encoded_query = quote(query.encode('utf-8'))
     try:
         page_number = int(page)
@@ -136,7 +136,7 @@ def video_view(request):
     folderid = config('FOLDERID')
     api_key = config('API_KEY')  # Замените на ваш API-ключ
     query = request.GET.get('query', '')
-    print('ПОИСКОЫЙ ЗАПРОС ВИДЕО', query)
+    print('ПОИСКОВЫЙ ЗАПРОС ВИДЕО', query)
     encoded_query = quote(query.encode('utf-8'))
     page = request.GET.get('page', 1)  # Текущая страница (по умолчанию 1)
     try:
@@ -202,3 +202,4 @@ def video_preview(request, id):
     age_verified = request.GET.get('age_verified', False)
     if not age_verified:
         return HttpResponseBadRequest("Доступ ограничен. Пожалуйста, подтвердите ваш возраст.")
+
