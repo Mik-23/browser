@@ -1,7 +1,7 @@
 import time
 import logging
 import requests
-from django.http import HttpResponse, HttpResponseBadRequest
+from django.http import HttpResponse
 from django.core.cache import cache
 from django.shortcuts import render
 from urllib.parse import quote
@@ -14,28 +14,12 @@ from decouple import config
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
-def get_favicon(link):
-    # Получаем фавикон
-    try:
-        response = requests.get(link, timeout=5)
-        if response.status_code == 200:
-            # Попробуйте извлечь фавикон из HTML
-            soup = BeautifulSoup(response.text, 'html.parser')
-            icon = soup.find('link', rel='icon')
-            if icon:
-                # Если найден, возвращаем его URL
-                return icon['href']
-    except Exception:
-        return None  # Ошибка при запросе
-    return None
-
-
 def search_view(request):
     # Функция поиска в браузере
     folderid = config('FOLDERID')
     api_key = config('API_KEY')  # Замените на ваш API-ключ
     query = request.GET.get('query', '')
-    print('ПОИСКОВЫЙ ЗАПРОС',query)
+    print('ПОИСКОВЫЙ ЗАПРОС', query)
     encoded_query = quote(query.encode('utf-8'))
     page = request.GET.get('page', 1)  # Текущая страница (по умолчанию 1)
     try:
@@ -44,13 +28,15 @@ def search_view(request):
         page_number = 1
     offset = (page_number - 1) * 10
     results = []
-    url = f'https://yandex.ru/search/xml/html?folderid={folderid}&apikey={api_key}&query={encoded_query}&offset={offset}'
+    url = (f'https://yandex.ru/search/xml/html?folderid={folderid}'
+           f'&apikey={api_key}&query={encoded_query}&offset={offset}')
     cache_key = f'search_results_{encoded_query}_{offset}'
     response = requests.get(url)
     # Создаем список для хранения результатов
     if response.status_code == 200:
         # Если ip адреса нет в списке
-        if 'Запрос пришёл с IP-адреса' in response.text and 'не входящего в список разрешённых для данного пользователя' in response.text:
+        if ('Запрос пришёл с IP-адреса' in response.text
+                and 'не входящего в список разрешённых для данного пользователя' in response.text):
             # Извлекаем ip адрес из XML ответа
             root = ET.fromstring(response.text)
             error_element = root.find('.//error')
@@ -62,11 +48,21 @@ def search_view(request):
         soup = BeautifulSoup(response.text, 'html.parser')  # Парсим HTML-код
         logging.info("Время запроса: %.2f секунд", time.time() - start_time)
         # Извлечение всех ссылок и заголовков
-        for item in tuple(soup.find_all('a')):  # Предположительно, ссылки представлены в теге <a>
-            # print(item)
-            link = item.get('href')  # Извлекаем URL из атрибута href
-            title = item.text  # Извлекаем текст ссылки
-            favicon_url = get_favicon(link) # Получаем фавикон
+        links = [item.get('href') for item in soup.find_all('a')]
+        titles = [item.text for item in soup.find_all('a')]
+        favicons = ['https://favicon.yandex.net/favicon/v2/' + item for item in links]
+        print(soup.find_all('img'))
+        # Заводим переменные счётчик и элемент
+        count = 1
+        elem = ''
+        for link, title, favicon_url in zip(links, titles, favicons):
+            """Если элемент отличается от ссылки из списка, то увеличиваем счётчик 
+            и присваиваем элементу значение ссылки из списка. В противном случае оставляем счётчик равным 1"""
+            if link != elem:
+                elem = link
+                count += 1
+            else:
+                count = 1
             """Проверяем, что ссылку и текст можно извлечь, 
             а также извлекаем ссылки без доменов yandex.ru, ya.ru, google.ru, bing.com,
             без символов /video/preview, video/search, # и текст без символов
@@ -75,8 +71,9 @@ def search_view(request):
             if (link and title and 'yandex.ru' not in link and 'ya.ru' not in link
                 and link[0] != '#' and '/video/preview' not in link and 'google.ru' not in link
                 and 'bing.com' not in link and title != 'Коммерческие предложения' and '/search?text' not in link
-                and not title.isdigit() and title != 'дальше' and 'video/search' not in link):
-                results.append({'title': title, 'url': link, 'favicon': favicon_url})
+                and not title.isdigit() and title != 'дальше' and 'video/search' not in link and count == 1):
+                results.append({'title': title, 'url': link, 'favicon_url': favicon_url})
+        print(len(results))
         end_time = time.time()
         parsing_time = end_time - start_time
         logging.info("Время парсинга: %.2f секунд", parsing_time)
@@ -108,7 +105,8 @@ def image_view(request):
 
     offset = (page_number - 1) * 10
     images = []
-    url = f'https://yandex.ru/images-xml/?folderid={folderid}&apikey={api_key}&text={encoded_query}&offset={offset}&itype=all'
+    url = (f'https://yandex.ru/images-xml/?folderid={folderid}'
+           f'&apikey={api_key}&text={encoded_query}&offset={offset}&itype=all')
     headers = {
         "Content-Type": "application/xml",
     }
@@ -146,21 +144,21 @@ def video_view(request):
 
     offset = (page_number - 1) * 10
     results = []
-    url = f'https://yandex.ru/search/xml/html?folderid={folderid}&apikey={api_key}&query={encoded_query}&offset={offset}'
-    time.sleep(3)
+    url = (f'https://yandex.ru/search/xml/html?folderid={folderid}'
+           f'&apikey={api_key}&query={encoded_query}&offset={offset}')
     response = requests.get(url)
     # print(response.text)
     if response.status_code == 200:
         soup = BeautifulSoup(response.text, 'html.parser')  # Парсим HTML-код
         # Извлечение всех ссылок и заголовков
-        for item in soup.find_all('a'):  # Предположительно, ссылки представлены в теге <a>
-            link = item.get('href')  # Извлекаем URL из атрибута href
-            # print('THUMBNAIL', thumbnail)
-            video = ''
-            print('LINK', link)
-            """Проверяем, что ссылка не содержит доменов yandex.ru, и rutube.ru"""
-            # Извлекаем текст ссылки
-            title = item.text
+        links = [item.get('href') for item in soup.find_all('a')]
+        titles = [item.text for item in soup.find_all('a')]
+        video = ''
+        for link, title in zip(links, titles):
+
+            """Проверяем, что ссылка не содержит доменов yandex.ru, и rutube.ru, а также не содердит
+            название ВИДЕО"""
+
             if ('yandex.ru' not in link and 'rutube.ru' not in link and '/video/preview' not in link
                 and '/search?text' not in link
                 and ('video' in link or 'video' in title
@@ -169,8 +167,7 @@ def video_view(request):
                 or 'Видео' in link or 'Видео' in title
                 or 'VIDEO' in link or 'VIDEO' in title
                 or 'ВИДЕО' in link or 'ВИДЕО' in title
-                or 'https://rusvideos.pro' in link
-                or 'youtube.com' in link)):
+                or 'https://rusvideos.pro' in link or 'youtube.com' in link)):
                 # Присваиваем переменной video ссылку
                 video = link
             # print('VIDEO', video)
@@ -189,17 +186,9 @@ def video_view(request):
                 item.update(img)
                 all_data.append(item)
             print(all_data)
-        print('RESULTS',results)
+        print('RESULTS', results)
         # Теперь вы можете вернуть список результатов
         return render(request, 'search/videos.html', {'results': all_data, 'query': query, 'page': page_number})
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return HttpResponse("Error occurred", status=response.status_code)
-
-
-def video_preview(request, id):
-    # Пример: проверка параметров запроса
-    age_verified = request.GET.get('age_verified', False)
-    if not age_verified:
-        return HttpResponseBadRequest("Доступ ограничен. Пожалуйста, подтвердите ваш возраст.")
-
