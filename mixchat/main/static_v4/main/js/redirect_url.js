@@ -1,5 +1,4 @@
 const loginUser = async (email, password) => {
-    console.log("loginUser called with:", email, password);
     const response = await fetch('/api/login/', {
         method: 'POST',
         headers: {
