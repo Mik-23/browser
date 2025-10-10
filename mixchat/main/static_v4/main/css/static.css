@@ -6,7 +6,7 @@ body {
         }
 
         h1 {
-            color: #FFFFE0;
+            color: #D9FFFD;
         }
 
         h2 {
@@ -27,13 +27,13 @@ body {
         .message .sender {
             font-weight: bold;
         }
-        .form-group {
-            max-width: 500px;
+        .form-group{
+            width: 500px;
             position: relative;
-            margin-left: auto;
+
             margin-right: auto;
-            top: -50px;
-            display: flex;
+            top: 0px;
+
             justify-content: space-between;
         }
 
@@ -43,23 +43,43 @@ body {
 
         .message-align {
             margin-top: -100px; /* Выравнивание текста влево */
-        }
-        .user-list li {
-           list-style-type: none;
-           text-align: center;
-           color: white
+
         }
 
-        .media-container img {
+        .user-list {
+            background-color: #3a3a3a;
+            max-width: 170px
+        }
+
+        .user-list li {
+           list-style-type: none;
+           margin-left: auto;
+           color: white;
+           line-height: 1.7
+        }
+
+        .media-container img{
             width: 42px; /* Установите желаемую ширину */
             height: 42px; /* Установите желаемую высоту */
+            position: fixed;
+            top: 42.5vh;
+            left: 115vh;
         }
+
+
+        .files-container {
+            width: 300px;
+            height: 300px;
+            backgroundColor: #3a3a3a;
+        }
+
 
         .message-message-list li {
             list-style-type: none;
             text-align: left; /* Выравнивание текста вправо */
             margin: 15px auto; /* Отступы между сообщениями */
             font-size: 20px;
+            overflow-y: auto;
             color: #E0FFFF;
             border: none; /* Граница вокруг сообщения */
             border-radius: 5px; /* Закругление углов */
@@ -71,42 +91,71 @@ body {
             margin-right: auto;
         }
 
+        .message-message-list p {
+            font-size: 10px;
+            margin-left: 270px;
+
+        }
 
 
         #messageContent {
             width: 200px; /* Установите желаемую ширину */
             margin-left: 600px;
+
+        }
+
+        .chat-list ul{
+            max-width: 100px;
+            width: 100%;
+            position: fixed
+        }
+
+        .chat-list li {
+            background-color: #3a3a3a;
+            font-size: 22px;
+            list-style-type: none;
+            color: #fff;
+            margin: 25px 0;
+
         }
 
 
-        .chat-list li {
-            font-size: 20px;
+        .chat-list p {
+            font-size: 19px;
             list-style-type: none;
-            color: #E0FFFF;
-            margin: 15px 0;
+            color: #C0C0C0;
+            margin: 1px 0;
         }
 
         .logout-container button{
             margin-right: 600px;
-            }
-
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
-            width: calc(100% - 80px);
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
         }
+
+
+
+        .files-container p {
+            font-size: 17px;
+            color: #D9FFFD;
+            margin: 20px 35px;
+
+        }
+
+        .files-container p:hover {
+            color: #02D6ED;
+        }
+
+
         button {
             width: 70px; /* Уменьшено для кнопки отправки */
             padding: 10px;
-            background-color: #28a745;
-            color: white;
+            background-color: #2c2c2c;
+            color: #D9FFFD;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            position: fixed;
         }
-        button:hover {
-            background-color: #218838;
+        .btn:hover {
+            color: #02D6ED;
         }
+
