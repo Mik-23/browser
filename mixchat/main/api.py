@@ -1,3 +1,4 @@
+from datetime import datetime
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -5,15 +6,15 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.urls import reverse
 from django.http import HttpResponse
-from django.contrib.auth.models import User
-from .models import Message, Chat, Channel, ChannelMembership
-from .serialazers import (UserSerializer, LoginSerializer, SendMessageSerializer, SearchUserSerializer,
-                          GetOneChatSerializer, GetChatsSerializer, MessageSerializer,
-                          CreateChatSerializer, CreateChannelSerializer,
-                          SubscribeToChannelSerializer, SendMessageToChannelSerializer)
+from .models import Message, Chat, Channel, ChannelMembership, ChatUser
+from .serialazers import (UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
+                          SearchUserSerializer,ChatSerializer, GetChatsSerializer,
+                          CreateChannelSerializer, SubscribeToChannelSerializer,
+                          SendMessageToChannelSerializer)
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -24,20 +25,40 @@ class CsrfExemptSessionAuthentication(SessionAuthentication):
 
 class RegisterView(generics.CreateAPIView):
     # Регистрация пользователя
-    queryset = User.objects.all()
+    queryset = ChatUser.objects.all()
     serializer_class = UserSerializer
 
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
-        self.perform_create(serializer)
-
+        serializer.save()
         # Возвращаем сообщение об успешной регистрации и URL для авторизации
         return Response({
-            'message': 'Пользователь успешно зарегистрирован.',
-            'login_url': request.build_absolute_uri(reverse('successfully'))
-            # Убедитесь, что у вас есть имя URL для страницы авторизации
+            'login_url': request.build_absolute_uri(reverse('confirmation_code'))
         })
+
+
+class SendCodeView(generics.GenericAPIView):
+    # Отправка СМС с кодом
+    serializer_class = SendCodeSerializer
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        code = serializer.validated_data['code']
+        user = ChatUser.objects.filter(code=code).first()
+        if user is not None:
+            user.is_active = True
+            user.save()
+            return Response({
+                'message': 'Пользователь успешно зарегистрирован.',
+                'login_url': request.build_absolute_uri(reverse('successfully'))
+            })
+        else:
+            return Response({
+                'message': 'Неверный код, пожалуйста, повторите попытку.',
+                'login_url': request.build_absolute_uri(reverse('confirmation_code'))
+            })
 
 
 class LoginView(generics.GenericAPIView):
@@ -48,7 +69,9 @@ class LoginView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
-        user = User.objects.filter(email=email).first()
+        password = serializer.validated_data['password']
+        user = authenticate(username=email, password=password)
+        print('user', user)
         refresh = RefreshToken.for_user(user)
         return Response({
             'refresh': str(refresh),
@@ -77,9 +100,9 @@ class LogoutView(APIView):
                          'logout_redirect': '/auth_in_chat'})
 
 
-class SendMessageView(generics.GenericAPIView):
+class MessageView(generics.GenericAPIView):
     # Отправить сообщение
-    serializer_class = SendMessageSerializer
+    serializer_class = MessageSerializer
     authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -106,7 +129,7 @@ class SendMessageView(generics.GenericAPIView):
             sender_id=sender_id,
             content=content,
             recipient_id=recipient_id,
-            chat_id=chat_id,
+            chat_id=chat_id
         )
 
         # Сохраняем фото в БД если оно есть
@@ -128,7 +151,7 @@ class SendMessageView(generics.GenericAPIView):
             message.audio = None
 
         message.save()
-        print(message)
+        print(message.recipient)
         return HttpResponse({
             'sender_id': sender_id,
             'recipient_id': recipient_id,
@@ -137,6 +160,25 @@ class SendMessageView(generics.GenericAPIView):
             'video': video_file,
             'audio': audio_file,
             'message_id': message.id
+        })
+
+    def get(self, request, *args, **kwargs):
+        chat_id = request.GET.get('chat_id')
+        messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
+        return Response({
+            'messages': [{
+                "id": message.id,
+                "sender": str(message.sender),
+                "recipient": str(message.recipient),
+                "sender_id": str(message.sender_id),
+                "recipient_id": str(message.recipient_id),
+                "content": message.content,
+                "image": message.image.url if message.image else None,
+                "video": message.video.url if message.video else None,
+                "audio": message.audio.url if message.audio else None,
+                "date": message.timestamp.date(),
+                "time": message.timestamp.strftime('%H:%m')
+            } for message in messages]
         })
 
 
@@ -149,7 +191,7 @@ class SearchUserView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        users = User.objects.all()
+        users = ChatUser.objects.all()
         return Response({
             'users': [{
                 "id": user.id,
@@ -159,9 +201,9 @@ class SearchUserView(generics.GenericAPIView):
         })
 
 
-class GetOneChatView(generics.GenericAPIView):
+class ChatView(generics.GenericAPIView):
     # Открыть один чат
-    serializer_class = GetOneChatSerializer
+    serializer_class = ChatSerializer
     authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -182,48 +224,6 @@ class GetOneChatView(generics.GenericAPIView):
         else:
             return Response({'chat_id': None})
 
-
-class GetChatsView(generics.GenericAPIView):
-    # Показать все чаты
-    serializer_class = GetChatsSerializer
-    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def get(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        # Выбираем список чатов, где есть текущий пользователь
-        chats = Chat.objects.filter(
-            Q(user_id_1=request.user.id) |
-            Q(user_id_2=request.user.id))
-        users = User.objects.all()
-        print(chats)
-        chat_with_user = []
-        for user, chat in zip(users, sorted(chats, key=lambda user: user.user_id_2)):
-            print(f'{user}      {chat}')
-            if chat.user_id_1 < request.user.id and chat.user_id_2 == request.user.id:
-                user = User.objects.filter(id=chat.user_id_1).first()
-            elif chat.user_id_1 == request.user.id and chat.user_id_2 > request.user.id:
-                user = User.objects.filter(id=chat.user_id_2).first()
-            elif chat.user_id_1 == chat.user_id_2 == request.user.id:
-                user = User.objects.filter(id=chat.user_id_1).first()
-            chat_with_user.append({
-                "id": chat.id,
-                "user_id_1": chat.user_id_1,
-                "user_id_2": chat.user_id_2,
-                "username": user.username
-            })
-        return Response({
-            'chats': chat_with_user
-        })
-
-
-class GreateChatView(generics.GenericAPIView):
-    # Создать чат
-    serializer_class = CreateChatSerializer
-    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
     def post(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -239,26 +239,44 @@ class GreateChatView(generics.GenericAPIView):
         })
 
 
-class MessageView(generics.GenericAPIView):
-    # Показать все сообщения в чате
-    serializer_class = MessageSerializer
+class GetChatsView(generics.GenericAPIView):
+    # Показать все чаты
+    serializer_class = GetChatsSerializer
     authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        chat_id = request.GET.get('chat_id')
-        messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # Выбираем список чатов, где есть текущий пользователь
+        chats = Chat.objects.filter(
+            Q(user_id_1=request.user.id) |
+            Q(user_id_2=request.user.id))
+        users = ChatUser.objects.all()
+        print(chats)
+        chat_with_user = []
+        for user, chat in zip(users, sorted(chats, key=lambda user: user.user_id_2)):
+            print(f'{user}      {chat}')
+            message = Message.objects.filter(chat=chat.id).order_by('-timestamp').first()
+            if chat.user_id_1 < request.user.id and chat.user_id_2 == request.user.id:
+                user = ChatUser.objects.filter(id=chat.user_id_1).first()
+            elif chat.user_id_1 == request.user.id and chat.user_id_2 > request.user.id:
+                user = ChatUser.objects.filter(id=chat.user_id_2).first()
+            elif chat.user_id_1 == chat.user_id_2 == request.user.id:
+                user = ChatUser.objects.filter(id=chat.user_id_1).first()
+            if message is not None:
+                content = message.content
+            else:
+                content = ''
+            chat_with_user.append({
+                "id": chat.id,
+                "user_id_1": chat.user_id_1,
+                "user_id_2": chat.user_id_2,
+                "username": user.username,
+                "content": content
+            })
         return Response({
-            'messages': [{
-                "id": message.id,
-                "sender_id": str(message.sender),
-                "recipient_id": str(message.recipient),
-                "content": message.content,
-                "image": message.image.url if message.image else None,
-                "video": message.video.url if message.video else None,
-                "audio": message.audio.url if message.audio else None,
-                "date": message.timestamp
-            } for message in messages]
+            'chats': chat_with_user
         })
 
 
