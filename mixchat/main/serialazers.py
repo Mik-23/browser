@@ -1,33 +1,42 @@
+import random
 from rest_framework import serializers
-from django.contrib.auth.models import User
-from django.contrib.auth.hashers import make_password
+from .models import ChatUser
+from django.core.mail import send_mail
 
 
 class UserSerializer(serializers.ModelSerializer):
+    password = serializers.CharField(max_length=128, min_length=8, write_only=True)
+
     class Meta:
-        model = User
+        model = ChatUser
         fields = ['email', 'username', 'password']
-        extra_kwargs = {
-            'password': {'write_only': True}  # чтобы пароль не возвращался в ответе
-        }
 
     def create(self, validated_data):
-        # Хешируем пароль перед сохранением
-        validated_data['password'] = make_password(validated_data['password'])
-        user = User.objects.create(**validated_data)
+        email = validated_data["email"]
+        validated_data["is_active"] = False
+        code = random.randint(1000, 9999)
+        validated_data["code"] = code
+        user = ChatUser.objects.create_user(**validated_data)
+        print('EMAIL', email)
+        send_mail(
+            "Subject here",
+            f"Mixchat, Код подтверждения: {code}",
+            "mixrechecosystem@gmail.com",
+            [email]
+        )
         return user
 
 
-class LoginSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = User
-        fields = ['email', 'password']
-        extra_kwargs = {
-            'password': {'write_only': True}  # чтобы пароль не возвращался в ответе
-        }
+class SendCodeSerializer(serializers.Serializer):
+    code = serializers.IntegerField()
 
 
-class SendMessageSerializer(serializers.Serializer):
+class LoginSerializer(serializers.Serializer):
+    email = serializers.CharField(max_length=255)
+    password = serializers.CharField(max_length=128, write_only=True)
+
+
+class MessageSerializer(serializers.Serializer):
     recipient_id = serializers.IntegerField()
     content = serializers.CharField(max_length=200, required=False, allow_blank=True)
     chat_id = serializers.IntegerField()
@@ -48,7 +57,7 @@ class SearchUserSerializer(serializers.Serializer):
     pass
 
 
-class GetOneChatSerializer(serializers.Serializer):
+class ChatSerializer(serializers.Serializer):
     sender_id = serializers.IntegerField()
     recipient_id = serializers.IntegerField()
 
@@ -57,18 +66,10 @@ class GetChatsSerializer(serializers.Serializer):
     pass
 
 
-class CreateChatSerializer(serializers.Serializer):
-    sender_id = serializers.IntegerField()
-    recipient_id = serializers.IntegerField()
-
-
-class MessageSerializer(serializers.Serializer):
-    chat_id = serializers.IntegerField()
-
-
 class SendMessageToChatSerializer(serializers.Serializer):
     chat_id = serializers.IntegerField()
     sender_id = serializers.IntegerField()
+    recipient_id = serializers.IntegerField()
     content = serializers.CharField()
 
 
