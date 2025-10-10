@@ -27,7 +27,7 @@ function displayUsers() {
     if (users.length > 0) { // Проверяем, есть ли пользователи
         users.forEach(user => {
             const li = document.createElement('li');
-            li.textContent = user.username; // Имя пользователя
+            //li.textContent = user.username; // Имя пользователя
             li.onclick = () => selectUser(user.id); // Выбор пользователя
             userList.appendChild(li);
         });
@@ -37,11 +37,33 @@ function displayUsers() {
     }
 }
 
-// Функция для выбора пользователя и отображения кнопки "Открыть чат"
+// Функция для выбора пользователя
 function selectUser(userId) {
    selectedUserId = userId; // Сохраняем ID выбранного пользователя
    console.log(selectedUserId)
-   document.getElementById('openChatButton').style.display = 'inline'; // Показываем кнопку
+   if (selectedUserId) {
+       li = document.querySelector('li')
+       console.log(li)
+       const listChat = document.getElementById('chats')
+       const allLists = listChat.querySelectorAll('li')
+       if (allLists.length != 0) {
+           for (const lis of allLists) {
+           lis.style.backgroundColor = '#3a3a3a';
+           }
+
+           //span = document.querySelectorAll('span')
+           for (const lis of allLists) {
+               span = lis.querySelector('span')
+               console.log(lis)
+               if (li.textContent === span.textContent) {
+                   li.onclick = () => openChat(selectedUserId, lis);
+               }
+           }
+       } else {
+           const listElem = document.createElement('li')
+           openChat(selectedUserId, listElem);
+       }
+   }
 }
 
 // Функция для поиска пользователей
@@ -49,7 +71,6 @@ function searchUsers() {
     const input = document.getElementById('userSearch').value.toLowerCase();
     console.log(input);
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(input));
-
     const userList = document.getElementById('users');
     userList.innerHTML = ''; // Очистить список
 
@@ -58,9 +79,11 @@ function searchUsers() {
             const li = document.createElement('li');
             li.textContent = user.username; // Имя пользователя
             li.onclick = () => selectUser(user.id); // Выбор пользователя
+
             userList.appendChild(li);
         });
         userList.style.display = 'block'; // Показываем список
+        userList.style.marginLeft = 'auto';
     } else {
         userList.style.display = 'none'; // Скрываем список, если нет результатов
     }
@@ -76,12 +99,12 @@ document.addEventListener('click', function(event) {
 });
 
 // Функция для открытия чата с пользователем
-function openChat(userId) {
+function openChat(userId, listElem) {
     const parseUserId = Number(userId);
     const parseSenderId = Number(senderId);
 
     // Сначала проверяем наличие чата
-    const url = `/api/get_one_chat/?sender_id=${parseSenderId}&recipient_id=${parseUserId}`;
+    const url = `/api/chat/?sender_id=${parseSenderId}&recipient_id=${parseUserId}`;
 
     fetch(url, {
         method: 'GET',
@@ -94,22 +117,38 @@ function openChat(userId) {
         if (data.chat_id) {
             // Если чат существует, открываем его
             currentChatId = data.chat_id;
-            console.log(selectUser(userId))
+            console.log(data)
             loadMessages(currentChatId);
         } else {
             // Если чат не существует, создаем новый
             createChat(parseSenderId, parseUserId);
         }
-         document.getElementById('chatWindow').style.display = 'block';
+        listElem.style.backgroundColor = '#1F9494';
+        listElem.style.top = '205px';
+        listElem.style.position = 'fixed'
+        document.getElementById('chatWindow').style.display = 'block';
+        document.getElementById('chatWindow').style.margin = '350px 0px';
+
     })
     .catch(error => console.error('Ошибка:', error));
 }
 
 function loadMessages(chatId) {
     const messageList = document.querySelector('.message-message-list');
+    let header = document.querySelector('h2');
+    console.log(header)
+    header.style.display = 'block';
+    header.style.textAlign = 'center'
+    header.style.position = 'fixed'
+    header.style.top = '1px'
+    header.style.left = '750px'
+    let button = document.querySelector('button');
+    button.style.margin = '-35px 830px';
+    let mediaButton = document.getElementById('mediaButton');
+    mediaButton.style.margin = '-35px 910px';
     messageList.innerHTML = ''; // Очистить предыдущие сообщения
 
-    const url = `/api/get_messages/?chat_id=${chatId}`; // Эндпоинт для получения сообщений по ID чата
+    const url = `/api/message/?chat_id=${chatId}`; // Эндпоинт для получения сообщений по ID чата
 
     fetch(url, {
         method: 'GET',
@@ -119,14 +158,28 @@ function loadMessages(chatId) {
     })
     .then(response => response.json())
     .then(data => {
+        let lastDate = null;
         data.messages.forEach(message => {
+            header.textContent = message.recipient;
+            console.log(message.recipient_id)
             const li = document.createElement('li');
+            li.style.top = '-60px'
+            li.style.position = 'relative'
             const messageContainer = document.createElement('div');
             console.log(message)
+            console.log(displayUsers())
+            if (message.sender_id === senderId) {
+                li.style.backgroundColor = '#1F9494'
+                li.style.maxWidth = '300px'
+                li.style.marginRight = '400px';
+            } else {
+                li.style.maxWidth = '300px'
+                li.style.marginLeft = '400px';
+            }
             // Добавляем текстовое сообщение, если есть
             if (message.content) {
                 const textSpan = document.createElement('span');
-                textSpan.textContent = `${message.sender_id}: ${message.content}`;
+                textSpan.textContent = `${message.sender}: ${message.content}`;
                 messageContainer.appendChild(textSpan);
             }
 
@@ -142,10 +195,10 @@ function loadMessages(chatId) {
                 img.style.maxWidth = '200px'; // Ограничение ширины для удобства
                 img.style.height = 'auto';
                 img.style.display = 'block'; // Чтобы изображение было на отдельной строке
-                img.alt = `${message.sender_id}`;
+                img.alt = `${message.sender}`;
 
                 const senderName = document.createElement('span');
-                senderName.textContent = message.sender_id; // или другое поле с именем
+                senderName.textContent = message.sender; // или другое поле с именем
                 senderName.style.fontSize = '14px';
                 senderName.style.fontWeight = 'bold';
 
@@ -208,7 +261,7 @@ function loadMessages(chatId) {
 }
 
 function createChat(senderId, recipientId) {
-   fetch('/api/create_chat/', { // Эндпоинт для создания нового чата
+   fetch('/api/chat/', { // Эндпоинт для создания нового чата
        method: 'POST',
        headers: {
            'Content-Type': 'application/json',
@@ -221,12 +274,23 @@ function createChat(senderId, recipientId) {
    })
    .then(response => response.json())
    .then(data => {
-       console.log(data.message); // Сообщение о создании чата
-       currentChatId = data.chat.id;
+       console.log(data); // Сообщение о создании чата
+       currentChatId = data.id;
        loadMessages(currentChatId); // Загружаем сообщения нового чата
+       fetchChats()
    })
    .catch(error => console.error('Ошибка:', error));
 }
+
+document.getElementById('sendMessageButton').addEventListener('mouseenter', () => {
+    const sendIconHover = document.getElementById('send_icon_hover');
+    sendIconHover.style.display = 'inline';
+})
+
+document.getElementById('sendMessageButton').addEventListener('mouseleave', () => {
+    const sendIconHover = document.getElementById('send_icon_hover');
+    sendIconHover.style.display = 'none';
+})
 
 // Обработчик события для отправки сообщения
 document.getElementById('sendMessageButton').addEventListener('click', () => {
@@ -234,8 +298,8 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
    const image = document.getElementById('imageInput').value;
    const video = document.getElementById('videoInput').value;
    const audio = document.getElementById('audioInput').value;
-
    const formData = new FormData();
+   console.log(content)
    formData.append('content', content);
    // Добавляем файлы, если они выбраны
    if (imageInput.files.length > 0) {
@@ -255,9 +319,10 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
    }
    // Добавляем остальные параметры
    formData.append('recipient_id', selectedUserId);
+   console.log(selectedUserId)
    formData.append('chat_id', currentChatId);
    console.log(currentChatId)
-   fetch('/api/send_message/', {
+   fetch('/api/message/', {
        method: 'POST',
        headers: {
            'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
@@ -275,6 +340,31 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
    })
    .catch(error => console.error('Ошибка:', error));
 });
+
+document.getElementById('mediaButton').addEventListener('click', () => {
+    const mediaSymbol = document.getElementById('media_symbol_hover')
+
+    mediaSymbol.style.display = 'inline';
+    const mediaIcons = document.getElementById('media');
+    mediaIcons.style.display = 'block';
+    mediaIcons.style.position = 'fixed';
+    mediaIcons.style.width = '100px';
+    mediaIcons.style.height = '130px';
+    mediaIcons.style.top = '505px';
+    mediaIcons.style.left = '995px';
+    mediaIcons.style.backgroundColor = '#3a3a3a';
+    console.log(mediaIcons)
+});
+
+const mediaIcons = document.getElementById('media')
+mediaIcons.addEventListener('mouseleave', () => {
+    mediaIcons.style.display = 'none'
+    const mediaSymbol = document.getElementById('media_symbol_hover')
+    mediaSymbol.style.display = 'none';
+
+});
+
+
 
 // Функция для получения списка чатов
 function fetchChats() {
@@ -298,29 +388,42 @@ function displayChats(chats) {
     console.log(chatList)
     chatList.innerHTML = ''; // Очистить список
     const numSenderId = Number(senderId)
+    console.log(chats)
     chats.forEach(chat => {
         const li = document.createElement('li');
-        li.textContent = `Чат с ${chat.username}`; // Имя пользователя в чате
-        console.log(typeof chat.user_id_1)
-        console.log(typeof chat.user_id_2)
-        console.log(typeof numSenderId)
-        console.log(chat.user_id_1 === chat.user_id_2 && chat.user_id_1 === numSenderId)
-        if (chat.user_id_1 < numSenderId && chat.user_id_2 === numSenderId) {
-            li.onclick = () => openChat(chat.user_id_1); // Открытие чата при клике
-        } else if (chat.user_id_1 === numSenderId && chat.user_id_2 > numSenderId) {
-            li.onclick = () => openChat(chat.user_id_2);
-        } else if (chat.user_id_1 === chat.user_id_2 && chat.user_id_1 === numSenderId) {
-            li.onclick = () => openChat(chat.user_id_1);
+        li.style.position = 'fixed'
+        const span = document.createElement('span');
+        span.textContent = chat.username; // Имя пользователя в чате
+        const p = document.createElement('p');
+        console.log(chat)
+        p.textContent = chat.content;
+        li.onclick = () => {
+            const listChat = document.getElementById('chats')
+            const allLists = listChat.querySelectorAll('li')
+            for (const lis of allLists) {
+                lis.style.backgroundColor = '#3a3a3a';
+            }
+            if (chat.user_id_1 < numSenderId && chat.user_id_2 === numSenderId) {
+                openChat(chat.user_id_1, li); // Открытие чата при клике
+                li.style.backgroundColor = '#1F9494';
+                li.style.top = '187px';
+            } else if (chat.user_id_1 === numSenderId && chat.user_id_2 > numSenderId) {
+                openChat(chat.user_id_2, li);
+                li.style.backgroundColor = '#1F9494';
+                li.style.top = '187px';
+            } else if (chat.user_id_1 === chat.user_id_2 && chat.user_id_1 === numSenderId) {
+                openChat(chat.user_id_1, li);
+                li.style.backgroundColor = '#1F9494';
+                li.style.top = '187px';
+            }
+            console.log(chat.user_id_2)
+            selectedUserId = chat.user_id_2
         }
+        li.appendChild(span);
+        li.appendChild(p);
         chatList.appendChild(li);
     });
 }
-// Обработчик события для кнопки "Открыть чат"
-document.getElementById('openChatButton').addEventListener('click', () => {
-   if (selectedUserId) {
-       openChat(selectedUserId); // Открываем чат с выбранным пользователем
-   }
-});
 
 // Инициализация списка пользователей при загрузке страницы
 fetchUsers();
