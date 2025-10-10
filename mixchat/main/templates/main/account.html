@@ -118,7 +118,7 @@
 // Обработчик события для формы входа
 document.getElementById('loginForm').addEventListener('submit', (event) => {
     event.preventDefault(); // Предотвращаем стандартное поведение формы
-    const email = document.getElementById('email').value; // Получаем значение phone
+    const email = document.getElementById('email').value; // Получаем значение email
     const password = document.getElementById('password').value; // Получаем значение пароля
     loginUser(email, password); // Вызов функции входа
 });
@@ -127,6 +127,7 @@ document.getElementById('loginForm').addEventListener('submit', (event) => {
 </body>
 
 </html>
+
 
 
 
