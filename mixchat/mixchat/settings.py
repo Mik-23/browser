@@ -27,7 +27,7 @@ SECRET_KEY = config('SECRET_KEY')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '158.160.133.169', '0.0.0.0', 'chat.mixrech.com', 'google.com', 'api.ipify.org', 'www.shadowserver.org']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '5.129.245.67', '0.0.0.0', 'chat.mixrech.com', 'google.com', 'api.ipify.org', 'www.shadowserver.org']
 
 LOGGING = {'version': 1, 'disable_existing_loggers': False, 'handlers': {'console': {'class': 'logging.StreamHandler',},},'loggers': {'django': {'handlers': ['console'], 'level': 'DEBUG',},},}
 
@@ -201,4 +201,5 @@ SIMPLE_JWT = {
 }
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
 
