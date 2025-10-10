@@ -29,6 +29,11 @@
             text-align: center;
             color: #FFFFFF
         }
+        p {
+            font-size: 18px;
+            color: #ffffff;
+            margin-bottom: 30px;
+        }
         .form-group {
             margin-bottom: 15px;
         }
@@ -83,7 +88,7 @@
 <body>
 
 <div class="container">
-    <h2>Вход</h2>
+    <h2>Войти</h2>
     <form id="loginForm"> <!-- Добавлен id для формы -->
         <div class="form-group">
             <label for="email">Электронная почта:</label>
@@ -113,7 +118,7 @@
 // Обработчик события для формы входа
 document.getElementById('loginForm').addEventListener('submit', (event) => {
     event.preventDefault(); // Предотвращаем стандартное поведение формы
-    const email = document.getElementById('email').value; // Получаем значение email
+    const email = document.getElementById('email').value; // Получаем значение phone
     const password = document.getElementById('password').value; // Получаем значение пароля
     loginUser(email, password); // Вызов функции входа
 });
