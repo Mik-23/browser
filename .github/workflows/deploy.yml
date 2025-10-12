@@ -31,7 +31,7 @@ jobs:
 
        - name: Deploy to server
          run: |
-           ssh root@5.129.245.67 "cd /root/browser && git pull && docker-compose down && docker-compose up --build -d"
+           ssh ${{ secrets.USERNAME }}@5.129.245.67 "cd /root/browser && git pull && docker-compose down && docker-compose up --build -d"
 
      logs:
        runs-on: ubuntu-latest
