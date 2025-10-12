@@ -1,118 +1,138 @@
+import os
+from dotenv import load_dotenv
+import base64
 import time
 import logging
 import requests
 from django.http import HttpResponse
-from django.core.cache import cache
 from django.shortcuts import render
-from urllib.parse import quote
 from bs4 import BeautifulSoup
-import xml.etree.ElementTree as ET
-from .ip_addres import get_ip
-from decouple import config
 
-
+load_dotenv()
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 
 def search_view(request):
     # Функция поиска в браузере
-    folderid = config('FOLDERID')
-    api_key = config('API_KEY')  # Замените на ваш API-ключ
-    query = request.GET.get('query', '')
-    print('ПОИСКОВЫЙ ЗАПРОС', query)
-    encoded_query = quote(query.encode('utf-8'))
+    folderid = os.getenv('FOLDERID')
+    api_key = os.getenv('API_KEY')  # Замените на ваш API-ключ
+    search_query = request.GET.get('query', '')
+    print('ПОИСКОВЫЙ ЗАПРОС', search_query)
     page = request.GET.get('page', 1)  # Текущая страница (по умолчанию 1)
+    print('Страница номер: ', page)
     try:
         page_number = int(page)
     except ValueError:
         page_number = 1
-    offset = (page_number - 1) * 10
     results = []
-    url = (f'https://yandex.ru/search/xml/html?folderid={folderid}'
-           f'&apikey={api_key}&query={encoded_query}&offset={offset}')
-    cache_key = f'search_results_{encoded_query}_{offset}'
-    response = requests.get(url)
+    url = 'https://searchapi.api.cloud.yandex.net/v2/web/search'
+
+    headers = {"Authorization": f"Api-Key {api_key}"}
+
+    body = {
+        "query": {
+          "searchType": "SEARCH_TYPE_COM",
+          "queryText": search_query,
+          "familyMode": "FAMILY_MODE_NONE",
+          "page": page_number,
+          "fixTypoMode": "FIX_TYPO_MODE_ON"
+        },
+        "folderId": folderid,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
+        "responseFormat": "FORMAT_HTML",
+    }
+    response = requests.post(url, headers=headers, json=body)
     # Создаем список для хранения результатов
     if response.status_code == 200:
-        # Если ip адреса нет в списке
-        if ('Запрос пришёл с IP-адреса' in response.text
-                and 'не входящего в список разрешённых для данного пользователя' in response.text):
-            # Извлекаем ip адрес из XML ответа
-            root = ET.fromstring(response.text)
-            error_element = root.find('.//error')
-            error_text = error_element.text
-            ip = error_text.split('адреса ')[1].split(',')[0]
-            # Добавляем ip адрес в Yandex Cloud
-            get_ip(ip)
         start_time = time.time()
-        soup = BeautifulSoup(response.text, 'html.parser')  # Парсим HTML-код
+        encode_response = response.json()["rawData"]
+        # декодируем из base64
+        decoded_bytes = base64.b64decode(encode_response)
+        # преобразуем байты в строку (UTF-8)
+        text_html = decoded_bytes.decode('utf-8')
+        soup = BeautifulSoup(text_html)  # Парсим HTML-код
         logging.info("Время запроса: %.2f секунд", time.time() - start_time)
         # Извлечение всех ссылок и заголовков
         links = [item.get('href') for item in soup.find_all('a')]
         titles = [item.text for item in soup.find_all('a')]
-        favicons = ['https://favicon.yandex.net/favicon/v2/' + item for item in links]
-        print(soup.find_all('img'))
         # Заводим переменные счётчик и элемент
         count = 1
-        elem = ''
-        for link, title, favicon_url in zip(links, titles, favicons):
+        favicon_count = 0
+        favicon_url = ''
+        for index, (link, title) in enumerate(zip(links, titles)):
             """Если элемент отличается от ссылки из списка, то увеличиваем счётчик 
             и присваиваем элементу значение ссылки из списка. В противном случае оставляем счётчик равным 1"""
-            if link != elem:
-                elem = link
+            if index % 2 == 0:
                 count += 1
             else:
                 count = 1
+
             """Проверяем, что ссылку и текст можно извлечь, 
             а также извлекаем ссылки без доменов yandex.ru, ya.ru, google.ru, bing.com,
             без символов /video/preview, video/search, # и текст без символов
             Коммерческие предложения, дальше и, если текст содержит только цифры.
             Нужно это для корректного отображения ссылок в браузере"""
+
             if (link and title and 'yandex.ru' not in link and 'ya.ru' not in link
                 and link[0] != '#' and '/video/preview' not in link and 'google.ru' not in link
-                and 'bing.com' not in link and title != 'Коммерческие предложения' and '/search?text' not in link
-                and not title.isdigit() and title != 'дальше' and 'video/search' not in link and count == 1):
+                and 'bing.com' not in link and title != 'Коммерческие предложения' and not title.isdigit()
+                and title != 'дальше' and 'video/search' not in link and count == 1
+                and '/search' not in link):
+                # Находим фавиконы
+                for elem in link:
+                    if '/' in elem:
+                        favicon_count += 1
+                    favicon_url += elem
+
+                    if favicon_count == 3:
+                        break
+                favicon_url = favicon_url + 'favicon.ico'
                 results.append({'title': title, 'url': link, 'favicon_url': favicon_url})
+                favicon_url = ''
+                favicon_count = 0
         print(len(results))
-        end_time = time.time()
-        parsing_time = end_time - start_time
-        logging.info("Время парсинга: %.2f секунд", parsing_time)
-        cache.set(cache_key, results, timeout=60 * 5)
-        # Разбиваем каждые 10 ответов по страницам
         len_results = len(results)
-        start_index = (page_number - 1) * 10
-        end_index = start_index + 10
-        results = results[start_index:end_index]
-        # Теперь вы можете вернуть список результатов
         return render(request, 'search/result.html',
-                      {'results': results, 'query': query, 'page': page_number, 'total_results': len_results})
+                      {'results': results, 'query': search_query, 'page': page_number, 'total_results': len_results})
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return HttpResponse("Error occurred", status=response.status_code)
 
 
 def image_view(request):
-    folderid = config('FOLDERID')
-    api_key = config('API_KEY')  # Замените на ваш API-ключ
-    query = request.GET.get('query', '')
+    folderid = os.getenv('FOLDERID')
+    api_key = os.getenv('API_KEY')  # Замените на ваш API-ключ
+    search_query = request.GET.get('query', '')
     page = request.GET.get('page', 1)
-    print('ПОИСКОВЫЙ ЗАПРОС КАРТИНКИ', query)
-    encoded_query = quote(query.encode('utf-8'))
+    print('ПОИСКОВЫЙ ЗАПРОС КАРТИНКИ', search_query)
     try:
         page_number = int(page)
     except ValueError:
         page_number = 1
-
-    offset = (page_number - 1) * 10
     images = []
-    url = (f'https://yandex.ru/images-xml/?folderid={folderid}'
-           f'&apikey={api_key}&text={encoded_query}&offset={offset}&itype=all')
-    headers = {
-        "Content-Type": "application/xml",
+    url = 'https://searchapi.api.cloud.yandex.net/v2/image/search'
+
+    headers = {"Authorization": f"Api-Key {api_key}"}
+
+    body = {
+        "query": {
+            "searchType": "SEARCH_TYPE_COM",
+            "queryText": search_query,
+            "familyMode": "FAMILY_MODE_NONE",
+            "page": page_number,
+            "fixTypoMode": "FIX_TYPO_MODE_ON"
+        },
+        "folderId": folderid,
+        "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
     }
-    response = requests.get(url, headers=headers)
+    response = requests.post(url, headers=headers, json=body)
     if response.status_code == 200:
-        soup = BeautifulSoup(response.content, 'lxml')  # Парсим HTML-код
+        encode_response = response.json()["rawData"]
+        # декодируем из base64
+        decoded_bytes = base64.b64decode(encode_response)
+        # преобразуем байты в строку (UTF-8)
+        text_xml = decoded_bytes.decode('utf-8')
+        soup = BeautifulSoup(text_xml, 'lxml')  # Парсим HTML-код
         # Извлечение всех изображений
         for item in soup.find_all('doc'):
             img_url = item.find('image-link').text if item.find('image-link') else None
@@ -124,71 +144,38 @@ def image_view(request):
         # print(images)
         # Теперь вы можете вернуть список изображений
         return render(request, 'search/images.html',
-                      {'images': images, 'query': query, 'page': page_number})
+                      {'images': images, 'query': search_query, 'page': page_number})
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return HttpResponse("Error occurred", status=response.status_code)
 
 
 def video_view(request):
-    folderid = config('FOLDERID')
-    api_key = config('API_KEY')  # Замените на ваш API-ключ
-    query = request.GET.get('query', '')
-    print('ПОИСКОВЫЙ ЗАПРОС ВИДЕО', query)
-    encoded_query = quote(query.encode('utf-8'))
-    page = request.GET.get('page', 1)  # Текущая страница (по умолчанию 1)
+    api_key = os.getenv('AIzaSyD1U4RWYafdYkbtnTPa07Ea6Xfm-Jq5fO8')
+    search_engine_id = os.getenv('2111a0bd6ad0446ef')
+    search_query = request.GET.get('query', '')
+    page = request.GET.get('page', 1)
     try:
         page_number = int(page)
     except ValueError:
         page_number = 1
-
-    offset = (page_number - 1) * 10
-    results = []
-    url = (f'https://yandex.ru/search/xml/html?folderid={folderid}'
-           f'&apikey={api_key}&query={encoded_query}&offset={offset}')
-    response = requests.get(url)
-    # print(response.text)
+    url = f'https://customsearch.googleapis.com/customsearch/v1/?q=видео {search_query}&page={page_number}&cx={search_engine_id}&key={api_key}'
+    headers = {"Authorization": f"Api-Key {api_key}"}
+    response = requests.get(url, headers=headers)
+    print(page)
     if response.status_code == 200:
-        soup = BeautifulSoup(response.text, 'html.parser')  # Парсим HTML-код
-        # Извлечение всех ссылок и заголовков
-        links = [item.get('href') for item in soup.find_all('a')]
-        titles = [item.text for item in soup.find_all('a')]
-        video = ''
-        for link, title in zip(links, titles):
-
-            """Проверяем, что ссылка не содержит доменов yandex.ru, и rutube.ru, а также не содердит
-            название ВИДЕО"""
-
-            if ('yandex.ru' not in link and 'rutube.ru' not in link and '/video/preview' not in link
-                and '/search?text' not in link
-                and ('video' in link or 'video' in title
-                or 'видео' in link or 'видео' in title
-                or 'Video' in link or 'Video' in title
-                or 'Видео' in link or 'Видео' in title
-                or 'VIDEO' in link or 'VIDEO' in title
-                or 'ВИДЕО' in link or 'ВИДЕО' in title
-                or 'https://rusvideos.pro' in link or 'youtube.com' in link)):
-                # Присваиваем переменной video ссылку
-                video = link
-            # print('VIDEO', video)
-            # print('TITLE', title)
-            if video and title:  # Проверяем, что ссылку и текст можно извлечь
-                results.append({'title': title, 'url': video})
-        images = []
-        for img in soup.find_all('img'):
-            thumbnail = img.get('src')
-            images.append({'thumbnail': thumbnail})
         all_data = []
-        if images == []:
-            all_data = results
-        else:
-            for item, img in zip(results, images):
-                item.update(img)
-                all_data.append(item)
-            print(all_data)
-        print('RESULTS', results)
-        # Теперь вы можете вернуть список результатов
-        return render(request, 'search/videos.html', {'results': all_data, 'query': query, 'page': page_number})
+        items = response.json()["items"]
+        for item in items:
+            try:
+                thumbnail = item["pagemap"]["cse_thumbnail"][0]["src"]
+            except KeyError:
+                thumbnail = None
+            all_data.append({'url': item["link"], 'title':item["title"], 'thumbnail': thumbnail})
+
+        return render(request, 'search/videos.html',
+                      {'results': all_data, 'query': search_query, 'page': page_number})
+
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return HttpResponse("Error occurred", status=response.status_code)
