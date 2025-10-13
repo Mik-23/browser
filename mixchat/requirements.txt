@@ -1,5 +1,5 @@
 django==5.1.1
-python-decouple==3.8
+python-dotenv==1.0.1
 pip==24.2
 gunicorn==23.0.0
 django-debug_toolbar==4.4.6
