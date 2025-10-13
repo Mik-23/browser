@@ -92,6 +92,7 @@ def search_view(request):
                 favicon_count = 0
         print(len(results))
         len_results = len(results)
+        print(results)
         return render(request, 'search/result.html',
                       {'results': results, 'query': search_query, 'page': page_number, 'total_results': len_results})
     else:
@@ -151,8 +152,8 @@ def image_view(request):
 
 
 def video_view(request):
-    api_key = os.getenv('AIzaSyD1U4RWYafdYkbtnTPa07Ea6Xfm-Jq5fO8')
-    search_engine_id = os.getenv('2111a0bd6ad0446ef')
+    api_key = os.getenv('OTHER_API_KEY')
+    search_engine_id = os.getenv('SEARCH_ENGINE_ID')
     search_query = request.GET.get('query', '')
     page = request.GET.get('page', 1)
     try:
