@@ -17,11 +17,11 @@ document.getElementById('registerForm').addEventListener('submit', (event) => {
     })
     .then(({ data, status }) => {
         console.log(data);
-        if (data.email != undefined && data.email[0] === 'user with this Электронная почта already exists.') {
+        if (data.email != undefined && data.email[0] === 'пользователь с таким Электронная почта уже существует.') {
             error = document.getElementById('emailError');
             error.textContent = 'Пользователь с такой же электронной почтой уже существует.'
         }
-        if (data.password != undefined && data.password[0] === 'Ensure this field has at least 8 characters.') {
+        if (data.password != undefined && data.password[0] === 'Убедитесь, что это значение содержит не менее 8 символов.') {
             error = document.getElementById('passwordError');
             error.textContent = 'Пароль должен содержать не менее 8 символов.'
         }
@@ -33,4 +33,5 @@ document.getElementById('registerForm').addEventListener('submit', (event) => {
     })
     .catch(error => console.error('Ошибка:', error)); // Обработка сетевых ошибок
 });
+
 
