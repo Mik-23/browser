@@ -70,15 +70,18 @@ class LoginView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         email = serializer.validated_data['email']
         password = serializer.validated_data['password']
-        user = authenticate(username=email, password=password)
-        print('user', user)
-        refresh = RefreshToken.for_user(user)
-        return Response({
-            'refresh': str(refresh),
-            'access': str(refresh.access_token),
-            'user_id': int(user.id),
-            'redirect_url': '/chat',  # URL для перенаправления на страницу почты
-        })
+        try:
+            user = authenticate(username=email, password=password)
+            print('user', user)
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                'refresh': str(refresh),
+                'access': str(refresh.access_token),
+                'user_id': int(user.id),
+                'redirect_url': '/chat',  # URL для перенаправления на страницу почты
+            })
+        except AttributeError:
+            return Response({'error': 'Неверный логин или пароль'})
 
 
 class LogoutView(APIView):
