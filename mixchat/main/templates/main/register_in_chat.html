@@ -53,6 +53,14 @@
         button:hover {
             background-color: #218838;
         }
+        .email-error {
+          color: red;
+          font-weight: bold;
+        }
+        .password-error {
+          color: red;
+          font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -68,6 +76,7 @@
             <input type="email" id="reg_email" name="email" required>
             <!-- <script src="https://unpkg.com/imask"></script> -->
         </div>
+        <div id="emailError" class="email-error" style="font-size: 14px;"></div>
         <div class="form-group">
             <label for="reg_login">Логин:</label>
             <input type="text" id="reg_login" name="username" required>
@@ -76,6 +85,7 @@
             <label for="reg_password">Пароль:</label>
             <input type="password" id="reg_password" name="password" required>
         </div>
+        <div id="passwordError" class="password-error" style="font-size: 14px;"></div>
         <button type="submit">Далее</button>
     </form>
 </div>
