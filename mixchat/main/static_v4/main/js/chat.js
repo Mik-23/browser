@@ -42,27 +42,7 @@ function selectUser(userId) {
    selectedUserId = userId; // Сохраняем ID выбранного пользователя
    console.log(selectedUserId)
    if (selectedUserId) {
-       li = document.querySelector('li')
-       console.log(li)
-       const listChat = document.getElementById('chats')
-       const allLists = listChat.querySelectorAll('li')
-       if (allLists.length != 0) {
-           for (const lis of allLists) {
-           lis.style.backgroundColor = '#3a3a3a';
-           }
-
-           //span = document.querySelectorAll('span')
-           for (const lis of allLists) {
-               span = lis.querySelector('span')
-               console.log(lis)
-               if (li.textContent === span.textContent) {
-                   li.onclick = () => openChat(selectedUserId, lis);
-               }
-           }
-       } else {
-           const listElem = document.createElement('li')
-           openChat(selectedUserId, listElem);
-       }
+       openChat(selectedUserId);
    }
 }
 
@@ -99,7 +79,7 @@ document.addEventListener('click', function(event) {
 });
 
 // Функция для открытия чата с пользователем
-function openChat(userId, listElem) {
+function openChat(userId) {
     const parseUserId = Number(userId);
     const parseSenderId = Number(senderId);
 
@@ -123,9 +103,6 @@ function openChat(userId, listElem) {
             // Если чат не существует, создаем новый
             createChat(parseSenderId, parseUserId);
         }
-        listElem.style.backgroundColor = '#1F9494';
-        listElem.style.top = '205px';
-        listElem.style.position = 'fixed'
         document.getElementById('chatWindow').style.display = 'block';
         document.getElementById('chatWindow').style.margin = '350px 0px';
 
@@ -391,7 +368,7 @@ function displayChats(chats) {
     console.log(chats)
     chats.forEach(chat => {
         const li = document.createElement('li');
-        li.style.position = 'fixed'
+        li.style.position = 'static'
         const span = document.createElement('span');
         span.textContent = chat.username; // Имя пользователя в чате
         const p = document.createElement('p');
@@ -404,24 +381,26 @@ function displayChats(chats) {
                 lis.style.backgroundColor = '#3a3a3a';
             }
             if (chat.user_id_1 < numSenderId && chat.user_id_2 === numSenderId) {
-                openChat(chat.user_id_1, li); // Открытие чата при клике
+                openChat(chat.user_id_1); // Открытие чата при клике
                 li.style.backgroundColor = '#1F9494';
-                li.style.top = '187px';
+                selectedUserId = chat.user_id_1
+                //li.style.top = '-57px';
             } else if (chat.user_id_1 === numSenderId && chat.user_id_2 > numSenderId) {
-                openChat(chat.user_id_2, li);
+                openChat(chat.user_id_2);
                 li.style.backgroundColor = '#1F9494';
-                li.style.top = '187px';
+                selectedUserId = chat.user_id_2
+                //li.style.top = '-57px';
             } else if (chat.user_id_1 === chat.user_id_2 && chat.user_id_1 === numSenderId) {
-                openChat(chat.user_id_1, li);
+                openChat(chat.user_id_1);
                 li.style.backgroundColor = '#1F9494';
-                li.style.top = '187px';
+                selectedUserId = chat.user_id_1
+                //li.style.top = '-57px';
             }
-            console.log(chat.user_id_2)
-            selectedUserId = chat.user_id_2
         }
         li.appendChild(span);
         li.appendChild(p);
         chatList.appendChild(li);
+        chatList.style.display = 'block';
     });
 }
 
