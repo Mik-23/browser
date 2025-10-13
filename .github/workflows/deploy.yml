@@ -31,7 +31,7 @@ jobs:
 
        - name: Deploy to server
          run: |
-           ssh ${{ secrets.USERNAME }}@5.129.245.67 "cd /root/browser && git pull && docker-compose down && docker-compose up --build -d && docker cp 741009f7fb9f:/staticfiles ./browser/mixrech && docker cp 9e2369ed8ff1:/staticfiles ./browser/mixchat"
+           ssh ${{ secrets.USERNAME }}@5.129.245.67 "cd /root/browser && git pull && docker-compose down && docker-compose up --build -d && docker cp 741009f7fb9f:/staticfiles ./mixrech && docker cp 9e2369ed8ff1:/staticfiles ./mixchat"
 
      logs:
        runs-on: ubuntu-latest
