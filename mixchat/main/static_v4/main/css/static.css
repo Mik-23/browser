@@ -108,6 +108,7 @@ body {
             max-width: 100px;
             width: 100%;
             position: fixed
+
         }
 
         .chat-list li {
@@ -116,7 +117,8 @@ body {
             list-style-type: none;
             color: #fff;
             margin: 25px 0;
-
+            position: fixed;
+            display: block;
         }
 
 
