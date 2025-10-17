@@ -26,7 +26,7 @@ def search_view(request):
         page_number = 1
     results = []
     url = 'https://searchapi.api.cloud.yandex.net/v2/web/search'
-
+    print(page_number)
     headers = {"Authorization": f"Api-Key {api_key}"}
 
     body = {
@@ -180,3 +180,4 @@ def video_view(request):
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return HttpResponse("Error occurred", status=response.status_code)
+
