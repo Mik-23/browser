@@ -1,66 +1,57 @@
 name: Deploy to Yandex Cloud
 
 on:
-   push:
-      branches:
-         - main  # или ваша основная ветка
+  push:
+    branches:
+      - main
 
 jobs:
-	 build:
-	   runs-on: ubuntu-latest
-	   
-	   steps:
-       - name: Checkout code
-         uses: actions/checkout@v2
-		 
-	   - name: Build image
-		 run: |
-		   docker build -t browser_mixrech_1:latest
-		   
-		
-     deploy:
-       runs-on: ubuntu-latest
-    
-       - name: Debug
-         run: echo "SSH_PRIVATE_KEY=${{ secrets.SSH_PRIVATE_KEY }}"
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
 
-       - name: Set up SSH
-         uses: webfactory/ssh-agent@v0.9.0
-         with:
-           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Build image
+        run: |
+          docker build -t browser_mixrech_1:latest .
 
-       - name: Add server to known_hosts
-         run: |
-           mkdir -p ~/.ssh
-           ssh-keyscan -H 5.129.245.67 >> ~/.ssh/known_hosts
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-       - name: Add SSH key to agent
-         run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
-		 
-		 
-	   - name: Save to server
-	     run: | 
-		   docker save browser_mixrech_1:latest | ssh ${{ secrets.USERNAME }}@5.129.245.67 'docker load'
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 5.129.245.67 >> ~/.ssh/known_hosts
 
-       - name: Deploy to server
-         run: |
-           ssh ${{ secrets.USERNAME }}@5.129.245.67 "cd /root/browser && docker run -d --name browser_mixrech_1:latest && docker cp browser_mixrech_1:/mixrech/staticfiles ./app/staticfiles/mixrech"
+      - name: Transfer docker image
+        run: |
+          docker save browser_mixrech_1:latest | ssh ${{ secrets.USERNAME }}@5.129.245.67 'docker load'
 
-     logs:
-       runs-on: ubuntu-latest
-       needs: deploy
-       
-       steps:
-       - name: Set up SSH
-         uses: webfactory/ssh-agent@v0.9.0
-         with:
-           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Run deployment
+        run: |
+          ssh ${{ secrets.USERNAME }}@5.129.245.67 "docker run -d --name browser_container browser_mixrech_1:latest && docker cp browser_container:/mixrech/staticfiles ./app/staticfiles/mixrech"
+  
+  logs:
+    runs-on: ubuntu-latest
+    needs: deploy
+    steps:
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-       - name: Add server to known_hosts
-         run: |
-           mkdir -p ~/.ssh
-           ssh-keyscan -H 5.129.245.67 >> ~/.ssh/known_hosts
-          
-       - name: Fetch logs
-         run: |
-           ssh ${{ secrets.USERNAME }}@5.129.245.67 "cd /root/browser && git pull && docker logs -f browser_mixrech_1"
+      - name: Add server to known_hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H 5.129.245.67 >> ~/.ssh/known_hosts
+
+      - name: Fetch logs
+        run: |
+          ssh ${{ secrets.USERNAME }}@5.129.245.67 "docker logs -f browser_container"
