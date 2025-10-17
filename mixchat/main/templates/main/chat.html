@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="google-site-verification" content="Код подтверждения в Google" />
+    <meta name="yandex-verification" content="8b55df76bf69b889" />
+    <title>Mixchat - Новый удобный мессенджер для общения с друзьями и коллегами</title>
+    <meta name=”description” content="MixChat - это современный мессенджер, обеспечивающий быстрый и безопасный обмен сообщениями с друзьями и коллегами." />
+    <meta name=”keywords” content="мессенджер, messenger, общение, communication" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/css/static.css' %}">
+    <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
+</head>
+<body>
+
+    <h1>Mixchat</h1>
+    <!-- Поле для поиска пользователей -->
+    <div class="form-group">
+        <input type="text" id="userSearch" placeholder="Поиск пользователя..." oninput="searchUsers()">
+        <!-- <button id="openChatButton" style="display: none;">Открыть чат</button> -->
+    </div>
+
+    <!-- Список пользователей -->
+    <div id="userList" class="user-list">
+        <ul id="users" style="display: none;"></ul> <!-- Здесь будут отображаться пользователи -->
+    </div>
+
+    <div id="chatList" class="chat-list">
+        <h2 class="chat-align">Чаты</h2>
+        <ul id="chats"></ul> <!-- Здесь будут отображаться чаты -->
+    </div>
+
+    <div class="vertical-line"></div>
+
+    <!-- Список сообщений -->
+    <div id="message" class="message-list active">
+        <h2 class="message-align" style="display: none;">Сообщения</h2>
+        <ul class="message-message-list"></ul> <!-- Здесь будут отображаться сообщения -->
+    </div>
+
+    <!-- Поле для ввода сообщения -->
+    <div id="chatWindow" style="display: none;">
+        <ul class="message-message-list"></ul>
+        <div class="media-container">
+            <input type="text" id="messageContent" placeholder="Введите сообщение..." style="position:fixed; bottom: 60px; right: 700px;">
+            <div class="files-container" id="media" style="display: none;">
+                <label for="imageInput" class="file-label">
+                    <img id="image" src="{% static 'main/png/image.png' %}" style="width: 21px; height: 21px; margin: 215px 160px;">
+                    <p>Фото</p>
+                </label>
+                <input type="file" id="imageInput" accept="image/*" multiple style="display: none;"/>
+                <label for="videoInput" class="file-label">
+                    <img id="video" src="{% static 'main/png/video.png' %}" style="width: 21px; height: 21px; margin: 255px 160px;">
+                    <p>Видео</p>
+                </label>
+                <input type="file" id="videoInput" accept="video/*" multiple style="display: none;"/>
+                <label for="audioInput" class="file-label">
+                    <img id="audio" src="{% static 'main/png/audio.png' %}" style="width: 21px; height: 21px; margin: 295px 160px;">
+                    <p>Аудио</p>
+                </label>
+                <input type="file" id="audioInput" accept="audio/*" multiple style="display: none;"/>
+            </div>
+        </div>
+
+        <button class="sent" id="sendMessageButton" style="position:fixed; bottom: 110px; right: -230px;">
+            <img class="send_icon" src="{% static 'main/png/send.png' %}" style="position:fixed; width: 30px">
+            <img id="send_icon_hover" src="{% static 'main/png/send_hover.svg' %}" style="display: none; position:fixed; width: 300px; margin: -135px -130px">
+        </button>
+        <button class="mediaIcons" id="mediaButton" style="position:fixed; bottom: 110px; right: -390px;">
+            <img id="media_symbol" class="media_icon" src="{% static 'main/png/media.png' %}" style="position:fixed; width: 30px; margin-left: -30px">
+            <img id="media_symbol_hover" src="{% static 'main/png/media_hover.png' %}" style="display: none; position:fixed; width: 30px; margin-left: -30px">
+        </button>
+    </div>
+
+    <form id="logout-form" style="position: fixed; top: 10px; right: 95px;">
+      <button class="btn" type="submit">Выйти</button>
+    </form>
+
+<script src="{% static 'main/js/logout_redirect.js' %}"></script>
+
+<script>
+document.getElementById('logout-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    logoutUser(); // Вызов функции выхода
+});
+</script>
+
+<script src="{% static 'main/js/chat.js' %}"></script>
+
+</body>
+</html>
+
