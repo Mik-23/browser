@@ -78,7 +78,7 @@ class LoginView(generics.GenericAPIView):
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
                 'user_id': int(user.id),
-                'redirect_url': '/chat',  # URL для перенаправления на страницу почты
+                'redirect_url': '/',  # URL для перенаправления на страницу почты
             })
         except AttributeError:
             return Response({'error': 'Неверный логин или пароль'})
@@ -89,16 +89,6 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        print(request.data)
-        # Получаем токен из заголовка Authorization
-        # try:
-        #    refresh_token = request.data["refresh"]
-        #    tok = RefreshToken(refresh_token)
-        #    tok.blacklist()
-        # except Exception as e:
-        #    print(e)
-        #    return Response(status=400, data={"detail": "Invalid token"})
-
         return Response({"detail": "Successfully logged out.",
                          'logout_redirect': '/auth_in_chat'})
 
