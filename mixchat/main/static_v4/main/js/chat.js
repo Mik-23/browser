@@ -12,7 +12,14 @@ function fetchUsers() {
             'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
         }
     })
-    .then(response => response.json())
+    .then(response => {
+        if (response.ok) {
+            return response.json(); // Продолжаем, если ответ успешный
+        } else {
+            // Обработка ошибок, например, выброс исключения или возврат отклоненного промиса
+             window.location.href = '/auth_in_chat';
+        }
+    })
     .then(data => {
         users = data.users; // Сохраняем полученных пользователей в переменную
         displayUsers(); // Отображаем пользователей
