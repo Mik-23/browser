@@ -4,8 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 urlpatterns = [
-    path('', views.root_redirect, name='root'),
-    path('chat', views.chat, name='chat_url'),
+    path('', views.chat, name='chat_url'),
     path('auth_in_chat', views.auth_in_chat, name='auth_in_chat'),
     path('register_in_chat', views.register_in_chat, name='register_in_chat'),
     path('successfully', views.successfully, name='successfully'),
