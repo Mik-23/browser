@@ -18,11 +18,25 @@ body {
         }
 
         .sent {
-            margin: -35px 830px;
+            position: fixed;
+            bottom: 80px;
+            right: 550px;
+            max-width: 30px; /* чтобы не превращался в огромный */
+            box-sizing: border-box; /* чтобы padding не влияли на ширину */
+            z-index: 9999; /* чтобы не перекрывалось чем-то */
+            width: calc(100% - 40px);
+            font-size: 14px;
         }
 
         .mediaIcons {
-            margin: -35px 910px;
+            position:fixed;
+            bottom: 80px;
+            right: 470px;
+            max-width: 30px; /* чтобы не превращался в огромный */
+            box-sizing: border-box; /* чтобы padding не влияли на ширину */
+            z-index: 9999; /* чтобы не перекрывалось чем-то */
+            width: calc(100% - 40px);
+            font-size: 14px;
         }
 
         .messages {
@@ -78,13 +92,6 @@ body {
         }
 
 
-        .files-container {
-            width: 300px;
-            height: 300px;
-            backgroundColor: #3a3a3a;
-        }
-
-
         .message-message-list li {
             list-style-type: none;
             text-align: left; /* Выравнивание текста вправо */
@@ -110,8 +117,14 @@ body {
 
 
         #messageContent {
-            width: 200px; /* Установите желаемую ширину */
-            margin-left: 600px;
+            position: fixed;
+            bottom: 60px;
+            right: 600px; /* уменьшите отступ, чтобы не уходил за границы */
+            width: calc(100% - 40px);
+            font-size: 14px;
+            max-width: 400px; /* чтобы не превращался в огромный */
+            box-sizing: border-box; /* чтобы padding не влияли на ширину */
+            z-index: 9999; /* чтобы не перекрывалось чем-то */
 
         }
 
@@ -175,9 +188,11 @@ body {
 
         @media(max-width: 600px) {
             #messageContent {
-                right: 5%;  /* чуть ближе к левому краю */
-                width: 90%; /* занимает почти всю ширину */
-                bottom: 70px; /* чуть ниже, чтобы оставить место для клавиатуры */
+                position: fixed;
+                bottom: 60px;
+                right: 20px; /* стартовая позиция для мобильных, например, 20px */
+                width: 70%; /* ширина в процентах */
+                max-width: 300px; /* максимум ширины */
             }
 
             #media {
