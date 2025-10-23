@@ -12,6 +12,17 @@ body {
         h2 {
             text-align: center;
             color: #FFFAFA;
+            position: fixed;
+            top: 1px;
+            left: 750px;
+        }
+
+        .sent {
+            margin: -35px 830px;
+        }
+
+        .mediaIcons {
+            margin: -35px 910px;
         }
 
         .messages {
@@ -157,7 +168,38 @@ body {
             cursor: pointer;
             position: fixed;
         }
+
         .btn:hover {
             color: #02D6ED;
+        }
+
+        @media(max-width: 600px) {
+            #messageContent {
+                right: 5%;  /* чуть ближе к левому краю */
+                width: 90%; /* занимает почти всю ширину */
+                bottom: 70px; /* чуть ниже, чтобы оставить место для клавиатуры */
+            }
+
+            #media {
+                width: 80%; /* ширина занимает 80% экрана */
+                height: auto; /* или задать конкретное значение по необходимости */
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+              }
+
+            #sendMessageButton {
+                bottom: 80px; /* чуть выше, чтобы было удобно нажимать */
+                right: 10px; /* оставьте небольшой отступ от края */
+                width: 60px; /* увеличенные кнопки, чтобы было удобно щипками */
+                height: 60px;
+            }
+
+            #mediaButton {
+                bottom: 80px; /* так же, чуть выше */
+                right: 80px;
+                width: 60px;
+                height: 60px;
+            }
         }
 
