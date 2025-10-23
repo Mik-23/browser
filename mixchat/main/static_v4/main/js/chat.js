@@ -328,8 +328,8 @@ document.getElementById('mediaButton').addEventListener('click', () => {
     mediaIcons.style.position = 'fixed';
     mediaIcons.style.width = '100px';
     mediaIcons.style.height = '130px';
-    mediaIcons.style.top = '505px';
-    mediaIcons.style.left = '995px';
+    mediaIcons.style.top = '69%';        // 50% от верхней границы окна
+    mediaIcons.style.left = '65%';
     mediaIcons.style.backgroundColor = '#3a3a3a';
     console.log(mediaIcons)
 });
