@@ -121,15 +121,9 @@ function loadMessages(chatId) {
     const messageList = document.querySelector('.message-message-list');
     let header = document.querySelector('h2');
     console.log(header)
-    header.style.display = 'block';
-    header.style.textAlign = 'center'
-    header.style.position = 'fixed'
-    header.style.top = '1px'
-    header.style.left = '750px'
+    //header.style.display = 'block';
     let button = document.querySelector('button');
-    button.style.margin = '-35px 830px';
     let mediaButton = document.getElementById('mediaButton');
-    mediaButton.style.margin = '-35px 910px';
     messageList.innerHTML = ''; // Очистить предыдущие сообщения
 
     const url = `/api/message/?chat_id=${chatId}`; // Эндпоинт для получения сообщений по ID чата
