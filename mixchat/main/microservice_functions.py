@@ -18,5 +18,3 @@ def mixrech(query):
     else:
         print(f"Ошибка: {response.status_code}")
         print(response.text)
-
-mixrech('вода')
