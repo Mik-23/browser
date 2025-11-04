@@ -27,12 +27,5 @@ def successfully(request):
     return render(request, 'main/successfully.html')
 
 
-def root_redirect(request):
-    if request.user.is_authenticated:
-        return redirect('chat')  # имя маршрута для views.chat
-    else:
-        return redirect('auth_in_chat')
-
-
 def confirmation_code(request):
     return render(request, 'main/confirmation_code.html')
