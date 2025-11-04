@@ -8,6 +8,7 @@ body {
 
         h1 {
             color: #D9FFFD;
+            position: fixed
         }
 
         h2 {
@@ -49,16 +50,20 @@ body {
         }
         .message {
             margin-bottom: 10px;
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
         }
         .message .sender {
             font-weight: bold;
         }
         .form-group{
             width: 500px;
-            position: relative;
+            position: fixed;
 
             margin-right: auto;
-            top: 0px;
+            top: 90px;
 
             justify-content: space-between;
         }
@@ -130,9 +135,10 @@ body {
         }
 
         .chat-list ul{
-            max-width: 100px;
+            max-width: 120px;
             width: 100%;
-            position: fixed
+            position: fixed;
+            top: 90px;
 
         }
 
@@ -187,7 +193,7 @@ body {
             color: #02D6ED;
         }
 
-        @media(max-width: 600px) {
+        @media(max-width: 1000px) {
             #messageContent {
                 position: fixed;
                 bottom: 60px;
@@ -205,18 +211,17 @@ body {
               }
 
             #sendMessageButton {
-                bottom: 80px; /* чуть выше, чтобы было удобно нажимать */
+                bottom: 85px; /* чуть выше, чтобы было удобно нажимать */
                 right: 10px; /* оставьте небольшой отступ от края */
                 width: 60px; /* увеличенные кнопки, чтобы было удобно щипками */
                 height: 60px;
             }
 
             #mediaButton {
-                bottom: 80px; /* так же, чуть выше */
+                bottom: 85px; /* так же, чуть выше */
                 right: 80px;
                 width: 60px;
                 height: 60px;
             }
         }
-
 
