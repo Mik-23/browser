@@ -79,14 +79,15 @@ body {
 
         .user-list {
             background-color: #3a3a3a;
-            max-width: 170px
+            max-width: 170px;
+            margin: 0px 170px
         }
 
         .user-list li {
            list-style-type: none;
            margin-left: auto;
            color: white;
-           line-height: 1.7
+           line-height: 1.9
         }
 
         .media-container img{
@@ -138,7 +139,7 @@ body {
             max-width: 120px;
             width: 100%;
             position: fixed;
-            top: 90px;
+            top: 120px;
 
         }
 
