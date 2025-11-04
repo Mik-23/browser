@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
@@ -10,7 +11,8 @@ from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.urls import reverse
 from django.http import HttpResponse
-from .models import Message, Chat, Channel, ChannelMembership, ChatUser
+from .microservice_functions import mixrech
+from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, MessageBot
 from .serialazers import (UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer,
                           CreateChannelSerializer, SubscribeToChannelSerializer,
@@ -72,7 +74,7 @@ class LoginView(generics.GenericAPIView):
         password = serializer.validated_data['password']
         try:
             user = authenticate(username=email, password=password)
-            print('user', user)
+            print('user', type(user.id))
             refresh = RefreshToken.for_user(user)
             return Response({
                 'refresh': str(refresh),
@@ -112,54 +114,96 @@ class MessageView(generics.GenericAPIView):
         print('Получатель', recipient_id)
         content = serializer.validated_data['content']
         chat_id = serializer.validated_data['chat_id']
+        chat = Chat.objects.filter(id=chat_id).first()
+        type = chat.type
+        # type = serializer.validated_data['type']
         print('ID чата', chat_id)
         # Получаем файлы фото, видео и аудио
         image_file = request.FILES.get('image')
         video_file = request.FILES.get('video')
         audio_file = request.FILES.get('audio')
         print('VIDEO', video_file)
-        message = Message(
-            sender_id=sender_id,
-            content=content,
-            recipient_id=recipient_id,
-            chat_id=chat_id
-        )
+        if type == 'user':
+            message = Message(
+                sender_id=sender_id,
+                content=content,
+                recipient_id=recipient_id,
+                chat_id=chat_id
+            )
 
-        # Сохраняем фото в БД если оно есть
-        if image_file:
-            message.image.save(image_file.name, image_file)
-        else:
-            message.image = None
+            # Сохраняем фото в БД если оно есть
+            if image_file:
+                message.image.save(image_file.name, image_file)
+            else:
+                message.image = None
 
-        # Сохраняем видео в БД если оно есть
-        if video_file:
-            message.video.save(video_file.name, video_file)
-        else:
-            message.video = None
+            # Сохраняем видео в БД если оно есть
+            if video_file:
+                message.video.save(video_file.name, video_file)
+            else:
+                message.video = None
 
-        # Сохраняем аудио в БД если оно есть
-        if audio_file:
-            message.audio.save(audio_file.name, audio_file)
-        else:
-            message.audio = None
+            # Сохраняем аудио в БД если оно есть
+            if audio_file:
+                message.audio.save(audio_file.name, audio_file)
+            else:
+                message.audio = None
 
-        message.save()
-        print(message.recipient)
-        return HttpResponse({
-            'sender_id': sender_id,
-            'recipient_id': recipient_id,
-            'content': content,
-            'image': image_file,
-            'video': video_file,
-            'audio': audio_file,
-            'message_id': message.id
-        })
+            message.save()
+            print(message.recipient)
+            return HttpResponse({
+                'sender_id': sender_id,
+                'recipient_id': recipient_id,
+                'content': content,
+                'image': image_file,
+                'video': video_file,
+                'audio': audio_file,
+                'message_id': message.id
+            })
+        elif type == 'bot':
+            user = ChatUser.objects.filter(id=sender_id).first()
+            sender = user.username
+            bot = Bot.objects.filter(id=recipient_id).first()
+            recipient = bot.name
+            message = MessageBot(
+                sender_id=sender_id,
+                content=content,
+                bot_id=recipient_id,
+                chat_id=chat_id,
+                sender=sender,
+                bot=recipient
+            )
+
+            # Сохраняем фото в БД если оно есть
+            if image_file:
+                message.image.save(image_file.name, image_file)
+            else:
+                message.image = None
+
+            message.save()
+            message_bot = MessageBot(
+                sender_id=recipient_id,
+                content=mixrech(content),
+                bot_id=sender_id,
+                chat_id=chat_id,
+                sender=recipient,
+                bot=sender
+            )
+            message_bot.save()
+            return HttpResponse({
+                'sender_id': sender_id,
+                'recipient_id': recipient_id,
+                'content': content,
+                'image': image_file,
+                'message_id': message.id
+            })
 
     def get(self, request, *args, **kwargs):
         chat_id = request.GET.get('chat_id')
+        print('hgfhfhfhf',chat_id)
         messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
-        return Response({
-            'messages': [{
+        messages_bot = MessageBot.objects.filter(chat_id=chat_id).order_by('timestamp')
+        list_messages = [{
                 "id": message.id,
                 "sender": str(message.sender),
                 "recipient": str(message.recipient),
@@ -172,6 +216,21 @@ class MessageView(generics.GenericAPIView):
                 "date": message.timestamp.date(),
                 "time": message.timestamp.strftime('%H:%m')
             } for message in messages]
+        list_messages_bot = [{
+                "id": message.id,
+                "sender": str(message.sender),
+                "recipient": str(message.bot),
+                "sender_id": str(message.sender_id),
+                "recipient_id": str(message.bot_id),
+                "content": message.content,
+                "image": message.image.url if message.image else None,
+                "date": message.timestamp.date(),
+                "time": message.timestamp.strftime('%H:%m')
+            } for message in messages_bot]
+        print(list_messages_bot)
+        list_messages.extend(list_messages_bot)
+        return Response({
+            'messages': list_messages
         })
 
 
@@ -185,12 +244,12 @@ class SearchUserView(generics.GenericAPIView):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         users = ChatUser.objects.all()
+        bots = Bot.objects.all()
+        list_users = [{"id": user.id, "username": user.username, "type": "user"} for user in users]
+        list_bots = [{"id": bot.id, "username": bot.name, "type": "bot"} for bot in bots]
+        list_users.extend(list_bots)
         return Response({
-            'users': [{
-                "id": user.id,
-                "username": user.username,
-                "email": user.email
-            } for user in users]
+            'users': list_users
         })
 
 
@@ -222,9 +281,10 @@ class ChatView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         sender_id = serializer.validated_data['sender_id']
         recipient_id = serializer.validated_data['recipient_id']
+        type = serializer.validated_data['type']
         user_ids = sorted([sender_id, recipient_id])
         serializer.is_valid(raise_exception=True)
-        chat = Chat.objects.create(user_id_1=user_ids[0], user_id_2=user_ids[1])
+        chat = Chat.objects.create(user_id_1=user_ids[0], user_id_2=user_ids[1], type=type)
         return Response({
             'id': chat.id,
             'user_id_1': chat.user_id_1,
@@ -246,26 +306,55 @@ class GetChatsView(generics.GenericAPIView):
             Q(user_id_1=request.user.id) |
             Q(user_id_2=request.user.id))
         users = ChatUser.objects.all()
-        print(chats)
+        bots = Bot.objects.all()
         chat_with_user = []
         for user, chat in zip(users, sorted(chats, key=lambda user: user.user_id_2)):
             print(f'{user}      {chat}')
             message = Message.objects.filter(chat=chat.id).order_by('-timestamp').first()
-            if chat.user_id_1 < request.user.id and chat.user_id_2 == request.user.id:
+            if chat.user_id_1 < str(request.user.id) and chat.user_id_2 == str(request.user.id):
                 user = ChatUser.objects.filter(id=chat.user_id_1).first()
-            elif chat.user_id_1 == request.user.id and chat.user_id_2 > request.user.id:
+            elif chat.user_id_1 == str(request.user.id) and chat.user_id_2 > str(request.user.id):
                 user = ChatUser.objects.filter(id=chat.user_id_2).first()
-            elif chat.user_id_1 == chat.user_id_2 == request.user.id:
+            elif chat.user_id_1 == chat.user_id_2 == str(request.user.id):
                 user = ChatUser.objects.filter(id=chat.user_id_1).first()
             if message is not None:
                 content = message.content
             else:
                 content = ''
+            try:
+                content = json.loads(content)
+                print('ghhgfhfhffhf',content)
+            except json.JSONDecodeError:
+                print('Ошибка: Невозможно декодировать формат отличный от JSON')
             chat_with_user.append({
                 "id": chat.id,
                 "user_id_1": chat.user_id_1,
                 "user_id_2": chat.user_id_2,
                 "username": user.username,
+                "content": content
+            })
+        chats_bots = list(filter(lambda x: x.type == 'bot', chats))
+
+        for bot, chat in zip(bots, chats_bots):
+            message = MessageBot.objects.filter(chat=chat.id).order_by('-timestamp').first()
+            if message is not None:
+                content = message.content
+            else:
+                content = ''
+            try:
+                new_content = ''
+                update_content = content.replace("'", '"')
+                json_content = json.loads(update_content)
+                for con in json_content:
+                    new_content = new_content + con + ' '
+                content = new_content
+            except json.JSONDecodeError:
+                print('Ошибка: Невозможно декодировать формат отличный от JSON')
+            chat_with_user.append({
+                "id": chat.id,
+                "user_id_1": chat.user_id_1,
+                "user_id_2": chat.user_id_2,
+                "username": bot.name,
                 "content": content
             })
         return Response({

@@ -37,7 +37,7 @@ class LoginSerializer(serializers.Serializer):
 
 
 class MessageSerializer(serializers.Serializer):
-    recipient_id = serializers.IntegerField()
+    recipient_id = serializers.CharField(max_length=200, required=False, allow_blank=True)
     content = serializers.CharField(max_length=200, required=False, allow_blank=True)
     chat_id = serializers.IntegerField()
     image = serializers.ImageField(required=False, allow_null=True)
@@ -58,8 +58,9 @@ class SearchUserSerializer(serializers.Serializer):
 
 
 class ChatSerializer(serializers.Serializer):
-    sender_id = serializers.IntegerField()
-    recipient_id = serializers.IntegerField()
+    sender_id = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    recipient_id = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    type = serializers.CharField(max_length=200, required=False, allow_blank=True)
 
 
 class GetChatsSerializer(serializers.Serializer):
