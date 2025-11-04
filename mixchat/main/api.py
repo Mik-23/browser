@@ -77,7 +77,7 @@ class LoginView(generics.GenericAPIView):
             return Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
-                'user_id': int(user.id),
+                'user_id': user.id,
                 'redirect_url': '/',  # URL для перенаправления на страницу почты
             })
         except AttributeError:
@@ -322,3 +322,4 @@ class SendMessageToChannelView(generics.GenericAPIView):
         return Response({
             'message': f'Сообщение отправлено в канал с id {channel_id}.'
         })
+
