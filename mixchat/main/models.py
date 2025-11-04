@@ -1,3 +1,4 @@
+import uuid
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
@@ -5,6 +6,10 @@ from django.contrib.auth.models import AbstractUser
 
 
 class ChatUser(AbstractUser):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False)
     email = models.EmailField("Электронная почта", unique=True)
     phone = models.CharField("Телефон")
     country_code = models.CharField("Код страны")
@@ -16,9 +21,18 @@ class ChatUser(AbstractUser):
         return self.username
 
 
+class Bot(models.Model):
+    id = models.UUIDField(
+        primary_key=True,
+        default=uuid.uuid4,
+        editable=False)
+    name = models.TextField("Имя")
+
+
 class Chat(models.Model):
-    user_id_1 = models.IntegerField()
-    user_id_2 = models.IntegerField()
+    user_id_1 = models.TextField()
+    user_id_2 = models.TextField()
+    type = models.TextField("Тип")
 
     def __str__(self):
         return f"Chat between {self.user_id_1} and {self.user_id_2}"
@@ -40,11 +54,23 @@ class Message(models.Model):
     sender = models.ForeignKey(ChatUser, on_delete=models.CASCADE, related_name='sent_messages')
     recipient = models.ForeignKey(ChatUser, on_delete=models.CASCADE, related_name='received_messages')
     content = models.TextField("Текст")
-    image = models.ImageField(upload_to='messages/images/', null=True, blank=True)
-    video = models.FileField(upload_to='messages/videos/', null=True, blank=True)
-    audio = models.FileField(upload_to='messages/audios/', null=True, blank=True)
+    image = models.ImageField("Картинка", upload_to='messages/images/', null=True, blank=True)
+    video = models.FileField("Видео", upload_to='messages/videos/', null=True, blank=True)
+    audio = models.FileField("Аудио", upload_to='messages/audios/', null=True, blank=True)
     timestamp = models.DateTimeField("Дата", auto_now=True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
 
     def __str__(self):
         return f"Message from {self.sender} to {self.recipient} in chat {self.chat.id}"
+
+
+class MessageBot(models.Model):
+    id = models.AutoField(primary_key=True)
+    sender_id = models.TextField()
+    bot_id = models.TextField()
+    sender = models.TextField("Имя пользователя")
+    bot = models.TextField("Название бота")
+    content = models.TextField("Текст")
+    image = models.ImageField(upload_to='messages/images/', null=True, blank=True)
+    timestamp = models.DateTimeField("Дата", auto_now=True)
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages_bot')
