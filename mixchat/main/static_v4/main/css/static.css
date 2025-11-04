@@ -3,15 +3,42 @@ body {
             margin: 0;
             padding: 20px;
             background-color: #2c2c2c;
+            overflow-x: hidden;
         }
 
         h1 {
             color: #D9FFFD;
+            position: fixed
         }
 
         h2 {
             text-align: center;
             color: #FFFAFA;
+            position: fixed;
+            top: 1px;
+            left: 750px;
+        }
+
+        .sent {
+            position: fixed;
+            bottom: 80px;
+            right: 550px;
+            max-width: 30px; /* чтобы не превращался в огромный */
+            box-sizing: border-box; /* чтобы padding не влияли на ширину */
+            z-index: 9999; /* чтобы не перекрывалось чем-то */
+            width: calc(100% - 40px);
+            font-size: 14px;
+        }
+
+        .mediaIcons {
+            position:fixed;
+            bottom: 80px;
+            right: 470px;
+            max-width: 30px; /* чтобы не превращался в огромный */
+            box-sizing: border-box; /* чтобы padding не влияли на ширину */
+            z-index: 9999; /* чтобы не перекрывалось чем-то */
+            width: calc(100% - 40px);
+            font-size: 14px;
         }
 
         .messages {
@@ -23,16 +50,20 @@ body {
         }
         .message {
             margin-bottom: 10px;
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
         }
         .message .sender {
             font-weight: bold;
         }
         .form-group{
             width: 500px;
-            position: relative;
+            position: fixed;
 
             margin-right: auto;
-            top: 0px;
+            top: 90px;
 
             justify-content: space-between;
         }
@@ -67,13 +98,6 @@ body {
         }
 
 
-        .files-container {
-            width: 300px;
-            height: 300px;
-            backgroundColor: #3a3a3a;
-        }
-
-
         .message-message-list li {
             list-style-type: none;
             text-align: left; /* Выравнивание текста вправо */
@@ -99,15 +123,22 @@ body {
 
 
         #messageContent {
-            width: 200px; /* Установите желаемую ширину */
-            margin-left: 600px;
+            position: fixed;
+            bottom: 60px;
+            right: 600px; /* уменьшите отступ, чтобы не уходил за границы */
+            width: calc(100% - 40px);
+            font-size: 14px;
+            max-width: 400px; /* чтобы не превращался в огромный */
+            box-sizing: border-box; /* чтобы padding не влияли на ширину */
+            z-index: 9999; /* чтобы не перекрывалось чем-то */
 
         }
 
         .chat-list ul{
-            max-width: 100px;
+            max-width: 120px;
             width: 100%;
-            position: fixed
+            position: fixed;
+            top: 90px;
 
         }
 
@@ -157,7 +188,40 @@ body {
             cursor: pointer;
             position: fixed;
         }
+
         .btn:hover {
             color: #02D6ED;
+        }
+
+        @media(max-width: 1000px) {
+            #messageContent {
+                position: fixed;
+                bottom: 60px;
+                right: 20px; /* стартовая позиция для мобильных, например, 20px */
+                width: 70%; /* ширина в процентах */
+                max-width: 300px; /* максимум ширины */
+            }
+
+            #media {
+                width: 80%; /* ширина занимает 80% экрана */
+                height: auto; /* или задать конкретное значение по необходимости */
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+              }
+
+            #sendMessageButton {
+                bottom: 85px; /* чуть выше, чтобы было удобно нажимать */
+                right: 10px; /* оставьте небольшой отступ от края */
+                width: 60px; /* увеличенные кнопки, чтобы было удобно щипками */
+                height: 60px;
+            }
+
+            #mediaButton {
+                bottom: 85px; /* так же, чуть выше */
+                right: 80px;
+                width: 60px;
+                height: 60px;
+            }
         }
 
