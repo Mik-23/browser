@@ -2,13 +2,14 @@
 <html lang="ru">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="google-site-verification" content="Код подтверждения в Google" />
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <meta name="google-site-verification" content="vnjAp1AKyXtiq31oJzrNQ05cxWc7mYnkm1GgrygVYIg" />
     <meta name="yandex-verification" content="8b55df76bf69b889" />
     <title>Mixchat - Новый удобный мессенджер для общения с друзьями и коллегами</title>
     <meta name=”description” content="MixChat - это современный мессенджер, обеспечивающий быстрый и безопасный обмен сообщениями с друзьями и коллегами." />
     <meta name=”keywords” content="мессенджер, messenger, общение, communication" />
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=0.01, maximum-scale=1.0">
     {% load static %}
     <link rel="stylesheet" href="{% static 'main/css/static.css' %}">
     <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
@@ -44,31 +45,31 @@
     <div id="chatWindow" style="display: none;">
         <ul class="message-message-list"></ul>
         <div class="media-container">
-            <input type="text" id="messageContent" placeholder="Введите сообщение..." style="position:fixed; bottom: 60px; right: 700px;">
-            <div class="files-container" id="media" style="display: none;">
+            <input type="text" id="messageContent" placeholder="Введите сообщение...">
+            <div class="files-container" id="media" style="display: none; position: relative; width: 100%; height: 100vh">
                 <label for="imageInput" class="file-label">
-                    <img id="image" src="{% static 'main/png/image.png' %}" style="width: 21px; height: 21px; margin: 215px 160px;">
+                    <img id="image" src="{% static 'main/png/image.png' %}" style="width: 1.5vw; height: 1.5vw; position: absolute; top: 15%; left: 5%;">
                     <p>Фото</p>
                 </label>
                 <input type="file" id="imageInput" accept="image/*" multiple style="display: none;"/>
                 <label for="videoInput" class="file-label">
-                    <img id="video" src="{% static 'main/png/video.png' %}" style="width: 21px; height: 21px; margin: 255px 160px;">
+                    <img id="video" src="{% static 'main/png/video.png' %}" style="width: 1.5vw; height: 1.5vw; position: absolute;; top: 45%; left: 5%;">
                     <p>Видео</p>
                 </label>
                 <input type="file" id="videoInput" accept="video/*" multiple style="display: none;"/>
                 <label for="audioInput" class="file-label">
-                    <img id="audio" src="{% static 'main/png/audio.png' %}" style="width: 21px; height: 21px; margin: 295px 160px;">
+                    <img id="audio" src="{% static 'main/png/audio.png' %}" style="width: 1.5vw; height: 1.5vw; position: absolute;; top: 75%; left: 5%;">
                     <p>Аудио</p>
                 </label>
                 <input type="file" id="audioInput" accept="audio/*" multiple style="display: none;"/>
             </div>
         </div>
 
-        <button class="sent" id="sendMessageButton" style="position:fixed; bottom: 110px; right: -230px;">
+        <button class="sent" id="sendMessageButton">
             <img class="send_icon" src="{% static 'main/png/send.png' %}" style="position:fixed; width: 30px">
             <img id="send_icon_hover" src="{% static 'main/png/send_hover.svg' %}" style="display: none; position:fixed; width: 300px; margin: -135px -130px">
         </button>
-        <button class="mediaIcons" id="mediaButton" style="position:fixed; bottom: 110px; right: -390px;">
+        <button class="mediaIcons" id="mediaButton">
             <img id="media_symbol" class="media_icon" src="{% static 'main/png/media.png' %}" style="position:fixed; width: 30px; margin-left: -30px">
             <img id="media_symbol_hover" src="{% static 'main/png/media_hover.png' %}" style="display: none; position:fixed; width: 30px; margin-left: -30px">
         </button>
@@ -91,4 +92,3 @@ document.getElementById('logout-form').addEventListener('submit', (event) => {
 
 </body>
 </html>
-
