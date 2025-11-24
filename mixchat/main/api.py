@@ -11,7 +11,7 @@ from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.urls import reverse
 from django.http import HttpResponse
-from .microservice_functions import mixrech
+from .microservice_functions import mixrech, send_to_mqtt, get_mqtt
 from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, MessageBot
 from .serialazers import (UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer,
@@ -181,9 +181,15 @@ class MessageView(generics.GenericAPIView):
                 message.image = None
 
             message.save()
+            message_content = ''
+            if recipient == 'Mixrobot':
+                message_content = mixrech(content)
+            elif recipient == 'SmartMix':
+                send_to_mqtt(content)
+                message_content = get_mqtt()
             message_bot = MessageBot(
                 sender_id=recipient_id,
-                content=mixrech(content),
+                content=message_content,
                 bot_id=sender_id,
                 chat_id=chat_id,
                 sender=recipient,
@@ -334,22 +340,25 @@ class GetChatsView(generics.GenericAPIView):
                 "content": content
             })
         chats_bots = list(filter(lambda x: x.type == 'bot', chats))
-
         for bot, chat in zip(bots, chats_bots):
             message = MessageBot.objects.filter(chat=chat.id).order_by('-timestamp').first()
             if message is not None:
                 content = message.content
             else:
                 content = ''
+            print('CONTENT', content)
             try:
                 new_content = ''
                 update_content = content.replace("'", '"')
                 json_content = json.loads(update_content)
-                for con in json_content:
-                    new_content = new_content + con + ' '
+                if isinstance(json_content, dict):
+                    for con in json_content:
+                        new_content = new_content + con + ' '
+                else:
+                    new_content = str(json_content)
                 content = new_content
             except json.JSONDecodeError:
-                print('Ошибка: Невозможно декодировать формат отличный от JSON')
+                print('(BOTS)Ошибка: Невозможно декодировать формат отличный от JSON')
             chat_with_user.append({
                 "id": chat.id,
                 "user_id_1": chat.user_id_1,
@@ -411,4 +420,3 @@ class SendMessageToChannelView(generics.GenericAPIView):
         return Response({
             'message': f'Сообщение отправлено в канал с id {channel_id}.'
         })
-
