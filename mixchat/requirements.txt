@@ -9,3 +9,4 @@ psycopg2==2.9.9
 pillow==11.2.1
 requests==2.32.3
 beautifulsoup4==4.12.3
+paho-mqtt==2.1.0
