@@ -51,8 +51,8 @@ class ChannelMembership(models.Model):
 
 class Message(models.Model):
     id = models.AutoField(primary_key=True)
-    sender = models.ForeignKey(ChatUser, on_delete=models.CASCADE, related_name='sent_messages')
-    recipient = models.ForeignKey(ChatUser, on_delete=models.CASCADE, related_name='received_messages')
+    sender = models.ForeignKey(ChatUser, verbose_name="Имя отправителя", on_delete=models.CASCADE, related_name='sent_messages')
+    recipient = models.ForeignKey(ChatUser, verbose_name="Имя получателя", on_delete=models.CASCADE, related_name='received_messages')
     content = models.TextField("Текст")
     image = models.ImageField("Картинка", upload_to='messages/images/', null=True, blank=True)
     video = models.FileField("Видео", upload_to='messages/videos/', null=True, blank=True)
