@@ -9,7 +9,7 @@ load_dotenv()
 
 server = os.getenv('MQTT_SERVER')
 port = os.getenv('MQTT_PORT')
-topic = os.getenv('MQTT_TOPIC')
+topic = os.getenv('MQTT_ANSWER_TOPIC')
 client_id = os.getenv('CLIENT_ID')
 username = os.getenv('MQTT_USERNAME')
 password = os.getenv('MQTT_PASSWORD')
@@ -30,7 +30,7 @@ def subscribe():
         client.username_pw_set(username, password)
         client.on_connect = on_connect
         client.on_message = on_message
-        client.connect(server, port)
+        client.connect(server, int(port))
         client.loop_start()  # Запускаем цикл в фоне
         start = time.time()
         while not exit_flag:
