@@ -1,12 +1,16 @@
+import os
+from dotenv import load_dotenv
 from paho.mqtt import client as mqtt_client
 
+load_dotenv()
 
-server = '5.129.245.67'
-port = 1883
-topic = "python/mqtt"
-client_id = 'Mixchat'
-username = 'mikmaster'
-password = 'mike31199'
+
+server = os.getenv('MQTT_SERVER')
+port = os.getenv('MQTT_PORT')
+topic = os.getenv('MQTT_TOPIC')
+client_id = os.getenv('CLIENT_ID')
+username = os.getenv('MQTT_USERNAME')
+password = os.getenv('MQTT_PASSWORD')
 
 client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, client_id)
 
