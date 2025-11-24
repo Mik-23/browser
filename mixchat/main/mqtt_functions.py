@@ -18,7 +18,7 @@ client = mqtt_client.Client(mqtt_client.CallbackAPIVersion.VERSION1, client_id)
 def connection():
     client.username_pw_set(username, password)
     client.on_connect = "Connected to MQTT Broker!"
-    client.connect(server, port)
+    client.connect(server, int(port))
 
 
 def publish(msg):
