@@ -1,9 +1,11 @@
 import requests
 from bs4 import BeautifulSoup
+from .mqtt_functions import connection, publish
+from .mqtt_subscribe import subscribe, print_message
 
 
 def mixrech(query):
-    # Отправить код подтверждения на номер телефона
+    # Функция для взаимодействия с поисковой системой
     url = (f'https://mixrech.com/search/?query={query}')
 
     response = requests.get(url)
@@ -18,3 +20,13 @@ def mixrech(query):
     else:
         print(f"Ошибка: {response.status_code}")
         print(response.text)
+
+
+def send_to_mqtt(msg):
+    connection()
+    publish(msg)
+
+
+def get_mqtt():
+    subscribe()
+    return print_message()
