@@ -7,7 +7,7 @@ h1 {
     margin: 0;
     padding: 0;
     height: 0vh;
-    color: #FFFFE0;
+    color: #D9FFFD;
     text-align: center;
     margin-top: 200px;
     font-size: 45px;
@@ -46,6 +46,16 @@ a button {
 a button:hover {
     color: #00BFFF;
     transform: scale(1.01);
+}
+
+.btn-outline-success {
+    color: #D9FFFD;
+    border-color: #D9FFFD
+}
+
+.btn-outline-success:hover {
+    color: #D9FFFD;
+    background-color: #019DAD
 }
 
 ul {
