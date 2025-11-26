@@ -15,7 +15,7 @@ class ChatUser(AbstractUser):
     country_code = models.CharField("Код страны")
     code = models.IntegerField("Код подтверждения", default=0)
     USERNAME_FIELD = 'email'
-    # REQUIRED_FIELDS = ['phone', 'country_code']
+    REQUIRED_FIELDS = ['phone', 'country_code']
 
     def __str__(self):
         return self.username
@@ -74,4 +74,5 @@ class MessageBot(models.Model):
     image = models.ImageField(upload_to='messages/images/', null=True, blank=True)
     timestamp = models.DateTimeField("Дата", auto_now=True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages_bot')
+
 
