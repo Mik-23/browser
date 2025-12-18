@@ -24,14 +24,14 @@ jobs:
        - name: Add server to known_hosts
          run: |
            mkdir -p ~/.ssh
-           ssh-keyscan -H 5.129.245.67 >> ~/.ssh/known_hosts
+           ssh-keyscan -H ${{ secrets.IP_ADRESS }} >> ~/.ssh/known_hosts
 
        - name: Add SSH key to agent
          run: echo "${{ secrets.SSH_PRIVATE_KEY }}" | ssh-add -
 
        - name: Deploy to server
          run: |
-           ssh ${{ secrets.USERNAME }}@5.129.245.67 "cd /root/browser && git pull && docker-compose down && docker-compose up --build -d && docker cp browser_mixrech_1:/mixrech/staticfiles ./mixrech && docker cp browser_mixchat_1:/mixchat/staticfiles ./mixchat"
+           ssh ${{ secrets.USERNAME }}@${{ secrets.IP_ADRESS }} "cd /root/browser && git pull && docker-compose down && docker-compose up --build -d && docker cp browser_mixrech_1:/mixrech/staticfiles ./mixrech && docker cp browser_mixchat_1:/mixchat/staticfiles ./mixchat"
            
 
      logs:
@@ -47,10 +47,10 @@ jobs:
        - name: Add server to known_hosts
          run: |
            mkdir -p ~/.ssh
-           ssh-keyscan -H 5.129.245.67 >> ~/.ssh/known_hosts
+           ssh-keyscan -H ${{ secrets.IP_ADRESS }} >> ~/.ssh/known_hosts
           
        - name: Fetch logs
          run: |
-           ssh ${{ secrets.USERNAME }}@5.129.245.67 "cd /root/browser && git pull && docker-compose logs -f"
+           ssh ${{ secrets.USERNAME }}@${{ secrets.IP_ADRESS }} "cd /root/browser && git pull && docker-compose logs -f"
 
 
