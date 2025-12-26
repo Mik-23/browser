@@ -36,7 +36,6 @@ function displayUsers() {
     if (users.length > 0) { // Проверяем, есть ли пользователи
         users.forEach(user => {
             const li = document.createElement('li');
-            type = user.type;
             console.log(user.id)
             console.log(user)
             //li.textContent = user.username; // Имя пользователя
@@ -70,9 +69,7 @@ function searchUsers() {
     if (filteredUsers.length > 0) { // Проверяем, есть ли отфильтрованные пользователи
         filteredUsers.forEach(user => {
             const li = document.createElement('li');
-            type = user.type;
             console.log(user.id)
-            console.log(type)
             li.textContent = user.username; // Имя пользователя
             li.onclick = () => selectUser(user.id); // Выбор пользователя
 
@@ -100,7 +97,12 @@ document.addEventListener('click', function(event) {
 function openChat(userId) {
     const parseUserId = userId;
     const parseSenderId = senderId;
-
+    let selectedUser = {}
+    for (user of users) {
+       if(user.id === parseUserId) {
+           selectedUser = user
+       }
+   }
     // Сначала проверяем наличие чата
     const url = `/api/chat/?sender_id=${parseSenderId}&recipient_id=${parseUserId}`;
 
@@ -121,7 +123,7 @@ function openChat(userId) {
             // Если чат не существует, создаем новый
             console.log(parseSenderId)
             console.log(parseUserId)
-            createChat(parseSenderId, parseUserId);
+            createChat(parseSenderId, parseUserId, selectedUser.type);
         }
         document.getElementById('chatWindow').style.display = 'block';
         document.getElementById('chatWindow').style.margin = '350px 0px';
@@ -276,7 +278,7 @@ function loadMessages(chatId) {
     .catch(error => console.error('Ошибка:', error));
 }
 
-function createChat(senderId, recipientId) {
+function createChat(senderId, recipientId, type) {
    fetch('/api/chat/', { // Эндпоинт для создания нового чата
        method: 'POST',
        headers: {
@@ -292,7 +294,6 @@ function createChat(senderId, recipientId) {
    .then(response => response.json())
    .then(data => {
        console.log(data); // Сообщение о создании чата
-       console.log(type)
        currentChatId = data.id;
        loadMessages(currentChatId); // Загружаем сообщения нового чата
        fetchChats()
@@ -339,7 +340,6 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
    formData.append('recipient_id', selectedUserId);
    console.log(selectedUserId)
    formData.append('chat_id', currentChatId);
-   console.log(type)
    formData.append('type', type);
    console.log(currentChatId)
    fetch('/api/message/', {
@@ -451,4 +451,3 @@ function displayChats(chats) {
 // Инициализация списка пользователей при загрузке страницы
 fetchUsers();
 fetchChats();
-
