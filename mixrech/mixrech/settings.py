@@ -28,7 +28,7 @@ SECRET_KEY = os.getenv('SECRET_KEY_MIXRECH')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '5.129.245.67', '0.0.0.0', 'mixrech.com', 'google.com']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', '37.252.19.194', '0.0.0.0', 'mixrech.com', 'google.com']
 
 
 # Application definition
