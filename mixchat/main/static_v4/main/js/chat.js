@@ -72,6 +72,7 @@ function searchUsers() {
             const li = document.createElement('li');
             type = user.type;
             console.log(user.id)
+            console.log(type)
             li.textContent = user.username; // Имя пользователя
             li.onclick = () => selectUser(user.id); // Выбор пользователя
 
@@ -291,6 +292,7 @@ function createChat(senderId, recipientId) {
    .then(response => response.json())
    .then(data => {
        console.log(data); // Сообщение о создании чата
+       console.log(type)
        currentChatId = data.id;
        loadMessages(currentChatId); // Загружаем сообщения нового чата
        fetchChats()
@@ -337,6 +339,7 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
    formData.append('recipient_id', selectedUserId);
    console.log(selectedUserId)
    formData.append('chat_id', currentChatId);
+   console.log(type)
    formData.append('type', type);
    console.log(currentChatId)
    fetch('/api/message/', {
@@ -448,3 +451,4 @@ function displayChats(chats) {
 // Инициализация списка пользователей при загрузке страницы
 fetchUsers();
 fetchChats();
+
