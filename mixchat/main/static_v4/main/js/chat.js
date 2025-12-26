@@ -23,7 +23,8 @@ function fetchUsers() {
     })
     .then(data => {
         users = data.users; // Сохраняем полученных пользователей в переменную
-        displayUsers(); // Отображаем пользователей
+        //displayUsers(); // Отображаем пользователей
+
     })
     .catch(error => console.error('Ошибка при получении пользователей:', error));
 }
@@ -36,7 +37,8 @@ function displayUsers() {
         users.forEach(user => {
             const li = document.createElement('li');
             type = user.type;
-            console.log(type)
+            console.log(user.id)
+            console.log(user)
             //li.textContent = user.username; // Имя пользователя
             li.onclick = () => selectUser(user.id); // Выбор пользователя
             userList.appendChild(li);
@@ -61,23 +63,28 @@ function searchUsers() {
     const input = document.getElementById('userSearch').value.toLowerCase();
     console.log(input);
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(input));
+    console.log(filteredUsers)
     const userList = document.getElementById('users');
     userList.innerHTML = ''; // Очистить список
 
     if (filteredUsers.length > 0) { // Проверяем, есть ли отфильтрованные пользователи
         filteredUsers.forEach(user => {
             const li = document.createElement('li');
+            type = user.type;
+            console.log(user.id)
             li.textContent = user.username; // Имя пользователя
             li.onclick = () => selectUser(user.id); // Выбор пользователя
 
             userList.appendChild(li);
         });
+        console.log(userList)
         userList.style.display = 'block'; // Показываем список
         userList.style.marginLeft = 'auto';
     } else {
         userList.style.display = 'none'; // Скрываем список, если нет результатов
     }
 }
+
 
 document.addEventListener('click', function(event) {
     const userList = document.getElementById('users');
