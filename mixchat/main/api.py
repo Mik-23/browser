@@ -253,9 +253,10 @@ class SearchUserView(generics.GenericAPIView):
         bots = Bot.objects.all()
         list_users = [{"id": user.id, "username": user.username, "type": "user"} for user in users]
         list_bots = [{"id": bot.id, "username": bot.name, "type": "bot"} for bot in bots]
-        print(list_users)
-        print(list_bots)
+        print('USERS: ', list_users)
+        print('BOTS: ', list_bots)
         list_users.extend(list_bots)
+        print('ALL USERS AND BOTS: ', list_users)
         return Response({
             'users': list_users
         })
@@ -422,4 +423,5 @@ class SendMessageToChannelView(generics.GenericAPIView):
         return Response({
             'message': f'Сообщение отправлено в канал с id {channel_id}.'
         })
+
 
