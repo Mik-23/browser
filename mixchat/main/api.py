@@ -253,10 +253,7 @@ class SearchUserView(generics.GenericAPIView):
         bots = Bot.objects.all()
         list_users = [{"id": user.id, "username": user.username, "type": "user"} for user in users]
         list_bots = [{"id": bot.id, "username": bot.name, "type": "bot"} for bot in bots]
-        print('USERS: ', list_users)
-        print('BOTS: ', list_bots)
         list_users.extend(list_bots)
-        print('ALL USERS AND BOTS: ', list_users)
         return Response({
             'users': list_users
         })
@@ -317,15 +314,21 @@ class GetChatsView(generics.GenericAPIView):
         users = ChatUser.objects.all()
         bots = Bot.objects.all()
         chat_with_user = []
-        for user, chat in zip(users, sorted(chats, key=lambda user: user.user_id_2)):
+        chats_users = list(filter(lambda x: x.type == 'user', chats))
+        for user, chat in zip(users, sorted(chats_users, key=lambda user: user.user_id_2)):
             print(f'{user}      {chat}')
             message = Message.objects.filter(chat=chat.id).order_by('-timestamp').first()
+            print(chat.user_id_1)
+            print('Auth User', request.user.id)
             if chat.user_id_1 < str(request.user.id) and chat.user_id_2 == str(request.user.id):
                 user = ChatUser.objects.filter(id=chat.user_id_1).first()
+                print('Condition 1', user)
             elif chat.user_id_1 == str(request.user.id) and chat.user_id_2 > str(request.user.id):
                 user = ChatUser.objects.filter(id=chat.user_id_2).first()
+                print('Condition 2', user)
             elif chat.user_id_1 == chat.user_id_2 == str(request.user.id):
                 user = ChatUser.objects.filter(id=chat.user_id_1).first()
+                print('Condition 3', user)
             if message is not None:
                 content = message.content
             else:
@@ -423,5 +426,3 @@ class SendMessageToChannelView(generics.GenericAPIView):
         return Response({
             'message': f'Сообщение отправлено в канал с id {channel_id}.'
         })
-
-
