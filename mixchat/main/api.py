@@ -151,7 +151,7 @@ class MessageView(generics.GenericAPIView):
 
             message.save()
             print(message.recipient)
-            return HttpResponse({
+            return Response({
                 'sender_id': sender_id,
                 'recipient_id': recipient_id,
                 'content': content,
@@ -196,7 +196,7 @@ class MessageView(generics.GenericAPIView):
                 bot=sender
             )
             message_bot.save()
-            return HttpResponse({
+            return Response({
                 'sender_id': sender_id,
                 'recipient_id': recipient_id,
                 'content': content,
@@ -426,3 +426,4 @@ class SendMessageToChannelView(generics.GenericAPIView):
         return Response({
             'message': f'Сообщение отправлено в канал с id {channel_id}.'
         })
+
