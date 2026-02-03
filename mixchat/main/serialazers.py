@@ -19,7 +19,7 @@ class UserSerializer(serializers.ModelSerializer):
         user = ChatUser.objects.create_user(**validated_data)
         print('EMAIL', email)
         send_mail(
-            "Subject here",
+            f"{user.username}, ваш код подтверждения",
             f"Mixchat, Код подтверждения: {code}",
             "mixrechecosystem@gmail.com",
             [email]
@@ -87,3 +87,4 @@ class SendMessageToChannelSerializer(serializers.Serializer):
     chanel_id = serializers.IntegerField()
     sender_id = serializers.IntegerField()
     content = serializers.CharField()
+
