@@ -179,15 +179,9 @@ def video(service_request):
         return HttpResponse("Error occurred", status=response.status_code)
 
 
-def search_by_image(service_request):
+def search_by_image(service_request, encoded_image):
     folderid = os.getenv('FOLDERID')
     api_key = os.getenv('API_KEY')  # Замените на ваш API-ключ
-    img_file = service_request.FILES.get('image')
-    print('ПОИСК ПО ИЗОБРАЖЕНИЮ: ', img_file)
-    if img_file:
-        encoded_image = base64.b64encode(img_file.read()).decode('utf-8')
-    else:
-        encoded_image = service_request.session.get('encoded_image')
     print(service_request.GET.get('section'))
     section = service_request.GET.get('section')
     page = service_request.GET.get('page', 1)
@@ -206,6 +200,7 @@ def search_by_image(service_request):
         "data": encoded_image,
         "page": page_number
     }
+    print(body)
     response = requests.post(url, headers=headers, json=body)
     if response.status_code == 200:
         images = response.json()["images"]
