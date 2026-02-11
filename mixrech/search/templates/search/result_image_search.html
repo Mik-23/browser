@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MixRech</title>
+    {% load static %}
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@flaticon/font-flaticon@1.0.0/css/font-flaticon.css">
+    <link rel="stylesheet" href="{% static 'search/css/static.css' %}">
+    <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
+</head>
+<body>
+    <h2><a href="{% url 'home' %}" style="text-decoration: none; color: inherit;">MixRech</a></h2>
+    <form method="post" action="{% url 'search_by_image' %}" enctype="multipart/form-data" style="display: inline;">
+        {% csrf_token %}
+        <input type="text" name="image" value="{% if encoded_image %}{{ encoded_image }}{% else %}{{ query }}{% endif %}" placeholder="Введите запрос" style="margin-right: 10px;">
+        <button type="submit" formaction="{% url 'search_by_image' %}" style="margin-right: 10px;">Поиск</button>
+    </form>
+    <form method="get" id="imageSearch" action="{% url 'search_by_image' %}" style="display: inline;">
+        <input type="hidden" name="section" value="Похожее">
+        <button type="submit" style="margin-right: 10px;">Похожее</button>
+    </form>
+    <form method="get" id="linkSearch" action="{% url 'search_by_image' %}" style="display: inline;">
+        <input type="hidden" name="section" value="Сайты">
+        <button type="submit" style="margin-right: 10px;">Сайты</button>
+    </form>
+    <div class="results-container">
+        {% if encoded_image %}
+            <h3>Загруженное изображение:</h3>
+            <img src="data:image/jpeg;base64,{{ encoded_image }}" alt="Загруженное фото" style="max-width: 300px; max-height: 300px;">
+        {% endif %}
+        <ul>
+            {% if results %}
+                {% if section == 'Похожее' or section == None %}
+                    <h4>Похожее</h4>
+                {% endif %}
+                <div class="imageUrl">
+                {% for result in results %}
+                    {% if result.link %}
+                    <a href="{{ result.link }}" target="_blank">
+                        <img src="{{ result.link }}" alt="Image" style="max-width: 300px; max-height: 300px;">
+                    </a>
+                    {% endif %}
+                {% endfor %}
+                </div>
+            {% else %}
+                <li>Нет результатов.</li>
+            {% endif %}
+        </ul>
+        <!-- <div class="paginationImages">
+            {% if page > 1 %}
+                <a href="?query={{ query }}&section=Похожее&page={{ page|add:-1 }}">Предыдущая</a>
+            {% endif %}
+            <a href="?query={{ query }}&section=Похожее&page={{ page|add:1 }}">Следующая</a>
+        </div> -->
+        <ul>
+            {% if results %}
+                {% if section == 'Сайты' or section == None %}
+                    <h4>Сайты</h4>
+                {% endif %}
+            <div class="linkUrl">
+                {% for result in results %}
+                    <h3>
+                        <a href="{{ result.url }}">
+                            {{ result.title }}
+                        </a>
+                    </h3>
+                    <li>
+                        <a href="{{ result.url }}">{{ result.url }}</a>
+                    </li>
+                {% endfor %}
+            </div>
+            {% else %}
+                <li>Нет результатов.</li>
+            {% endif %}
+        </ul>
+        <!-- <div class="paginationLinks">
+            {% if page > 1 %}
+                <a href="?query={{ query }}&section=Сайты&page={{ page|add:-1 }}">Предыдущая</a>
+            {% endif %}
+            <a href="?query={{ query }}&section=Сайты&page={{ page|add:1 }}">Следующая</a>
+        </div> -->
+        <div class="pagination">
+            {% if section == 'Похожее' %}
+                {% if page > 1 %}
+                    <a href="?query={{ query }}&section=Похожее&page={{ page|add:-1 }}">Предыдущая</a>
+                {% endif %}
+                <a href="?query={{ query }}&section=Похожее&page={{ page|add:1 }}">Следующая</a>
+            {% elif section == 'Сайты' %}
+                {% if page > 1 %}
+                    <a href="?query={{ query }}&section=Сайты&page={{ page|add:-1 }}">Предыдущая</a>
+                {% endif %}
+                <a href="?query={{ query }}&section=Сайты&page={{ page|add:1 }}">Следующая</a>
+            {% else %}
+            {% endif %}
+        </div>
+    </div>
+</body>
+</html>

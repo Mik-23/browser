@@ -45,10 +45,43 @@
     <div class="container">
         <div class="features text-center my-6">
             <form class="d-flex" method="get" action="/search">
-                <input class="form-control me-2" type="search" name="query" placeholder="Введите поисковый запрос или URL" aria-label="Поиск">
+                <input class="form-control me-2" type="search" name="query" placeholder="Введите поисковый запрос или URL" aria-label="Поиск" style="width: 500%;">
+                <label for="selectImage" class="file-label">
+                    <img src="{% static 'search/png/photo.png' %}" style="width: 50%; height: 100%;">
+                </label>
                 <button class="btn btn-outline-success" type="submit">Найти</button>
+            </form>
+
+            <form method="post" action="/search/search_by_image" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" id="selectImage" name="image" style="display: none" accept="image/*"/>
+                <img id="preview" src="{% static 'search/png/photo.png' %}" style="display: none; width: 200px; height: 200px;">
+                <button id="image" class="btn btn-outline-success" type="submit" style="margin-top: 162px; display: none;">Поиск по картинке</button>
             </form>
         </div>
     </div>
+    <script>
+      document.getElementById('selectImage').addEventListener('change', function() {
+        const btn = document.getElementById('image');
+        const file = event.target.files[0];
+        console.log(file)
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = function(e) {
+            const image = document.getElementById('preview')
+            document.getElementById('preview').src = e.target.result;
+            image.style = 'inline';
+            image.style.width = '200px';
+            image.style.height = '200px';
+          };
+          reader.readAsDataURL(file);
+        }
+        if (this.files && this.files.length > 0) {
+          btn.style.display = 'inline-block'; // или 'block', в зависимости от дизайна
+        } else {
+          btn.style.display = 'none';
+        }
+      });
+    </script>
 </body>
 </html>

@@ -11,8 +11,8 @@
     <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
 </head>
 <body>
-    <h2><a href="{% url 'home' %}" style="text-decoration: none; color: inherit;">MixRech</a></h2>
-    <form method="get" action="{% url 'search' %}" style="display: inline;">
+    <h1><a href="{% url 'home' %}" style="text-decoration: none; color: inherit;">MixRech</a></h1>
+        <form method="get" action="#" style="display: inline;">
         <input type="text" name="query" value="{{ query }}" placeholder="Введите запрос" style="margin-right: 10px;">
         <button type="submit" formaction="{% url 'search' %}" style="margin-right: 10px;">Поиск</button>
         <button type="submit" formaction="{% url 'images' %}" style="margin-right: 10px;">Картинки</button>

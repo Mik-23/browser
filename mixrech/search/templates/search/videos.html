@@ -17,6 +17,7 @@
             <button type="submit" formaction="{% url 'search' %}" style="margin-right: 10px;">Поиск</button>
             <button type="submit" formaction="{% url 'images' %}" style="margin-right: 10px;">Картинки</button>
             <button type="submit" formaction="{% url 'videos' %}" style="margin-right: 10px;">Видео</button>
+            <button type="submit" formaction="{% url 'news' %}" style="margin-right: 10px;">Новости</button>
         </form>
         <ul>
             {% if results %}
@@ -38,13 +39,12 @@
             {% else %}
                 <p>Видео не найдены.</p>
             {% endif %}
-            <div>
+        </ul>
+        <div>
             {% if page > 1 %}
                 <a href="?query={{ query }}&page={{ page|add:-1 }}">Предыдущая</a>
             {% endif %}
                 <a href="?query={{ query }}&page={{ page|add:1 }}">Следующая</a>
-            </div>
-        </ul>
+        </div>
     </body>
-
     </html>
