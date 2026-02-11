@@ -59,7 +59,7 @@ def search_by_image_view(request):
         page_number = int(page)
     except ValueError:
         page_number = 1
-    results = search_by_image(request)
+    results = search_by_image(request, encoded_image)
     return render(request, 'search/result_image_search.html',
                       {'results': results, 'query': img_file,
                         'page': page_number, 'encoded_image': encoded_image, 'section': section})
