@@ -17,6 +17,7 @@
             <button type="submit" formaction="{% url 'search' %}" style="margin-right: 10px;">Поиск</button>
             <button type="submit" formaction="{% url 'images' %}" style="margin-right: 10px;">Картинки</button>
             <button type="submit" formaction="{% url 'videos' %}" style="margin-right: 10px;">Видео</button>
+            <button type="submit" formaction="{% url 'news' %}" style="margin-right: 10px;">Новости</button>
         </form>
         <ul>
             {% if images %}
@@ -38,5 +39,4 @@
             </div>
         </ul>
     </body>
-
     </html>
