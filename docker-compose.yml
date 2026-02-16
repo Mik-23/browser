@@ -20,13 +20,13 @@ services:
       ports:
          - "8001:8001"
 
-   mixvoice:
-      build: /root/cloudapi
-      command: gunicorn app:app --bind 0.0.0.0:5000 --timeout 120
-      volumes:
-      - .:/app
-      ports:
-         - "5000:5000"
+  # mixvoice:
+     # build: /root/cloudapi
+     # command: gunicorn app:app --bind 0.0.0.0:5000 --timeout 120
+      #volumes:
+      #- .:/app
+      #ports:
+       #  - "5000:5000"
          
    nginx:
       image: nginx:1.25.3
@@ -41,7 +41,7 @@ services:
       depends_on:
         - mixrech
         - mixchat
-        - mixvoice
+        #- mixvoice
       ports:
         - "80:80"
         - "443:443"
