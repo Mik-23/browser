@@ -32,9 +32,10 @@ document.getElementById('writeVoice').addEventListener('click', () => {
       setTimeout(() => {
         console.log('Останавливаем запись');
         mediaRecorder.stop();
-      }, 500
+      }, 5000);
     })
     .catch(err => console.error('Ошибка доступа к микрофону:', err));
 });
+
 
 
