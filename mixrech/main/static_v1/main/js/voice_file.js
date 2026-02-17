@@ -4,6 +4,11 @@ document.getElementById('writeVoice').addEventListener('click', () => {
 
   navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
+      const options = { mimeType: 'audio/webm;codecs=opus' };
+      if (!MediaRecorder.isTypeSupported(options.mimeType)) {
+        console.warn(`${options.mimeType} не поддерживается, попробуйте оставить без типа`);
+      }
+      
       mediaRecorder = new MediaRecorder(stream);
       mediaRecorder.onstart = () => console.log('Запись началась');
       mediaRecorder.ondataavailable = event => {
@@ -36,6 +41,7 @@ document.getElementById('writeVoice').addEventListener('click', () => {
     })
     .catch(err => console.error('Ошибка доступа к микрофону:', err));
 });
+
 
 
 
