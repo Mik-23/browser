@@ -16,6 +16,7 @@ document.getElementById('writeVoice').addEventListener('click', () => {
         const formData = new FormData();
         formData.append('file', audioBlob, 'audio.wav');
         console.log(formData)
+        console.log('Медиа пластина:', mediaRecorder.mimeType);
 
         fetch('https://voice.mixrech.com/start-recording', { // ваш URL для приема аудио
           method: 'POST',
@@ -24,10 +25,10 @@ document.getElementById('writeVoice').addEventListener('click', () => {
           .then(text => console.log('Распознанный текст:', text))
           .catch(console.error);
       };
-      console.log('Медиа пластина:', mediaRecorder.mimeType);
       // Запуск записи, остановка через N секунд или по кнопке
       mediaRecorder.start();
       setTimeout(() => mediaRecorder.stop(), 30000); // например, 30 сек
     })
     .catch(err => console.error('Ошибка доступа к микрофону:', err));
 });
+
