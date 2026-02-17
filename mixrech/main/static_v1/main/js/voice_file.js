@@ -21,7 +21,6 @@ document.getElementById('writeVoice').addEventListener('click', () => {
           method: 'POST',
           body: formData,
         }).then(response => response.text())
-          console.log(formData)
           .then(text => console.log('Распознанный текст:', text))
           .catch(console.error);
       };
@@ -32,3 +31,4 @@ document.getElementById('writeVoice').addEventListener('click', () => {
     })
     .catch(err => console.error('Ошибка доступа к микрофону:', err));
 });
+
