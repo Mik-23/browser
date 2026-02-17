@@ -5,6 +5,7 @@ document.getElementById('writeVoice').addEventListener('click', () => {
   navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
       mediaRecorder = new MediaRecorder(stream);
+      mediaRecorder.onstart = () => console.log('Запись началась');
       mediaRecorder.ondataavailable = event => {
         audioChunks.push(event.data);
       };
@@ -26,9 +27,14 @@ document.getElementById('writeVoice').addEventListener('click', () => {
           .catch(console.error);
       };
       // Запуск записи, остановка через N секунд или по кнопке
+      console.log('Начинаем запись...');
       mediaRecorder.start();
-      setTimeout(() => mediaRecorder.stop(), 30000); // например, 30 сек
+      setTimeout(() => {
+        console.log('Останавливаем запись');
+        mediaRecorder.stop();
+      }, 500
     })
     .catch(err => console.error('Ошибка доступа к микрофону:', err));
 });
+
 
