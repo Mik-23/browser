@@ -5,35 +5,43 @@ document.getElementById('writeVoice').addEventListener('click', () => {
   navigator.mediaDevices.getUserMedia({ audio: true })
     .then(stream => {
       const options = { mimeType: 'audio/webm;codecs=opus' };
+      let recorderOptions = options;
+
       if (!MediaRecorder.isTypeSupported(options.mimeType)) {
-        console.warn(`${options.mimeType} не поддерживается, попробуйте оставить без типа`);
+        console.warn(`${options.mimeType} не поддерживается, оставляем без типов`);
+        recorderOptions = {}; // без типа
+      } else {
+        recorderOptions = { mimeType: options.mimeType };
       }
-      
-      mediaRecorder = new MediaRecorder(stream);
+
+      // Создаем Recorder с поддерживаемым типом
+      mediaRecorder = new MediaRecorder(stream, recorderOptions);
+
       mediaRecorder.onstart = () => console.log('Запись началась');
       mediaRecorder.ondataavailable = event => {
+        console.log('Поступили данные:', event.data);
         audioChunks.push(event.data);
       };
       mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunks, { type: 'audio/wav' });
+        console.log('Длина массива:', audioChunks.length);
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // или другой поддерживаемый тип
         audioChunks = [];
-        console.log(audioChunks)
-        // Отправка файла на сервер
+
         const formData = new FormData();
-        formData.append('file', audioBlob, 'audio.wav');
-        console.log(formData)
+        formData.append('file', audioBlob, 'audio.webm'); // заменил расширение и тип
         console.log('Медиа пластина:', mediaRecorder.mimeType);
 
-        fetch('https://voice.mixrech.com/start-recording', { // ваш URL для приема аудио
+        fetch('https://voice.mixrech.com/start-recording', {
           method: 'POST',
           body: formData,
         }).then(response => response.text())
           .then(text => console.log('Распознанный текст:', text))
           .catch(console.error);
       };
-      // Запуск записи, остановка через N секунд или по кнопке
+
       console.log('Начинаем запись...');
       mediaRecorder.start();
+
       setTimeout(() => {
         console.log('Останавливаем запись');
         mediaRecorder.stop();
@@ -41,7 +49,3 @@ document.getElementById('writeVoice').addEventListener('click', () => {
     })
     .catch(err => console.error('Ошибка доступа к микрофону:', err));
 });
-
-
-
-
