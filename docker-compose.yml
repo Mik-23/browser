@@ -33,7 +33,6 @@ services:
       depends_on:
         - mixrech
         - mixchat
-e
       ports:
         - "80:80"
         - "443:443"
