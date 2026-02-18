@@ -31,8 +31,11 @@ document.getElementById('writeVoice').addEventListener('click', () => {
         formData.append('file', audioBlob, 'audio.webm'); // заменил расширение и тип
         console.log('Медиа пластина:', mediaRecorder.mimeType);
 
-        fetch('https://voice.mixrech.com/start-recording', {
+        fetch('https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?topic=general&folderId=b1g2vhomnplkm0fsgug9', {
           method: 'POST',
+          headers: {
+           'Authorization': 'Api-Key AQVNxTqnw_My-hYayHiidS7-knUZW-czNKotviYc' // Используйте токен доступа
+          },
           body: formData,
         }).then(response => {
           console.log('Статус ответа:', response);
@@ -52,6 +55,5 @@ document.getElementById('writeVoice').addEventListener('click', () => {
     })
     .catch(err => console.error('Ошибка доступа к микрофону:', err));
 });
-
 
 
