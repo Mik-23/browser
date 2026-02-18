@@ -34,7 +34,10 @@ document.getElementById('writeVoice').addEventListener('click', () => {
         fetch('https://voice.mixrech.com/start-recording', {
           method: 'POST',
           body: formData,
-        }).then(response => response.text())
+        }).then(response => {
+          console.log('Статус ответа:', response.status);
+          return response.text();
+          })
           .then(text => console.log('Распознанный текст:', text))
           .catch(console.error);
       };
@@ -49,3 +52,4 @@ document.getElementById('writeVoice').addEventListener('click', () => {
     })
     .catch(err => console.error('Ошибка доступа к микрофону:', err));
 });
+
