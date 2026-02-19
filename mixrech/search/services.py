@@ -4,6 +4,7 @@ import base64
 import time
 import logging
 import requests
+import subprocess
 from django.http import HttpResponse
 from bs4 import BeautifulSoup
 
@@ -216,3 +217,53 @@ def search_by_image(service_request, encoded_image):
     else:
         print(f"Error: {response.status_code} - {response.text}")
         return HttpResponse("Error occurred", status=response.status_code)
+
+
+def convert_webm_to_ogg(input_path: str, output_path: str):
+    ffmpeg_path = r'C:\Users\Mike\Downloads\ffmpeg-8.0.1-essentials_build\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe'  # Укажите путь на вашей машине
+    print('Вывести команду')
+    command = [
+        ffmpeg_path,
+        '-y',
+        '-i', input_path,
+        '-c:a', 'libopus',
+        output_path
+    ]
+    print('Начало конвертации')
+
+    try:
+        print('Попытка')
+        subprocess.run(command, check=True)
+        print(f"Конвертация завершена: {output_path}")
+    except subprocess.CalledProcessError as e:
+        print(f"Ошибка при конвертации: {e.stderr.decode()}")
+
+
+def voice_search(file):
+    folderid = os.getenv('FOLDERID')
+    api_key = os.getenv('API_KEY')
+    url = f'https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?topic=general&folderId={folderid}'
+    headers = {
+        "Authorization": f"Api-Key {api_key}",
+        "Content-Type": "audio/ogg"
+    }
+    file.seek(0)
+    data = file.read()
+    input_webm = 'audio.webm'
+    # Запись бинарных данных во входной вебм-файл
+    with open(input_webm, 'wb') as f_out:
+        f_out.write(data)
+    convert_webm_to_ogg(input_webm, 'audio.ogg')
+    print('Успешно')
+    with open('audio.ogg', 'rb') as f:
+        ogg_data = f.read()
+    print(ogg_data)
+    response = requests.post(url, headers=headers, data=ogg_data)
+
+    try:
+        print(response.json())
+        return response.json()
+    except Exception as e:
+        print(f"Ошибка при разборе ответа: {e}")
+        print(response.text)
+        return None
