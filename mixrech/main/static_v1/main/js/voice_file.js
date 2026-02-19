@@ -30,29 +30,70 @@ document.getElementById('writeVoice').addEventListener('click', () => {
         const formData = new FormData();
         formData.append('file', audioBlob, 'audio.webm'); // заменил расширение и тип
         console.log('Медиа пластина:', mediaRecorder.mimeType);
-
-        fetch('https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?topic=general', {
+        console.log(formData.get('file'));
+        fetch('/search/api/voice', {
           method: 'POST',
-          
           body: formData,
         }).then(response => {
           console.log('Статус ответа:', response);
-          return response.text();
+          return response.json();
           })
-          .then(text => console.log('Распознанный текст:', text))
+          .then(text => {
+              console.log('Распознанный текст:', text)
+              const input = document.querySelector('input[name="query"]');
+              input.value = text.data.result;
+              const searchButton = document.querySelector('button.btn.btn-outline-success[type="submit"]');
+              if (input.value != '') {
+                searchButton.click()
+              } else {
+              }
+
+          })
           .catch(console.error);
       };
 
       console.log('Начинаем запись...');
       mediaRecorder.start();
 
-      setTimeout(() => {
-        console.log('Останавливаем запись');
-        mediaRecorder.stop();
-      }, 5000);
+      const audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+      const analyser = audioContext.createAnalyser();
+      analyser.fftSize = 512;
+      source.connect(analyser);
+
+      const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+      let silenceStart = null;      // Время начала тишины
+      const silenceThreshold = 30;  // Порог громкости (0-255), ниже которого считаем тишину
+      const maxSilenceTime = 1500;  // Максимальное время тишины (мс), после которого остановим запись
+
+      function checkSilence() {
+        analyser.getByteFrequencyData(dataArray);
+        const volume = dataArray.reduce((a,b) => a + b) / dataArray.length;
+        // console.log('Громкость:', volume.toFixed(2));
+
+        if (volume < silenceThreshold) {
+          if (silenceStart === null) {
+            silenceStart = Date.now();
+          } else {
+            let silenceDuration = Date.now() - silenceStart;
+            if (silenceDuration > maxSilenceTime) {
+              console.log('Обнаружена тишина, останавливаем запись');
+              mediaRecorder.stop();
+              audioContext.close();
+              return; // прекратить вызов таймера
+            }
+          }
+        } else {
+          silenceStart = null; // звук появился — сброс таймера тишины
+        }
+
+        requestAnimationFrame(checkSilence);
+      }
+
+      checkSilence();
     })
     .catch(err => console.error('Ошибка доступа к микрофону:', err));
 });
-
 
 
