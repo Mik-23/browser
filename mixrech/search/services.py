@@ -220,7 +220,7 @@ def search_by_image(service_request, encoded_image):
 
 
 def convert_webm_to_ogg(input_path: str, output_path: str):
-    ffmpeg_path = r'\root\ffmpeg-8.0.1-essentials_build\ffmpeg-8.0.1-essentials_build\bin\ffmpeg.exe'  # Укажите путь на вашей машине
+    ffmpeg_path = '/root/ffmpeg-8.0.1-essentials_build/ffmpeg-8.0.1-essentials_build/bin/ffmpeg.exe'  # Укажите путь на вашей машине
     print('Вывести команду')
     command = [
         ffmpeg_path,
@@ -267,4 +267,5 @@ def voice_search(file):
         print(f"Ошибка при разборе ответа: {e}")
         print(response.text)
         return None
+
 
