@@ -11,32 +11,59 @@
         <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
     </head>
     <body>
-        <h1><a href="{% url 'home' %}" style="text-decoration: none; color: inherit;">MixRech</a></h1>
-        <form method="get" action="#" style="display: inline;">
-            <input type="text" name="query" value="{{ query }}" placeholder="Введите запрос" style="margin-right: 10px;">
-            <button type="submit" formaction="{% url 'search' %}" style="margin-right: 10px;">Поиск</button>
-            <button type="submit" formaction="{% url 'images' %}" style="margin-right: 10px;">Картинки</button>
-            <button type="submit" formaction="{% url 'videos' %}" style="margin-right: 10px;">Видео</button>
-            <button type="submit" formaction="{% url 'news' %}" style="margin-right: 10px;">Новости</button>
-        </form>
-        <ul>
-            {% if images %}
-            <div>
-                {% for image in images %}
-                    <a href="{{ image.link }}" target="_blank">
-                        <img src="{{ image.url }}" alt="Image" style="max-width: 300px; max-height: 300px;">
+        <div class="header">
+            <div class="header-content">
+                <h2><a href="{% url 'home' %}" style="text-decoration: none;">MixRech</a></h2>
+                <form method="get" action="#" class="search-form">
+                    <div class="search-input-wrapper">
+                        <input type="text" name="query" value="{{ query }}" placeholder="Введите поисковый запрос или URL" aria-label="Поиск">
+                    </div>
+                </form>
+                <div class="category-buttons">
+                    <a href="{% url 'search' %}?query={{ query }}" class="category-btn {% if request.path == '/search' %}active{% endif %}">
+                        Все
                     </a>
-                {% endfor %}
+                    <a href="{% url 'images' %}?query={{ query }}" class="category-btn {% if request.path == '/images' %}active{% endif %}">
+                        Картинки
+                    </a>
+                    <a href="{% url 'videos' %}?query={{ query }}" class="category-btn {% if request.path == '/videos' %}active{% endif %}">
+                        Видео
+                    </a>
+                    <a href="{% url 'news' %}?query={{ query }}" class="category-btn {% if request.path == '/news' %}active{% endif %}">
+                        Новости
+                    </a>
+                </div>
             </div>
+        </div>
+        <div class="results-container">
+            {% if images %}
+                {% for image in images %}
+                        <a href="{{ image.link }}" target="_blank">
+                            <img src="{{ image.url }}" alt="Image" style="max-width: 300px; max-height: 300px;">
+                        </a>
+                {% endfor %}
             {% else %}
                 <p>Изображения не найдены.</p>
             {% endif %}
-            <div>
-            {% if page > 1 %}
-                <a href="?query={{ query }}&page={{ page|add:-1 }}">Предыдущая</a>
-            {% endif %}
-                <a href="?query={{ query }}&page={{ page|add:1 }}">Следующая</a>
+            <div class="pagination">
+                {% if page > 1 %}
+                    <a href="?query={{ query }}&page={{ page|add:-1 }}">
+                        <svg class="icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+                            <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                        Предыдущая
+                    </a>
+                    {% endif %}
+
+                    <span class="page-info">Страница {{ page }}</span>
+
+                    <a href="?query={{ query }}&page={{ page|add:1 }}">
+                        Следующая
+                        <svg class="icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+                            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
+                        </svg>
+                    </a>
             </div>
-        </ul>
+        </div>
     </body>
     </html>

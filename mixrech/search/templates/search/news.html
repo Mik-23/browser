@@ -11,37 +11,72 @@
     <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
 </head>
 <body>
-    <h1><a href="{% url 'home' %}" style="text-decoration: none; color: inherit;">MixRech</a></h1>
-        <form method="get" action="#" style="display: inline;">
-        <input type="text" name="query" value="{{ query }}" placeholder="Введите запрос" style="margin-right: 10px;">
-        <button type="submit" formaction="{% url 'search' %}" style="margin-right: 10px;">Поиск</button>
-        <button type="submit" formaction="{% url 'images' %}" style="margin-right: 10px;">Картинки</button>
-        <button type="submit" formaction="{% url 'videos' %}" style="margin-right: 10px;">Видео</button>
-        <button type="submit" formaction="{% url 'news' %}" style="margin-right: 10px;">Новости</button>
-    </form>
+    <div class="header">
+        <div class="header-content">
+            <h2><a href="{% url 'home' %}" style="text-decoration: none;">MixRech</a></h2>
+            <form method="get" action="#" class="search-form">
+                <div class="search-input-wrapper">
+                    <input type="text" name="query" value="{{ query }}" placeholder="Введите поисковый запрос или URL" aria-label="Поиск">
+                </div>
+            </form>
+            <div class="category-buttons">
+                <a href="{% url 'search' %}?query={{ query }}" class="category-btn {% if request.path == '/search' %}active{% endif %}">
+                    Все
+                </a>
+                <a href="{% url 'images' %}?query={{ query }}" class="category-btn {% if request.path == '/images' %}active{% endif %}">
+                    Картинки
+                </a>
+                <a href="{% url 'videos' %}?query={{ query }}" class="category-btn {% if request.path == '/videos' %}active{% endif %}">
+                    Видео
+                </a>
+                <a href="{% url 'news' %}?query={{ query }}" class="category-btn {% if request.path == '/news' %}active{% endif %}">
+                    Новости
+                </a>
+            </div>
+        </div>
+    </div>
     <div class="results-container">
-        <ul>
-            {% if results %}
-                {% for result in results %}
-                <h3>
+        {% if results %}
+            {% for result in results %}
+            <div class="result-card">
+                <div class="result-title">
+                    {% if result.favicon_url %}
+                    <img src="{{ result.favicon_url }}" alt="" onerror="this.style.display='none'">
+                    {% endif %}
+                    <a href="{{ result.title }}">{{ result.title }}</a>
+                </div>
+                <div class="result-url">
                     <a href="{{ result.url }}">
-                        <img src="{{ result.favicon_url }}"  style="width: 20px; height: 20px; vertical-align: middle; margin-right: 5px;">
-                        {{ result.title }}
+                        <svg class="icon" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
+                            <circle cx="12" cy="12" r="3" stroke="currentColor" fill="none"/>
+                            <path d="M19.4 15a8 8 0 00-14.8 0M5 9a8 8 0 0114 0" stroke="currentColor"/>
+                        </svg>
+                        {{ result.url|truncatechars:60 }}
                     </a>
-                </h3>
-                <li>
-                    <a href="{{ result.url }}">{{ result.url }}</a>
-                </li>
-                {% endfor %}
-            {% else %}
-                <li>Нет результатов.</li>
-            {% endif %}
-        </ul>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <li>Нет результатов.</li>
+        {% endif %}
         <div class="pagination">
             {% if page > 1 %}
-                <a href="?query={{ query }}&page={{ page|add:-1 }}">Предыдущая</a>
-            {% endif %}
-            <a href="?query={{ query }}&page={{ page|add:1 }}">Следующая</a>
+                <a href="?query={{ query }}&page={{ page|add:-1 }}">
+                    <svg class="icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+                        <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                    Предыдущая
+                </a>
+                {% endif %}
+
+                <span class="page-info">Страница {{ page }}</span>
+
+                <a href="?query={{ query }}&page={{ page|add:1 }}">
+                    Следующая
+                    <svg class="icon" viewBox="0 0 24 24" style="width: 18px; height: 18px;">
+                        <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2"/>
+                    </svg>
+                </a>
         </div>
     </div>
 </body>

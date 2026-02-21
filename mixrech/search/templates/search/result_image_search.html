@@ -12,19 +12,21 @@
 </head>
 <body>
     <h2><a href="{% url 'home' %}" style="text-decoration: none; color: inherit;">MixRech</a></h2>
-    <form method="post" action="{% url 'search_by_image' %}" enctype="multipart/form-data" style="display: inline;">
-        {% csrf_token %}
-        <input type="text" name="image" value="{% if encoded_image %}{{ encoded_image }}{% else %}{{ query }}{% endif %}" placeholder="Введите запрос" style="margin-right: 10px;">
-        <button type="submit" formaction="{% url 'search_by_image' %}" style="margin-right: 10px;">Поиск</button>
-    </form>
-    <form method="get" id="imageSearch" action="{% url 'search_by_image' %}" style="display: inline;">
-        <input type="hidden" name="section" value="Похожее">
-        <button type="submit" style="margin-right: 10px;">Похожее</button>
-    </form>
-    <form method="get" id="linkSearch" action="{% url 'search_by_image' %}" style="display: inline;">
-        <input type="hidden" name="section" value="Сайты">
-        <button type="submit" style="margin-right: 10px;">Сайты</button>
-    </form>
+    <div class="category-buttons">
+        <form method="post" action="{% url 'search_by_image' %}" enctype="multipart/form-data" style="display: inline;">
+            {% csrf_token %}
+            <input type="text" name="image" value="{% if encoded_image %}{{ encoded_image }}{% else %}{{ query }}{% endif %}" placeholder="Введите запрос" style="margin-right: 10px;">
+            <button type="submit" formaction="{% url 'search_by_image' %}" class="category-btn {% if request.path == '/search_by_image' %}active{% endif %}" style="margin-right: 10px;">Поиск</button>
+        </form>
+        <form method="get" id="imageSearch" action="{% url 'search_by_image' %}" style="display: inline;">
+            <input type="hidden" name="section" value="Похожее">
+            <button type="submit" style="margin-right: 10px;" class="category-btn {% if request.path == '/search_by_image' %}active{% endif %}">Похожее</button>
+        </form>
+        <form method="get" id="linkSearch" action="{% url 'search_by_image' %}" style="display: inline;">
+            <input type="hidden" name="section" value="Сайты">
+            <button type="submit" style="margin-right: 10px;" class="category-btn {% if request.path == '/search_by_image' %}active{% endif %}">Сайты</button>
+        </form>
+    </div>
     <div class="results-container">
         {% if encoded_image %}
             <h3>Загруженное изображение:</h3>
@@ -36,13 +38,13 @@
                     <h4>Похожее</h4>
                 {% endif %}
                 <div class="imageUrl">
-                {% for result in results %}
-                    {% if result.link %}
-                    <a href="{{ result.link }}" target="_blank">
-                        <img src="{{ result.link }}" alt="Image" style="max-width: 300px; max-height: 300px;">
-                    </a>
-                    {% endif %}
-                {% endfor %}
+                    {% for result in results %}
+                        {% if result.link %}
+                        <a href="{{ result.link }}" target="_blank">
+                            <img src="{{ result.link }}" alt="Image" style="max-width: 300px; max-height: 300px;">
+                        </a>
+                        {% endif %}
+                    {% endfor %}
                 </div>
             {% else %}
                 <li>Нет результатов.</li>
@@ -59,18 +61,27 @@
                 {% if section == 'Сайты' or section == None %}
                     <h4>Сайты</h4>
                 {% endif %}
-            <div class="linkUrl">
-                {% for result in results %}
-                    <h3>
-                        <a href="{{ result.url }}">
-                            {{ result.title }}
-                        </a>
-                    </h3>
-                    <li>
-                        <a href="{{ result.url }}">{{ result.url }}</a>
-                    </li>
-                {% endfor %}
-            </div>
+                <div class="linkUrl">
+                    {% for result in results %}
+                        <div class="result-card">
+                            <div class="result-title">
+                                {% if result.favicon_url %}
+                                <img src="{{ result.favicon_url }}" alt="" onerror="this.style.display='none'">
+                                {% endif %}
+                                <a href="{{ result.title }}">{{ result.title }}</a>
+                            </div>
+                            <div class="result-url">
+                                <a href="{{ result.url }}">
+                                    <svg class="icon" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
+                                        <circle cx="12" cy="12" r="3" stroke="currentColor" fill="none"/>
+                                        <path d="M19.4 15a8 8 0 00-14.8 0M5 9a8 8 0 0114 0" stroke="currentColor"/>
+                                    </svg>
+                                    {{ result.url|truncatechars:60 }}
+                                </a>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
             {% else %}
                 <li>Нет результатов.</li>
             {% endif %}
@@ -81,6 +92,22 @@
             {% endif %}
             <a href="?query={{ query }}&section=Сайты&page={{ page|add:1 }}">Следующая</a>
         </div> -->
+        {% if section == 'Похожее' and section != None %}
+            <script>
+                const imageUrl = document.querySelector('.imageUrl');
+                const linkUrl = document.querySelector('.linkUrl');
+                linkUrl.style.display = 'none';
+                imageUrl.style.display = 'block';
+            </script>
+        {% endif %}
+        {% if section == 'Сайты' and section != None %}
+            <script>
+                const imageUrl = document.querySelector('.imageUrl');
+                const linkUrl = document.querySelector('.linkUrl');
+                imageUrl.style.display = 'none';
+                linkUrl.style.display = 'block';
+            </script>
+        {% endif %}
         <div class="pagination">
             {% if section == 'Похожее' %}
                 {% if page > 1 %}
