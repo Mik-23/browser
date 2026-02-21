@@ -98,11 +98,10 @@ def search(search_query, page):
         return HttpResponse("Error occurred", status=response.status_code)
 
 
-def image(service_request):
+def image(service_request, search_query):
     # Функция поиска фото
     folderid = os.getenv('FOLDERID')
     api_key = os.getenv('API_KEY')  # Замените на ваш API-ключ
-    search_query = service_request.GET.get('query', '')
     page = service_request.GET.get('page', 1)
     print('ПОИСКОВЫЙ ЗАПРОС КАРТИНКИ', search_query)
     try:
@@ -267,6 +266,7 @@ def voice_search(file):
         print(f"Ошибка при разборе ответа: {e}")
         print(response.text)
         return None
+
 
 
 
