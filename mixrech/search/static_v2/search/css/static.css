@@ -41,6 +41,44 @@ h2 {
     flex-wrap: wrap;
 }
 
+.search-form {
+    background: #2A3240;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 60px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s;
+    margin-bottom: 30px;
+}
+
+
+.search-input-wrapper {
+     flex: 1;
+     display: flex;
+     align-items: center;
+     padding: 0 16px;
+ }
+
+.search-input-wrapper input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 18px 0;
+    color: white;
+    font-size: 18px;
+    outline: none;
+}
+
+.search-input-wrapper input::placeholder {
+    color: #6c81a5;
+    font-weight: 300;
+}
+
 .category-buttons {
      display: flex;
      gap: 8px;
