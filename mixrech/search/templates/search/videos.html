@@ -36,26 +36,21 @@
             </div>
         </div>
         <ul>
-            {% if results %}
+            {% if images %}
             <div>
-                {% for result in results %}
-                <div class="result-card">
-                    <div class="result-title">
-                        {% if result.favicon_url %}
-                        <img src="{{ result.favicon_url }}" alt="" onerror="this.style.display='none'">
-                        {% endif %}
-                        <a href="{{ result.title }}">{{ result.title }}</a>
+                {% for image in images %}
+                    <div class="result-card">
+                        <div class="video-title">
+                            <a href="{{ image.link }}" target="_blank">
+                                <img src="{{ image.url }}" alt="Image" style="max-width: 300px; max-height: 300px;">
+                            </a>
+                        </div>
+                        <div class="video-url">
+                            <a href="{{ image.link }}">
+                            {{ image.link }}
+                            </a>
+                        </div>
                     </div>
-                    <div class="result-url">
-                        <a href="{{ result.url }}">
-                            <svg class="icon" viewBox="0 0 24 24" style="width: 14px; height: 14px;">
-                                <circle cx="12" cy="12" r="3" stroke="currentColor" fill="none"/>
-                                <path d="M19.4 15a8 8 0 00-14.8 0M5 9a8 8 0 0114 0" stroke="currentColor"/>
-                            </svg>
-                            {{ result.url|truncatechars:60 }}
-                        </a>
-                    </div>
-                </div>
                 {% endfor %}
             </div>
             {% else %}
