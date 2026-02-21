@@ -126,7 +126,7 @@ function openChat(userId) {
             createChat(parseSenderId, parseUserId, selectedUser.type);
         }
         document.getElementById('chatWindow').style.display = 'block';
-        document.getElementById('chatWindow').style.margin = '350px 0px';
+
 
     })
     .catch(error => console.error('Ошибка:', error));
@@ -134,6 +134,7 @@ function openChat(userId) {
 
 function loadMessages(chatId) {
     const messageList = document.querySelector('.message-message-list');
+    const messageContainer = document.querySelector('.message-list');
     let header = document.querySelector('h2');
     console.log(header)
     console.log(chatId)
@@ -157,18 +158,16 @@ function loadMessages(chatId) {
             header.textContent = message.recipient;
             console.log(message.recipient_id)
             const li = document.createElement('li');
-            li.style.top = '30px'
-            li.style.position = 'relative'
             const messageContainer = document.createElement('div');
             console.log(message)
             console.log(displayUsers())
             if (message.sender_id === senderId) {
                 li.style.backgroundColor = '#1F9494'
-                li.style.maxWidth = '300px'
-                li.style.marginRight = '400px';
+                li.style.alignSelf = 'flex-end';
+                li.style.marginLeft = 'auto';
             } else {
-                li.style.maxWidth = '300px'
-                li.style.marginLeft = '400px';
+                li.style.alignSelf = 'flex-start';
+                li.style.marginLeft = 'auto';
             }
             // Добавляем текстовое сообщение, если есть
             if (message.content) {
@@ -273,7 +272,7 @@ function loadMessages(chatId) {
             messageList.appendChild(li);
             console.log(messageList)
         });
-        messageList.scrollTop = messageList.scrollHeight;
+        messageContainer.scrollTop = messageContainer.scrollHeight;
     })
     .catch(error => console.error('Ошибка:', error));
 }
@@ -300,16 +299,6 @@ function createChat(senderId, recipientId, type) {
    })
    .catch(error => console.error('Ошибка:', error));
 }
-
-document.getElementById('sendMessageButton').addEventListener('mouseenter', () => {
-    const sendIconHover = document.getElementById('send_icon_hover');
-    sendIconHover.style.display = 'inline';
-})
-
-document.getElementById('sendMessageButton').addEventListener('mouseleave', () => {
-    const sendIconHover = document.getElementById('send_icon_hover');
-    sendIconHover.style.display = 'none';
-})
 
 // Обработчик события для отправки сообщения
 document.getElementById('sendMessageButton').addEventListener('click', () => {
@@ -362,25 +351,13 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
 });
 
 document.getElementById('mediaButton').addEventListener('click', () => {
-    const mediaSymbol = document.getElementById('media_symbol_hover')
-
-    mediaSymbol.style.display = 'inline';
     const mediaIcons = document.getElementById('media');
     mediaIcons.style.display = 'block';
-    mediaIcons.style.position = 'fixed';
-    mediaIcons.style.width = '100px';
-    mediaIcons.style.height = '130px';
-    mediaIcons.style.top = '69%';        // 50% от верхней границы окна
-    mediaIcons.style.left = '65%';
-    mediaIcons.style.backgroundColor = '#3a3a3a';
-    console.log(mediaIcons)
 });
 
 const mediaIcons = document.getElementById('media')
 mediaIcons.addEventListener('mouseleave', () => {
     mediaIcons.style.display = 'none'
-    const mediaSymbol = document.getElementById('media_symbol_hover')
-    mediaSymbol.style.display = 'none';
 
 });
 
@@ -411,7 +388,7 @@ function displayChats(chats) {
     console.log(chats)
     chats.forEach(chat => {
         const li = document.createElement('li');
-        li.style.position = 'static'
+
         const span = document.createElement('span');
         span.textContent = chat.username; // Имя пользователя в чате
         const p = document.createElement('p');
