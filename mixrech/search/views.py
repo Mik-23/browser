@@ -27,7 +27,7 @@ def image_view(request):
         page_number = int(page)
     except ValueError:
         page_number = 1
-    images = image(request)
+    images = image(request, search_query)
     return render(request, 'search/images.html',
                       {'images': images, 'query': search_query, 'page': page_number})
 
@@ -36,13 +36,15 @@ def video_view(request):
     # Функция поиска видео
     search_query = request.GET.get('query', '')
     page = request.GET.get('page', 1)
+    print('ПОИСКОВЫЙ ЗАПРОС ВИДЕО', search_query)
     try:
         page_number = int(page)
     except ValueError:
         page_number = 1
-    all_data = video(request)
+    video_query = 'видео' + search_query
+    images = image(request, video_query)
     return render(request, 'search/videos.html',
-                      {'results': all_data, 'query': search_query, 'page': page_number})
+                  {'images': images, 'query': search_query, 'page': page_number})
 
 
 def search_by_image_view(request):
