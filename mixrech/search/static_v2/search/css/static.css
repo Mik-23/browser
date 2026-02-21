@@ -206,6 +206,53 @@ button:hover {
     color: #4eecb4;
 }
 
+.video-title {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.video-title img {
+    width: 300px;
+    height: 300px;
+    border-radius: 6px;
+    object-fit: contain;
+    background: white;
+    padding: 2px;
+}
+
+.video-title a {
+    font-size: 20px;
+    font-weight: 600;
+    color: #7aa5ff;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.video-title a:hover {
+    color: #9bb9ff;
+    text-decoration: underline;
+}
+
+.video-url {
+    margin-bottom: 12px;
+}
+
+.video-url a {
+    color: #35d8a0;
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.video-url a:hover {
+    text-decoration: underline;
+    color: #4eecb4;
+}
+
 .pagination {
     display: flex;
     justify-content: center;
