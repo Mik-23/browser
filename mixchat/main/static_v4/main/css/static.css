@@ -183,6 +183,19 @@
            line-height: 1.9
         }
 
+        .files-container {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            right: 80px;
+            background: #17212b;
+            border-radius: 16px;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
         .files-container img{
             width: 25px; /* Установите желаемую ширину */
             height: 25px; /* Установите желаемую высоту */
@@ -253,6 +266,12 @@
 
         .files-container label {
             display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: 0.15s;
         }
 
         .files-container p {
