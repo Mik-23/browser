@@ -401,8 +401,10 @@ function displayChats(chats) {
         li.onclick = () => {
             const listChat = document.getElementById('chats')
             const allLists = listChat.querySelectorAll('li')
+            const mediaIcons = document.getElementById('media')
             for (const lis of allLists) {
                 lis.style.backgroundColor = '#3a3a3a';
+                mediaIcons.style.display = 'none'
             }
             if (chat.user_id_1 < numSenderId && chat.user_id_2 === numSenderId) {
                 openChat(chat.user_id_1); // Открытие чата при клике
