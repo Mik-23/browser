@@ -390,6 +390,7 @@
                 padding: 16px 20px;
             }
             .message-message-list {
+                width: 50%
                 padding: 150px;
             }
 
@@ -401,5 +402,5 @@
             .chat-list li {
                 font-size: 15px;
             }
-
         }
+
