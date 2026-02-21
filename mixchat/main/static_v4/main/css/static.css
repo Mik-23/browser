@@ -1,26 +1,72 @@
-body {
-            font-family: Arial, sans-serif;
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+
             margin: 0;
             padding: 20px;
-            background-color: #2c2c2c;
+            background-color: rgba(0, 0, 45, 11);
             overflow-x: hidden;
         }
 
+
         h1 {
             color: #D9FFFD;
-            position: fixed
         }
 
         h2 {
-            text-align: center;
+            text-align: left;
             color: #FFFAFA;
-            position: fixed;
-            top: 1px;
-            left: 750px;
+
+        }
+
+        .messenger {
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+            background: #0E1621;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 36px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), inset 0 1px 2px rgba(255, 255, 255, 0.08);
+            display: flex;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar {
+            width: 360px;
+            background: #06002E
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            gap: 20px;
+        }
+
+        /* шапка sidebar */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .main-chat {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            background: #0E1621;
+            position: relative;
         }
 
         .sent {
-            position: fixed;
             bottom: 80px;
             right: 550px;
             max-width: 30px; /* чтобы не превращался в огромный */
@@ -31,7 +77,6 @@ body {
         }
 
         .mediaIcons {
-            position:fixed;
             bottom: 80px;
             right: 470px;
             max-width: 30px; /* чтобы не превращался в огромный */
@@ -59,17 +104,65 @@ body {
             font-weight: bold;
         }
         .form-group{
-            width: 500px;
-            position: fixed;
+             width: 90%;
+             display: flex;
+             background: rgba(255, 255, 255, 0.06);
+             border: 1px solid rgba(255, 255, 255, 0.05);
+             border-radius: 40px;
+             justify-content: space-between;
+             position: relative; /* или static */
+             padding: 0 10px;
+             box-sizing: border-box;
+        }
 
-            margin-right: auto;
-            top: 90px;
+        .input-panel {
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 18px 28px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
 
-            justify-content: space-between;
+        .input-wrapper {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            padding: 4px 4px 4px 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.15s;
+        }
+
+        .input-wrapper input {
+            background: transparent;
+            border: none;
+            padding: 14px 0;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+        }
+
+
+        .input-wrapper text {
+            font-size: 10px;
+        }
+
+        .form-group input {
+            background: transparent;
+            border: none;
+            padding: 14px 0;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
         }
 
         .chat-align {
-            text-align: left; /* Выравнивание текста влево */
+            text-align: center; /* Выравнивание текста влево */
         }
 
         .message-align {
@@ -90,45 +183,40 @@ body {
            line-height: 1.9
         }
 
-        .media-container img{
-            width: 42px; /* Установите желаемую ширину */
-            height: 42px; /* Установите желаемую высоту */
-            position: fixed;
-            top: 42.5vh;
-            left: 115vh;
+        .files-container img{
+            width: 25px; /* Установите желаемую ширину */
+            height: 25px; /* Установите желаемую высоту */
+
         }
 
+        .message-list {
+            overflow-y: auto;
+        }
 
         .message-message-list li {
             list-style-type: none;
             text-align: left; /* Выравнивание текста вправо */
-            margin: 15px auto; /* Отступы между сообщениями */
             font-size: 20px;
             overflow-y: auto;
             color: #E0FFFF;
             border: none; /* Граница вокруг сообщения */
-            border-radius: 5px; /* Закругление углов */
+            border-radius: 40px; /* Закругление углов */
             padding: 10px;
             background-color: #3a3a3a;
             max-width: 600px; /* Максимальная ширина сообщения */
             width: 100%;
-            margin-left: auto; /* Центрируем по горизонтали */
-            margin-right: auto;
+
         }
 
         .message-message-list p {
             font-size: 10px;
-            margin-left: 270px;
+
 
         }
 
 
         #messageContent {
-            position: fixed;
-            bottom: 60px;
-            right: 600px; /* уменьшите отступ, чтобы не уходил за границы */
             width: calc(100% - 40px);
-            font-size: 14px;
             max-width: 400px; /* чтобы не превращался в огромный */
             box-sizing: border-box; /* чтобы padding не влияли на ширину */
             z-index: 9999; /* чтобы не перекрывалось чем-то */
@@ -136,20 +224,19 @@ body {
         }
 
         .chat-list ul{
-            max-width: 120px;
-            width: 100%;
-            position: fixed;
-            top: 120px;
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
 
         }
 
         .chat-list li {
             background-color: #3a3a3a;
-            font-size: 22px;
+            font-size: 18px;
+            border-radius: 12px;
             list-style-type: none;
             color: #fff;
-            margin: 25px 0;
-            position: fixed;
             display: block;
         }
 
@@ -158,20 +245,19 @@ body {
             font-size: 19px;
             list-style-type: none;
             color: #C0C0C0;
-            margin: 1px 0;
         }
 
         .logout-container button{
             margin-right: 600px;
         }
 
-
+        .files-container label {
+            display: flex;
+        }
 
         .files-container p {
             font-size: 17px;
             color: #D9FFFD;
-            margin: 20px 35px;
-
         }
 
         .files-container p:hover {
@@ -187,42 +273,114 @@ body {
             border: none;
             border-radius: 5px;
             cursor: pointer;
-            position: fixed;
         }
 
         .btn:hover {
             color: #02D6ED;
+            background: #08003B
         }
 
-        @media(max-width: 1000px) {
-            #messageContent {
-                position: fixed;
-                bottom: 60px;
-                right: 20px; /* стартовая позиция для мобильных, например, 20px */
-                width: 70%; /* ширина в процентах */
-                max-width: 300px; /* максимум ширины */
-            }
-
-            #media {
-                width: 80%; /* ширина занимает 80% экрана */
-                height: auto; /* или задать конкретное значение по необходимости */
-                top: 50%;
-                left: 50%;
-                transform: translate(-50%, -50%);
-              }
-
-            #sendMessageButton {
-                bottom: 85px; /* чуть выше, чтобы было удобно нажимать */
-                right: 10px; /* оставьте небольшой отступ от края */
-                width: 60px; /* увеличенные кнопки, чтобы было удобно щипками */
-                height: 60px;
-            }
-
-            #mediaButton {
-                bottom: 85px; /* так же, чуть выше */
-                right: 80px;
-                width: 60px;
-                height: 60px;
-            }
+        .out-chat svg {
+            width: 30px;
+            height: 30px;
+            fill: none;
+            stroke-width: 2;
         }
 
+        .out-chat {
+            background: none;
+            width: 45px;
+            height: 45px;
+        }
+
+         .mediaIcons svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: #545454;
+            stroke-width: 2;
+        }
+
+        .mediaIcons {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            max-width: 45px;
+            height: 45px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: 0.15s;
+        }
+
+        .mediaIcons:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mediaIcons svg:hover {
+            stroke: #FFFFFF;
+        }
+
+        .sent {
+            background: #1F9494;
+            border: none;
+            max-width: 45px;
+            height: 45px;
+            border-radius: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(26, 77, 255, 0.4);
+            transition: all 0.2s;
+        }
+
+        .sent:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px #1f4eff;
+        }
+
+        .sent svg {
+            size: 120px;
+            width: 24px;
+            height: 24px;
+            fill: white;
+            stroke: none;
+        }
+
+        @media (max-width: 800px) {
+            .messenger {
+                flex-direction: column;
+                height: 100vh;
+                border-radius: 28px;
+            }
+            .sidebar {
+                width: 100%;
+                max-height: 35%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .main-chat {
+                height: 65%;
+            }
+            .chats-header {
+                padding: 16px 20px;
+            }
+            .message-message-list {
+                padding: 150px;
+            }
+
+            .files-container {
+                bottom: 80px;
+                right: 20px;
+            }
+
+            .chat-list li {
+                font-size: 15px;
+            }
+
+        }
