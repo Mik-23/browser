@@ -1,432 +1,406 @@
-let users = []; // Изначально пустой массив пользователей
-let selectedUserId = null; // Переменная для хранения ID выбранного пользователя
-let currentChatId = null;
-let type = null
-const senderId = localStorage.getItem('user_id');
-
-console.log(senderId)
-// Функция для получения пользователей из API
-function fetchUsers() {
-    fetch('/api/search_user/', { // Замените на ваш реальный эндпоинт
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json(); // Продолжаем, если ответ успешный
-        } else {
-            // Обработка ошибок, например, выброс исключения или возврат отклоненного промиса
-             window.location.href = '/auth_in_chat';
+        body {
+
+            margin: 0;
+            padding: 20px;
+            background-color: rgba(0, 0, 45, 11);
+            overflow-x: hidden;
         }
-    })
-    .then(data => {
-        users = data.users; // Сохраняем полученных пользователей в переменную
-        //displayUsers(); // Отображаем пользователей
-
-    })
-    .catch(error => console.error('Ошибка при получении пользователей:', error));
-}
-
-// Функция для отображения пользователей
-function displayUsers() {
-    const userList = document.getElementById('users');
-    userList.innerHTML = ''; // Очистить список
-    if (users.length > 0) { // Проверяем, есть ли пользователи
-        users.forEach(user => {
-            const li = document.createElement('li');
-            console.log(user.id)
-            console.log(user)
-            //li.textContent = user.username; // Имя пользователя
-            li.onclick = () => selectUser(user.id); // Выбор пользователя
-            userList.appendChild(li);
-        });
-        userList.style.display = 'block'; // Показываем список
-    } else {
-        userList.style.display = 'none'; // Скрываем список, если нет пользователей
-    }
-}
-
-// Функция для выбора пользователя
-function selectUser(userId) {
-   selectedUserId = userId; // Сохраняем ID выбранного пользователя
-   console.log(selectedUserId)
-   if (selectedUserId) {
-       openChat(selectedUserId);
-   }
-}
-
-// Функция для поиска пользователей
-function searchUsers() {
-    const input = document.getElementById('userSearch').value.toLowerCase();
-    console.log(input);
-    const filteredUsers = users.filter(user => user.username.toLowerCase().includes(input));
-    console.log(filteredUsers)
-    const userList = document.getElementById('users');
-    userList.innerHTML = ''; // Очистить список
-
-    if (filteredUsers.length > 0) { // Проверяем, есть ли отфильтрованные пользователи
-        filteredUsers.forEach(user => {
-            const li = document.createElement('li');
-            console.log(user.id)
-            li.textContent = user.username; // Имя пользователя
-            li.onclick = () => selectUser(user.id); // Выбор пользователя
-
-            userList.appendChild(li);
-        });
-        console.log(userList)
-        userList.style.display = 'block'; // Показываем список
-        userList.style.marginLeft = 'auto';
-    } else {
-        userList.style.display = 'none'; // Скрываем список, если нет результатов
-    }
-}
 
 
-document.addEventListener('click', function(event) {
-    const userList = document.getElementById('users');
-    const searchInput = document.getElementById('userSearch');
-
-    if (!userList.contains(event.target) && event.target !== searchInput) {
-        userList.style.display = 'none';
-    }
-});
-
-// Функция для открытия чата с пользователем
-function openChat(userId) {
-    const parseUserId = userId;
-    const parseSenderId = senderId;
-    let selectedUser = {}
-    for (user of users) {
-       if(user.id === parseUserId) {
-           selectedUser = user
-       }
-   }
-    // Сначала проверяем наличие чата
-    const url = `/api/chat/?sender_id=${parseSenderId}&recipient_id=${parseUserId}`;
-
-    fetch(url, {
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+        h1 {
+            color: #D9FFFD;
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        if (data.chat_id) {
-            // Если чат существует, открываем его
-            currentChatId = data.chat_id;
-            console.log(data)
-            loadMessages(currentChatId);
-        } else {
-            // Если чат не существует, создаем новый
-            console.log(parseSenderId)
-            console.log(parseUserId)
-            createChat(parseSenderId, parseUserId, selectedUser.type);
+
+        h2 {
+            text-align: left;
+            color: #FFFAFA;
+
         }
-        document.getElementById('chatWindow').style.display = 'block';
 
-
-    })
-    .catch(error => console.error('Ошибка:', error));
-}
-
-function loadMessages(chatId) {
-    const messageList = document.querySelector('.message-message-list');
-    const messageContainer = document.querySelector('.message-list');
-    let header = document.querySelector('h2');
-    console.log(header)
-    console.log(chatId)
-    //header.style.display = 'block';
-    let button = document.querySelector('button');
-    let mediaButton = document.getElementById('mediaButton');
-    messageList.innerHTML = ''; // Очистить предыдущие сообщения
-
-    const url = `/api/message/?chat_id=${chatId}`; // Эндпоинт для получения сообщений по ID чата
-
-    fetch(url, {
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+        .messenger {
+            width: 100%;
+            max-width: 1400px;
+            height: 90vh;
+            background: #0E1621;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 36px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75), inset 0 1px 2px rgba(255, 255, 255, 0.08);
+            display: flex;
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.05);
         }
-    })
-    .then(response => response.json())
-    .then(data => {
-        let lastDate = null;
-        data.messages.forEach(message => {
-            header.textContent = message.recipient;
-            console.log(message.recipient_id)
-            const li = document.createElement('li');
-            const messageContainer = document.createElement('div');
-            console.log(message)
-            console.log(displayUsers())
-            if (message.sender_id === senderId) {
-                li.style.backgroundColor = '#1F9494'
-                li.style.alignSelf = 'flex-end';
-                li.style.marginLeft = 'auto';
-            } else {
-                li.style.alignSelf = 'flex-start';
-                li.style.marginLeft = 'auto';
+
+        .sidebar {
+            width: 360px;
+            background: #06002E
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 255, 0.05);
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            gap: 20px;
+        }
+
+        /* шапка sidebar */
+        .sidebar-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .main-chat {
+            flex: 1;
+            overflow: auto;
+            display: flex;
+            flex-direction: column;
+            background: #0E1621;
+            position: relative;
+        }
+
+        .sent {
+            bottom: 80px;
+            right: 550px;
+            max-width: 30px; /* чтобы не превращался в огромный */
+            box-sizing: border-box; /* чтобы padding не влияли на ширину */
+            z-index: 9999; /* чтобы не перекрывалось чем-то */
+            width: calc(100% - 40px);
+            font-size: 14px;
+        }
+
+        .mediaIcons {
+            bottom: 80px;
+            right: 470px;
+            max-width: 30px; /* чтобы не превращался в огромный */
+            box-sizing: border-box; /* чтобы padding не влияли на ширину */
+            z-index: 9999; /* чтобы не перекрывалось чем-то */
+            width: calc(100% - 40px);
+            font-size: 14px;
+        }
+
+        .messages {
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-bottom: 15px;
+        }
+        .message {
+            margin-bottom: 10px;
+            max-height: 400px;
+            overflow: auto;
+            border: 1px solid #ccc;
+            padding: 10px;
+        }
+        .message .sender {
+            font-weight: bold;
+        }
+        .form-group{
+             width: 90%;
+             display: flex;
+             background: rgba(255, 255, 255, 0.06);
+             border: 1px solid rgba(255, 255, 255, 0.05);
+             border-radius: 40px;
+             justify-content: space-between;
+             position: relative; /* или static */
+             padding: 0 10px;
+             box-sizing: border-box;
+        }
+
+        .input-panel {
+            backdrop-filter: blur(16px);
+            border-top: 1px solid rgba(255, 255, 255, 0.04);
+            padding: 18px 28px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            padding: 4px 4px 4px 22px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: 0.15s;
+        }
+
+        .input-wrapper input {
+            background: transparent;
+            border: none;
+            padding: 14px 0;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+        }
+
+
+        .input-wrapper text {
+            font-size: 10px;
+        }
+
+        .form-group input {
+            background: transparent;
+            border: none;
+            padding: 14px 0;
+            color: white;
+            font-size: 14px;
+            outline: none;
+            width: 100%;
+        }
+
+        .chat-align {
+            text-align: center; /* Выравнивание текста влево */
+        }
+
+        .message-align {
+            margin-top: -100px; /* Выравнивание текста влево */
+
+        }
+
+        .user-list {
+            background-color: #3a3a3a;
+            max-width: 170px;
+            margin: 0px 170px
+        }
+
+        .user-list li {
+           list-style-type: none;
+           margin-left: auto;
+           color: white;
+           line-height: 1.9
+        }
+
+        .files-container {
+            display: none;
+            position: absolute;
+            bottom: 80px;
+            right: 80px;
+            background: #17212b;
+            border-radius: 16px;
+            padding: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+        }
+
+        .files-container img{
+            width: 25px; /* Установите желаемую ширину */
+            height: 25px; /* Установите желаемую высоту */
+
+        }
+
+        .message-list {
+            overflow-y: auto;
+        }
+
+        .message-message-list li {
+            list-style-type: none;
+            text-align: left; /* Выравнивание текста вправо */
+            font-size: 20px;
+            overflow-y: auto;
+            color: #E0FFFF;
+            border: none; /* Граница вокруг сообщения */
+            border-radius: 40px; /* Закругление углов */
+            padding: 10px;
+            background-color: #3a3a3a;
+            max-width: 600px; /* Максимальная ширина сообщения */
+            width: 100%;
+
+        }
+
+        .message-message-list p {
+            font-size: 10px;
+
+
+        }
+
+
+        #messageContent {
+            width: calc(100% - 40px);
+            max-width: 400px; /* чтобы не превращался в огромный */
+            box-sizing: border-box; /* чтобы padding не влияли на ширину */
+            z-index: 9999; /* чтобы не перекрывалось чем-то */
+
+        }
+
+        .chat-list ul{
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+
+        }
+
+        .chat-list li {
+            background-color: #3a3a3a;
+            font-size: 18px;
+            border-radius: 12px;
+            list-style-type: none;
+            color: #fff;
+            display: block;
+        }
+
+
+        .chat-list p {
+            font-size: 19px;
+            list-style-type: none;
+            color: #C0C0C0;
+        }
+
+        .logout-container button{
+            margin-right: 600px;
+        }
+
+        .files-container label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 2px;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: 0.15s;
+        }
+
+        .files-container p {
+            font-size: 17px;
+            color: #D9FFFD;
+        }
+
+        .files-container p:hover {
+            color: #02D6ED;
+        }
+
+
+        button {
+            width: 70px; /* Уменьшено для кнопки отправки */
+            padding: 10px;
+            background-color: #2c2c2c;
+            color: #D9FFFD;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .btn:hover {
+            color: #02D6ED;
+            background: #08003B
+        }
+
+        .out-chat svg {
+            width: 30px;
+            height: 30px;
+            fill: none;
+            stroke-width: 2;
+        }
+
+        .out-chat {
+            background: none;
+            width: 45px;
+            height: 45px;
+        }
+
+         .mediaIcons svg {
+            width: 24px;
+            height: 24px;
+            fill: none;
+            stroke: #545454;
+            stroke-width: 2;
+        }
+
+        .mediaIcons {
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            max-width: 45px;
+            height: 45px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: 0.15s;
+        }
+
+        .mediaIcons:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .mediaIcons svg:hover {
+            stroke: #FFFFFF;
+        }
+
+        .sent {
+            background: #1F9494;
+            border: none;
+            max-width: 45px;
+            height: 45px;
+            border-radius: 52px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 6px 14px rgba(26, 77, 255, 0.4);
+            transition: all 0.2s;
+        }
+
+        .sent:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px #1f4eff;
+        }
+
+        .sent svg {
+            size: 120px;
+            width: 24px;
+            height: 24px;
+            fill: white;
+            stroke: none;
+        }
+
+        @media (max-width: 800px) {
+            .messenger {
+                flex-direction: column;
+                height: 100vh;
+                border-radius: 28px;
             }
-            // Добавляем текстовое сообщение, если есть
-            if (message.content) {
-                if (message.content.includes("https://")) {
-                    const textSpan = document.createElement('span');
-                    textSpan.textContent = message.sender;
-                    textSpan.style.maxWidth = '300px';
-                    textSpan.style.wordWrap = 'break-word';
-                    console.log(message.content)
-                    const jsonString = message.content.replace(/'/g, '"');
-                    contentArray = JSON.parse(jsonString);
-                    messageContainer.appendChild(textSpan);
-                    console.log(contentArray)
-                    for (key in contentArray) {
-                        const link = document.createElement('a');
-                        console.log(key)
-                        link.style.display = 'block';
-                        link.style.maxWidth = '300px';
-                        link.style.wordWrap = 'break-word';
-                        link.href = contentArray[key];
-                        link.textContent = key;
-                        messageContainer.appendChild(link);
-                    }
-                } else {
-                    const textSpan = document.createElement('span');
-                    textSpan.style.maxWidth = '300px';
-                    textSpan.style.wordWrap = 'break-word';
-                    textSpan.textContent = `${message.sender}: ${message.content}`;
-                    messageContainer.appendChild(textSpan);
-                }
+            .sidebar {
+                width: 100%;
+                max-height: 35%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
             }
 
-            // Проверяем наличие изображения
-            if (message.image) {
-                const messageWrapper = document.createElement('div');
-                messageWrapper.style.display = 'flex'; // горизонтальное расположение
-                messageWrapper.style.alignItems = 'center'; // по вертикали по центру
-                messageWrapper.style.marginBottom = '10px';
-
-                const img = document.createElement('img');
-                img.src = message.image;
-                img.style.maxWidth = '200px'; // Ограничение ширины для удобства
-                img.style.height = 'auto';
-                img.style.display = 'block'; // Чтобы изображение было на отдельной строке
-                img.alt = `${message.sender}`;
-
-                const senderName = document.createElement('span');
-                senderName.textContent = message.sender; // или другое поле с именем
-                senderName.style.fontSize = '14px';
-                senderName.style.fontWeight = 'bold';
-
-                // Добавляем изображение и имя в контейнер
-                messageWrapper.appendChild(senderName);
-                messageWrapper.appendChild(img);
-
-                messageContainer.appendChild(messageWrapper);
+            .main-chat {
+                height: 65%;
+            }
+            .chats-header {
+                padding: 16px 20px;
+            }
+            .message-message-list {
+                width: 50%
+                padding: 150px;
             }
 
-            if (message.video) {
-                const mediaWrapper = document.createElement('div');
-                mediaWrapper.style.display = 'flex';
-                mediaWrapper.style.alignItems = 'center';
-
-                const video = document.createElement('video');
-                video.src = message.video;
-                video.controls = true;
-                video.style.maxWidth = '300px';
-                video.style.height = 'auto';
-                video.style.marginRight = '10px';
-
-                const senderName = document.createElement('span');
-                senderName.textContent = message.sender_name; // или другое поле
-                senderName.style.fontSize = '14px';
-
-                mediaWrapper.appendChild(video);
-                mediaWrapper.appendChild(senderName);
-
-                messageContainer.appendChild(mediaWrapper);
+            .files-container {
+                bottom: 80px;
+                right: 20px;
             }
 
-            // Для аудио
-            if (message.audio) {
-                const mediaWrapper = document.createElement('div');
-                mediaWrapper.style.display = 'flex';
-                mediaWrapper.style.alignItems = 'center';
-
-                const audio = document.createElement('audio');
-                audio.src = message.audio;
-                audio.controls = true;
-                audio.style.marginRight = '10px';
-
-                const senderName = document.createElement('span');
-                senderName.textContent = message.sender_name;
-
-                mediaWrapper.appendChild(audio);
-                mediaWrapper.appendChild(senderName);
-
-                messageContainer.appendChild(mediaWrapper);
-            }
-
-            li.appendChild(messageContainer);
-            messageList.appendChild(li);
-            console.log(messageList)
-        });
-        messageContainer.scrollTop = messageContainer.scrollHeight;
-    })
-    .catch(error => console.error('Ошибка:', error));
-}
-
-function createChat(senderId, recipientId, type) {
-   fetch('/api/chat/', { // Эндпоинт для создания нового чата
-       method: 'POST',
-       headers: {
-           'Content-Type': 'application/json',
-           'Authorization': 'Bearer ' + localStorage.getItem('access_token')
-       },
-       body: JSON.stringify({
-           sender_id: senderId,
-           recipient_id: recipientId,
-           type: type
-       })
-   })
-   .then(response => response.json())
-   .then(data => {
-       console.log(data); // Сообщение о создании чата
-       currentChatId = data.id;
-       loadMessages(currentChatId); // Загружаем сообщения нового чата
-       fetchChats()
-   })
-   .catch(error => console.error('Ошибка:', error));
-}
-
-// Обработчик события для отправки сообщения
-document.getElementById('sendMessageButton').addEventListener('click', () => {
-   const content = document.getElementById('messageContent').value;
-   const image = document.getElementById('imageInput').value;
-   const video = document.getElementById('videoInput').value;
-   const audio = document.getElementById('audioInput').value;
-   const formData = new FormData();
-   console.log(content)
-   formData.append('content', content);
-   // Добавляем файлы, если они выбраны
-   if (imageInput.files.length > 0) {
-       for (let i = 0; i < imageInput.files.length; i++) {
-           formData.append('image', imageInput.files[i]);
-       }
-   }
-   if (videoInput.files.length > 0) {
-       for (let i = 0; i < videoInput.files.length; i++) {
-           formData.append('video', videoInput.files[i]);
-       }
-   }
-   if (audioInput.files.length > 0) {
-       for (let i = 0; i < audioInput.files.length; i++) {
-           formData.append('audio', audioInput.files[i]);
-       }
-   }
-   // Добавляем остальные параметры
-   formData.append('recipient_id', selectedUserId);
-   console.log(selectedUserId)
-   formData.append('chat_id', currentChatId);
-   formData.append('type', type);
-   console.log(currentChatId)
-   fetch('/api/message/', {
-       method: 'POST',
-       headers: {
-           'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
-       },
-       body: formData
-   })
-   .then(response => response.text)
-   .then(data => {
-       document.getElementById('messageContent').value = ''; // Очистить поле ввода
-       document.getElementById('imageInput').value = '';
-       document.getElementById('videoInput').value = '';
-       document.getElementById('audioInput').value = '';
-       console.log(data)
-       loadMessages(currentChatId); // Обновить чат с выбранным пользователем после отправки сообщения
-   })
-   .catch(error => console.error('Ошибка:', error));
-});
-
-document.getElementById('mediaButton').addEventListener('click', () => {
-    const mediaIcons = document.getElementById('media');
-    mediaIcons.style.display = 'block';
-});
-
-const mediaIcons = document.getElementById('media')
-mediaIcons.addEventListener('mouseleave', () => {
-    mediaIcons.style.display = 'none'
-
-});
-
-
-
-// Функция для получения списка чатов
-function fetchChats() {
-    fetch('/api/get_chats/', { // Замените на ваш реальный эндпоинт
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        console.log(data)
-        displayChats(data.chats); // Отображаем полученные чаты
-    })
-    .catch(error => console.error('Ошибка при получении чатов:', error));
-}
-
-// Функция для отображения списка чатов
-function displayChats(chats) {
-    const chatList = document.getElementById('chats');
-    console.log(chatList)
-    chatList.innerHTML = ''; // Очистить список
-    const numSenderId = senderId
-    console.log(chats)
-    chats.forEach(chat => {
-        const li = document.createElement('li');
-
-        const span = document.createElement('span');
-        span.textContent = chat.username; // Имя пользователя в чате
-        const p = document.createElement('p');
-        console.log(chat)
-        if (chat.content.length > 13) {
-            p.textContent = chat.content.substring(0, 14) + '...';
-        } else {
-            p.textContent = chat.content;
-        }
-        li.onclick = () => {
-            const listChat = document.getElementById('chats')
-            const allLists = listChat.querySelectorAll('li')
-            const mediaIcons = document.getElementById('media')
-            for (const lis of allLists) {
-                lis.style.backgroundColor = '#3a3a3a';
-                mediaIcons.style.display = 'none'
-            }
-            if (chat.user_id_1 < numSenderId && chat.user_id_2 === numSenderId) {
-                openChat(chat.user_id_1); // Открытие чата при клике
-                li.style.backgroundColor = '#1F9494';
-                selectedUserId = chat.user_id_1
-            } else if (chat.user_id_1 === numSenderId && chat.user_id_2 > numSenderId) {
-                openChat(chat.user_id_2);
-                li.style.backgroundColor = '#1F9494';
-                selectedUserId = chat.user_id_2
-            } else if (chat.user_id_1 === chat.user_id_2 && chat.user_id_1 === numSenderId) {
-                openChat(chat.user_id_1);
-                li.style.backgroundColor = '#1F9494';
-                selectedUserId = chat.user_id_1
+            .chat-list li {
+                font-size: 15px;
             }
         }
-        li.appendChild(span);
-        li.appendChild(p);
-        chatList.appendChild(li);
-        chatList.style.display = 'block';
-    });
-}
 
-// Инициализация списка пользователей при загрузке страницы
-fetchUsers();
-fetchChats();
