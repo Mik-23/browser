@@ -1,15 +1,83 @@
-body {
-    font-family: Arial, sans-serif;
+* {
     margin: 0;
-    color: #D9FFFD;
-    padding: 20px;
-    background-color: #2c2c2c;
+    padding: 0;
+    box-sizing: border-box;
 }
 
-.search-container {
-    text-align: center;
-    margin-bottom: 20px;
+body {
+     background: linear-gradient(90deg, #0b0f1a 0%, #1E2438 100%);
+     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
 }
+
+h2 {
+    font-size: 40px;
+    font-weight: 800;
+    background: linear-gradient(145deg, #a7f0ff, #6e9eff, #9d7aff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: -2px;
+    text-shadow: 0 10px 30px rgba(110, 158, 255, 0.3);
+}
+
+.header {
+    background: rgba(18, 23, 40, 0.8);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px 30px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+.header-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.category-buttons {
+     display: flex;
+     gap: 8px;
+     flex-wrap: wrap;
+}
+
+.category-btn {
+     background: rgba(255, 255, 255, 0.03);
+     border: 1px solid rgba(255, 255, 255, 0.05);
+     border-radius: 30px;
+     padding: 10px 20px;
+     color: #b0c8ff;
+     font-size: 14px;
+     font-weight: 500;
+     cursor: pointer;
+     transition: all 0.2s;
+     text-decoration: none;
+     display: inline-flex;
+     align-items: center;
+     gap: 6px;
+}
+
+.category-btn:hover {
+     background: rgba(76, 140, 255, 0.15);
+     border-color: rgba(110, 158, 255, 0.3);
+     color: white;
+     transform: translateY(-1px);
+}
+
+.category-btn.active {
+    background: linear-gradient(145deg, #2f5eff, #1a3db0);
+    border-color: transparent;
+    color: white;
+    box-shadow: 0 4px 12px rgba(26, 77, 255, 0.3);
+}
+
+
 
 input[type="text"] {
     width: 300px;
@@ -36,29 +104,102 @@ button:hover {
     margin-top: 55px;
 }
 
-.results-container ul {
-    list-style-type: none;
-    padding: 0;
+.result-card {
+     background: rgba(255, 255, 255, 0.02);
+     border: 1px solid rgba(255, 255, 255, 0.03);
+     border-radius: 20px;
+     margin-bottom: 20px;
+     transition: all 0.2s;
+     backdrop-filter: blur(5px);
+     width: 50%
+ }
+
+ .result-card:hover {
+     background: rgba(255, 255, 255, 0.04);
+     border-color: rgba(110, 158, 255, 0.2);
+     transform: translateY(-2px);
+     box-shadow: 0 12px 30px -10px rgba(0, 0, 0, 0.4);
+ }
+
+.result-title {
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
 }
 
-.results-container li {
-    margin-bottom: 40px;
-    color: #FFFAFA; /* Цвет текста для элементов <li> */
+.result-title img {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    object-fit: contain;
+    background: white;
+    padding: 2px;
 }
 
-.results-container li a {
+.result-title a {
+    font-size: 20px;
+    font-weight: 600;
+    color: #7aa5ff;
     text-decoration: none;
-    color: #FFFAFA; /* Цвет текста для ссылок внутри <li> */
+    transition: color 0.2s;
 }
 
-.results-container h3 {
-    color: #6495ED; /* Цвет текста для заголовков <h3> */
-}
-
-.results-container h3 a {
-    color: #6495ED; /* Цвет текста для <a> внутри <h3> */
-}
-
-.results-container a:hover {
+.result-title a:hover {
+    color: #9bb9ff;
     text-decoration: underline;
 }
+
+.result-url {
+    margin-bottom: 12px;
+}
+
+.result-url a {
+    color: #35d8a0;
+    text-decoration: none;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.result-url a:hover {
+    text-decoration: underline;
+    color: #4eecb4;
+}
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 50px;
+}
+
+.pagination a {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 40px;
+    padding: 12px 28px;
+    color: #b0c8ff;
+    text-decoration: none;
+    font-size: 15px;
+    font-weight: 500;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.pagination a:hover {
+    background: rgba(76, 140, 255, 0.15);
+    border-color: rgba(110, 158, 255, 0.3);
+    color: white;
+    transform: translateY(-1px);
+}
+
+ .pagination .page-info {
+     color: #8e9bb5;
+     font-size: 14px;
+     padding: 0 15px;
+ }
