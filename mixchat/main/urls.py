@@ -11,6 +11,7 @@ urlpatterns = [
     path('confirmation_code', views.confirmation_code, name='confirmation_code'),
     path('api/reg/', api.RegisterView.as_view(), name='reg'),
     path('api/send_code/', api.SendCodeView.as_view(), name='send_code'),
+    path('api/profile_form/', api.ProfileformView.as_view(), name='profile_form'),
     path('api/message/', api.MessageView.as_view(), name='message'),
     path('api/search_user/', api.SearchUserView.as_view(), name='search_user'),
     path('api/chat/', api.ChatView.as_view(), name='chat'),
