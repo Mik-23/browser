@@ -36,6 +36,11 @@ class LoginSerializer(serializers.Serializer):
     password = serializers.CharField(max_length=128, write_only=True)
 
 
+class ProfileformSerializer(serializers.Serializer):
+    photo = serializers.ImageField(required=False, allow_null=True)
+    date_birth = serializers.DateField(required=False, allow_null=True)
+
+
 class MessageSerializer(serializers.Serializer):
     recipient_id = serializers.CharField(max_length=200, required=False, allow_blank=True)
     content = serializers.CharField(max_length=200, required=False, allow_blank=True)
@@ -87,4 +92,3 @@ class SendMessageToChannelSerializer(serializers.Serializer):
     chanel_id = serializers.IntegerField()
     sender_id = serializers.IntegerField()
     content = serializers.CharField()
-
