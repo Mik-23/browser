@@ -68,7 +68,7 @@
                                 {% if result.favicon_url %}
                                 <img src="{{ result.favicon_url }}" alt="" onerror="this.style.display='none'">
                                 {% endif %}
-                                <a href="{{ result.title }}">{{ result.title }}</a>
+                                <a href="{{ result.url }}">{{ result.title }}</a>
                             </div>
                             <div class="result-url">
                                 <a href="{{ result.url }}">
@@ -124,4 +124,5 @@
         </div>
     </div>
 </body>
+
 </html>
