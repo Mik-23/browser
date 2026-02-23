@@ -16,7 +16,7 @@ from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, Me
 from .serialazers import (UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer,
                           CreateChannelSerializer, SubscribeToChannelSerializer,
-                          SendMessageToChannelSerializer)
+                          SendMessageToChannelSerializer, ProfileformSerializer)
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -95,13 +95,41 @@ class LogoutView(APIView):
                          'logout_redirect': '/auth_in_chat'})
 
 
+class ProfileformView(generics.GenericAPIView):
+    # API профиля
+    serializer_class = ProfileformSerializer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+
+    def get(self, request):
+        # Открыть профиль пользователя
+        user = ChatUser.objects.filter(id=request.user.id).first()
+        return Response({"photo": user.photo.url,
+                         'date_birth': user.date_birth})
+
+    def put(self, request, *args, **kwargs):
+        # Редактировать профиль пользователя
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        photo = request.FILES.get('photo')
+        date_birth = serializer.validated_data['date_birth']
+        user = ChatUser.objects.filter(id=request.user.id).first()
+        user.date_birth = date_birth
+        if photo != None:
+            user.photo.save(photo.name, photo)
+        user.save()
+        return Response({"photo": user.photo.url,
+                         'date_birth': user.date_birth})
+
+
 class MessageView(generics.GenericAPIView):
-    # Отправить сообщение
+    # API сообщений
     serializer_class = MessageSerializer
     authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
+        # Отправить сообщение
         print(request.user.id)
         serializer = self.get_serializer(data=request.data)
         print(request.data)
@@ -115,15 +143,15 @@ class MessageView(generics.GenericAPIView):
         content = serializer.validated_data['content']
         chat_id = serializer.validated_data['chat_id']
         chat = Chat.objects.filter(id=chat_id).first()
-        type = chat.type
+        chat_type = chat.type
         # type = serializer.validated_data['type']
-        print('ID чата', chat_id)
+
         # Получаем файлы фото, видео и аудио
         image_file = request.FILES.get('image')
         video_file = request.FILES.get('video')
         audio_file = request.FILES.get('audio')
-        print('VIDEO', video_file)
-        if type == 'user':
+
+        if chat_type == 'user':
             message = Message(
                 sender_id=sender_id,
                 content=content,
@@ -132,7 +160,7 @@ class MessageView(generics.GenericAPIView):
             )
 
             # Сохраняем фото в БД если оно есть
-            if image_file:
+            if image_file != None:
                 message.image.save(image_file.name, image_file)
             else:
                 message.image = None
@@ -151,16 +179,17 @@ class MessageView(generics.GenericAPIView):
 
             message.save()
             print(message.recipient)
+
             return Response({
                 'sender_id': sender_id,
                 'recipient_id': recipient_id,
                 'content': content,
-                'image': image_file,
-                'video': video_file,
-                'audio': audio_file,
+                'image': message.image.url if message.image else None,
+                'video': message.video.url if message.video else None,
+                'audio': message.audio.url if message.audio else None,
                 'message_id': message.id
             })
-        elif type == 'bot':
+        elif chat_type == 'bot':
             user = ChatUser.objects.filter(id=sender_id).first()
             sender = user.username
             bot = Bot.objects.filter(id=recipient_id).first()
@@ -205,8 +234,9 @@ class MessageView(generics.GenericAPIView):
             })
 
     def get(self, request, *args, **kwargs):
+        # Получение сообщений
         chat_id = request.GET.get('chat_id')
-        print('hgfhfhfhf',chat_id)
+
         messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
         messages_bot = MessageBot.objects.filter(chat_id=chat_id).order_by('timestamp')
         list_messages = [{
@@ -220,7 +250,7 @@ class MessageView(generics.GenericAPIView):
                 "video": message.video.url if message.video else None,
                 "audio": message.audio.url if message.audio else None,
                 "date": message.timestamp.date(),
-                "time": message.timestamp.strftime('%H:%m')
+                "time": message.timestamp.strftime('%H:%m'),
             } for message in messages]
         list_messages_bot = [{
                 "id": message.id,
@@ -251,8 +281,8 @@ class SearchUserView(generics.GenericAPIView):
         serializer.is_valid(raise_exception=True)
         users = ChatUser.objects.all()
         bots = Bot.objects.all()
-        list_users = [{"id": user.id, "username": user.username, "type": "user"} for user in users]
-        list_bots = [{"id": bot.id, "username": bot.name, "type": "bot"} for bot in bots]
+        list_users = [{"id": user.id, "username": user.username, "type": "user", "photo": user.photo.url} for user in users]
+        list_bots = [{"id": bot.id, "username": bot.name, "type": "bot", "photo": bot.photo.url} for bot in bots]
         list_users.extend(list_bots)
         return Response({
             'users': list_users
@@ -260,12 +290,13 @@ class SearchUserView(generics.GenericAPIView):
 
 
 class ChatView(generics.GenericAPIView):
-    # Открыть один чат
+    # API чатов
     serializer_class = ChatSerializer
     authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
+        # Открыть один чат
         sender_id = request.GET.get('sender_id')
         recipient_id = request.GET.get('recipient_id')
 
@@ -283,6 +314,7 @@ class ChatView(generics.GenericAPIView):
             return Response({'chat_id': None})
 
     def post(self, request, *args, **kwargs):
+        # Создать чат
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         sender_id = serializer.validated_data['sender_id']
@@ -331,27 +363,51 @@ class GetChatsView(generics.GenericAPIView):
                 print('Condition 3', user)
             if message is not None:
                 content = message.content
+                sender_name = message.sender.username + ': '
+                
+                if message.image and not content:
+                    content = 'Фотография'
+                if message.video and not content:
+                    content = 'Видеозапись'
+                if message.audio and not content:
+                    content = 'Аудиозапись'
             else:
                 content = ''
+                sender_name = ''
+
+            if user.photo is not None or user.photo == '':
+                photo = user.photo.url
+            else:
+                photo = ''
+
             try:
                 content = json.loads(content)
-                print('ghhgfhfhffhf',content)
             except json.JSONDecodeError:
                 print('Ошибка: Невозможно декодировать формат отличный от JSON')
+
+            print('CONTENT', content)
             chat_with_user.append({
                 "id": chat.id,
                 "user_id_1": chat.user_id_1,
                 "user_id_2": chat.user_id_2,
                 "username": user.username,
-                "content": content
+                "content": content,
+                "photo": photo,
+                "sender_name": sender_name
             })
         chats_bots = list(filter(lambda x: x.type == 'bot', chats))
         for bot, chat in zip(bots, chats_bots):
             message = MessageBot.objects.filter(chat=chat.id).order_by('-timestamp').first()
             if message is not None:
                 content = message.content
+                sender_name = message.sender + ': '
+                print('bot',type(message.sender))
+                print('SENDER_NAME', sender_name)
+                if message.image and not content:
+                    content = 'Фотография'
             else:
                 content = ''
+                sender_name = ''
             print('CONTENT', content)
             try:
                 new_content = ''
@@ -365,12 +421,18 @@ class GetChatsView(generics.GenericAPIView):
                 content = new_content
             except json.JSONDecodeError:
                 print('(BOTS)Ошибка: Невозможно декодировать формат отличный от JSON')
+            if bot.photo is not None or bot.photo == '':
+                photo = bot.photo.url
+            else:
+                photo = ''
             chat_with_user.append({
                 "id": chat.id,
                 "user_id_1": chat.user_id_1,
                 "user_id_2": chat.user_id_2,
                 "username": bot.name,
-                "content": content
+                "content": content,
+                "photo": photo,
+                "sender_name": sender_name
             })
         return Response({
             'chats': chat_with_user
@@ -426,4 +488,3 @@ class SendMessageToChannelView(generics.GenericAPIView):
         return Response({
             'message': f'Сообщение отправлено в канал с id {channel_id}.'
         })
-
