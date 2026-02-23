@@ -13,5 +13,4 @@ RUN pip install --upgrade pip
 RUN python manage.py makemigrations --verbosity=3
 RUN python manage.py migrate
 
-RUN mkdir -p /mixchat/main/media_v4/photo
 RUN python manage.py collectstatic --noinput --verbosity 2
