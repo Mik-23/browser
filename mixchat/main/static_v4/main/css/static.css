@@ -161,6 +161,143 @@
             width: 100%;
         }
 
+        .profile-form {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background: #0E1621;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+        }
+
+        .form-profile label {
+            display: block;
+            color: #D9FFFD;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .form-profile input[type="file"],
+        .form-profile input[type="date"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            padding: 14px 20px;
+            color: #FFFFFF;
+            font-size: 14px;
+            outline: none;
+            transition: 0.15s;
+            cursor: pointer;
+        }
+
+        .form-profile input[type="file"]:hover,
+        .form-profile input[type="date"]:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-profile input[type="file"]:focus,
+        .form-profile input[type="date"]:focus {
+            border-color: #1F9494;
+            background: rgba(31, 148, 148, 0.1);
+        }
+
+        .form-profile input[type="file"]::-webkit-file-upload-button {
+            background: #1F9494;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin-right: 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .form-profile input[type="file"]::-webkit-file-upload-button:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.4);
+        }
+
+        .form-profile input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.7;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .form-profile input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        /* Кнопки для формы профиля (если нужно добавить) */
+        .profile-form-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .profile-form-buttons button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .profile-form-buttons .save-btn {
+            background: #1F9494;
+            color: white;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .profile-form-buttons .save-btn:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(31, 148, 148, 0.5);
+        }
+
+        .profile-form-buttons .cancel-btn {
+            background: rgba(255, 255, 255, 0.06);
+            color: #D9FFFD;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .profile-form-buttons .cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Затемнение фона при открытой форме */
+        .profile-form-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+        }
+
+
         .chat-align {
             text-align: center; /* Выравнивание текста влево */
         }
@@ -223,8 +360,6 @@
 
         .message-message-list p {
             font-size: 10px;
-
-
         }
 
 
