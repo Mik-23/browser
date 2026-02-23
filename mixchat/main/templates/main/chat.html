@@ -19,6 +19,7 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <h1>Mixchat</h1>
+            <button id="profile" class="btn" type="submit"><img src="" id="avatar"></button>
             <form id="logout-form" style="top: 10px; right: 95px; border-radius: 10px">
               <button class="btn" type="submit">Выйти</button>
             </form>
@@ -44,8 +45,40 @@
         <h2 class="message-align" style="display: none;">Сообщения</h2>
     </div>
 
+    <form class="profile-form" id="profileForm" enctype="multipart/form-data" method="POST" style="display: none;">
+        {% csrf_token %}
+        <div class="form-profile"><img src="" id="photoProfile"></div>
+        <div class="form-profile">
+            <label for="photo_input">Фотография профиля</label>
+            <input type="file" accept="image/*" id="photo_input" name="photo">
+        </div>
+        <div class="form-profile">
+            <label for="date_birth_input">Дата рождения</label>
+            <input type="date" id="date_birth_input" name="date_birth">
+        </div>
+        <div class="profile-form-buttons">
+            <button type="submit" class="save-btn">Сохранить</button>
+            <button type="button" class="cancel-btn" id="cancelProfile">Отмена</button>
+        </div>
+        <script>
+            document.querySelector('.save-btn').addEventListener('click', () => {
+                const photo = document.getElementById('photo_input').value;
+                const date_birth = document.getElementById('date_birth_input').value;
+                console.log('gfdgdgdgf',photo.length)
+                saveProfile(photo, date_birth)
+                const form = document.getElementById('profileForm');
+                form.style.display = 'none'
+            });
+            document.querySelector('.cancel-btn').addEventListener('click', () => {
+                const form = document.getElementById('profileForm');
+                form.style.display = 'none'
+            });
+        </script>
+    </form>
+
     <!-- Поле для ввода сообщения -->
     <div class="main-chat" id="chatWindow" style="display: none; background: #0E1621;">
+        <div class="user-name"><img src=""><p></p></div>
         <button class="out-chat" id="outChat">
             <svg viewBox="0 0 24 24" stroke="currentColor";>
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
