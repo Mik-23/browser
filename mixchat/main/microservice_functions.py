@@ -13,8 +13,8 @@ def mixrech(query):
         print("Успешный запрос")
         text_html = response.text
         soup = BeautifulSoup(text_html, 'html.parser')  # Парсим HTML-код
-        links = [item.a for item in soup.find_all('h3')]
-        titles = [item.text.strip() for item in soup.find_all('h3')]
+        links = [item.a for item in soup.find_all('div', class_='result-url')]
+        titles = [item.text.strip() for item in soup.find_all('div', class_='result-title')]
         hrefs = [item.get('href') for item in links]
         return dict(zip(titles, hrefs))
     else:
