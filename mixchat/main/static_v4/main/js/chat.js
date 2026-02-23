@@ -1,7 +1,7 @@
 let users = []; // Изначально пустой массив пользователей
 let selectedUserId = null; // Переменная для хранения ID выбранного пользователя
 let currentChatId = null;
-let type = null
+let type = null;
 const senderId = localStorage.getItem('user_id');
 
 console.log(senderId)
@@ -132,13 +132,68 @@ function openChat(userId) {
     .catch(error => console.error('Ошибка:', error));
 }
 
+document.getElementById('profile').addEventListener('click', () => {
+    const profileForm = document.getElementById('profileForm');
+    profileForm.style.display = 'block';
+});
+
+const url = `/api/profile_form/`;
+fetch(url, {
+    method: 'GET',
+    headers: {
+        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+    }
+})
+.then(response => response.json())
+.then(data => {
+    console.log(data)
+    const formPhoto = document.querySelector('.form-profile')
+    let photo = document.getElementById('photoProfile');
+    let photoFile = document.getElementById('photo_input');
+    let date_birth = document.getElementById('date_birth_input');
+    console.log(photoFile.files)
+    date_birth.value = data.date_birth;
+    console.log(date_birth)
+    photo.src = data.photo;
+    console.log(photo)
+    photo.style.width = '150px';
+    photo.style.height = '150px';
+    formPhoto.appendChild(photo)
+    const avatar = document.getElementById('avatar');
+    console.log(photo)
+    avatar.src = photo.src;
+    avatar.style.width = '50px';
+    avatar.style.height = '50px';
+   });
+
+function saveProfile(photo, date_birth) {
+   const formData = new FormData();
+   console.log(photo_input.files.length)
+   if (photo_input.files.length > 0) {
+      for (let i = 0; i < photo_input.files.length; i++) {
+          console.log(photo_input.files[i])
+          formData.append('photo', photo_input.files[i]);
+      }
+   }
+   formData.append('date_birth', date_birth);
+   const url = `/api/profile_form/`;
+   console.log(formData)
+   fetch(url, {
+       method: 'PUT',
+       headers: {
+           'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+       },
+       body: formData
+   })
+   .then(response => response.text)
+}
+
+
 function loadMessages(chatId) {
     const messageList = document.querySelector('.message-message-list');
     const messageContainer = document.querySelector('.message-list');
-    let header = document.querySelector('h2');
-    console.log(header)
+    const userName = document.querySelector('.user-name') ;
     console.log(chatId)
-    //header.style.display = 'block';
     let button = document.querySelector('button');
     let mediaButton = document.getElementById('mediaButton');
     messageList.innerHTML = ''; // Очистить предыдущие сообщения
@@ -154,13 +209,25 @@ function loadMessages(chatId) {
     .then(response => response.json())
     .then(data => {
         let lastDate = null;
+        const targetElement = Array.from(document.querySelectorAll('#chats li')).find((li, index) => {
+                const bgColor = window.getComputedStyle(li).backgroundColor;
+                return bgColor === 'rgb(31, 148, 148)';
+            });
+        const current_img = targetElement.querySelector('img').src
+        const current_p = targetElement.querySelector('span').textContent
+        const img = document.querySelector('.user-name img')
+        const p = document.querySelector('.user-name p')
+        p.textContent = current_p
+        p.style.color = '#D9FFFD'
+        img.src = current_img
+        img.style.width = '50px'
+        img.style.height = '50px'
+        userName.appendChild(img)
+        userName.appendChild(p)
         data.messages.forEach(message => {
-            header.textContent = message.recipient;
-            console.log(message.recipient_id)
             const li = document.createElement('li');
             const messageContainer = document.createElement('div');
-            console.log(message)
-            console.log(displayUsers())
+
             if (message.sender_id === senderId) {
                 li.style.backgroundColor = '#1F9494'
                 li.style.alignSelf = 'flex-end';
@@ -392,11 +459,15 @@ function displayChats(chats) {
         const span = document.createElement('span');
         span.textContent = chat.username; // Имя пользователя в чате
         const p = document.createElement('p');
+        const img = document.createElement('img');
+        img.src = chat.photo;
+        img.style.width = '50px'
+        img.style.height = '50px'
         console.log(chat)
         if (chat.content.length > 13) {
-            p.textContent = chat.content.substring(0, 14) + '...';
+            p.textContent = chat.sender_name + chat.content.substring(0, 14) + '...';
         } else {
-            p.textContent = chat.content;
+            p.textContent = chat.sender_name + chat.content;
         }
         li.onclick = () => {
             const listChat = document.getElementById('chats')
@@ -422,6 +493,7 @@ function displayChats(chats) {
         }
         li.appendChild(span);
         li.appendChild(p);
+        li.appendChild(img)
         chatList.appendChild(li);
         chatList.style.display = 'block';
     });
