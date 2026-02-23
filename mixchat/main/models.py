@@ -14,6 +14,8 @@ class ChatUser(AbstractUser):
     phone = models.CharField("Телефон")
     country_code = models.CharField("Код страны")
     code = models.IntegerField("Код подтверждения", default=0)
+    photo = models.ImageField(upload_to='photo/profilephoto/', default='photo/profilephoto/default.png', null=False, blank=True, verbose_name="Фотография")
+    date_birth = models.DateField(null=True, blank=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['phone', 'country_code']
 
@@ -27,6 +29,8 @@ class Bot(models.Model):
         default=uuid.uuid4,
         editable=False)
     name = models.TextField("Имя")
+    photo = models.ImageField(upload_to='photo/profilephoto/', default='photo/profilephoto/default.png', null=False,
+                              blank=True, verbose_name="Фотография")
 
 
 class Chat(models.Model):
@@ -74,5 +78,3 @@ class MessageBot(models.Model):
     image = models.ImageField(upload_to='messages/images/', null=True, blank=True)
     timestamp = models.DateTimeField("Дата", auto_now=True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages_bot')
-
-
