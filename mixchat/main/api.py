@@ -103,18 +103,25 @@ class ProfileformView(generics.GenericAPIView):
 
     def get(self, request):
         # Открыть профиль пользователя
-        user = ChatUser.objects.filter(id=request.user.id).first()
+        user_id = request.GET.get('user_id')
+        user = ChatUser.objects.filter(id=user_id).first()
         return Response({"photo": user.photo.url,
-                         'date_birth': user.date_birth})
+                         "name": user.username,
+                         'date_birth': user.date_birth,
+                         'bio': user.bio})
 
     def put(self, request, *args, **kwargs):
         # Редактировать профиль пользователя
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         photo = request.FILES.get('photo')
+        name = serializer.validated_data['name']
         date_birth = serializer.validated_data['date_birth']
+        bio = serializer.validated_data['bio']
         user = ChatUser.objects.filter(id=request.user.id).first()
+        user.username = name
         user.date_birth = date_birth
+        user.bio = bio
         if photo != None:
             user.photo.save(photo.name, photo)
         user.save()
@@ -145,12 +152,12 @@ class MessageView(generics.GenericAPIView):
         chat = Chat.objects.filter(id=chat_id).first()
         chat_type = chat.type
         # type = serializer.validated_data['type']
-
+        print('ID чата', chat_id)
         # Получаем файлы фото, видео и аудио
         image_file = request.FILES.get('image')
         video_file = request.FILES.get('video')
         audio_file = request.FILES.get('audio')
-
+        print('VIDEO', video_file)
         if chat_type == 'user':
             message = Message(
                 sender_id=sender_id,
@@ -179,7 +186,9 @@ class MessageView(generics.GenericAPIView):
 
             message.save()
             print(message.recipient)
-
+            print('image', message.image.url if message.image else None)
+            print('video', message.video.url if message.video else None)
+            print('audio', message.audio.url if message.audio else None)
             return Response({
                 'sender_id': sender_id,
                 'recipient_id': recipient_id,
@@ -236,7 +245,7 @@ class MessageView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         # Получение сообщений
         chat_id = request.GET.get('chat_id')
-
+        print('hgfhfhfhf',chat_id)
         messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
         messages_bot = MessageBot.objects.filter(chat_id=chat_id).order_by('timestamp')
         list_messages = [{
@@ -286,6 +295,21 @@ class SearchUserView(generics.GenericAPIView):
         list_users.extend(list_bots)
         return Response({
             'users': list_users
+        })
+
+
+class GetCurrentUserView(generics.GenericAPIView):
+    # Получить текущего пользователя
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = ChatUser.objects.filter(id=request.user.id).first()
+        return Response({
+            'name': user.username,
+            'photo': user.photo.url,
+            'date_birth': user.date_birth,
+            'bio': user.bio
         })
 
 
@@ -364,7 +388,8 @@ class GetChatsView(generics.GenericAPIView):
             if message is not None:
                 content = message.content
                 sender_name = message.sender.username + ': '
-                
+                print('SENDER_NAME', type(message.sender))
+                print('SENDER_NAME', sender_name)
                 if message.image and not content:
                     content = 'Фотография'
                 if message.video and not content:
@@ -379,7 +404,8 @@ class GetChatsView(generics.GenericAPIView):
                 photo = user.photo.url
             else:
                 photo = ''
-
+            print('PHOTO', photo)
+            print('CONTENT 1', content)
             try:
                 content = json.loads(content)
             except json.JSONDecodeError:
