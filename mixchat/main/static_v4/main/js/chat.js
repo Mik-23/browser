@@ -154,6 +154,8 @@ document.querySelector('.user-name img').addEventListener('click', () => {
 
 document.getElementById('profile').addEventListener('click', () => {
     const profileForm = document.getElementById('profileForm');
+    profileId = senderId
+    getProfile()
     profileForm.style.display = 'block';
 });
 
@@ -540,3 +542,4 @@ function displayChats(chats) {
 fetchUsers();
 fetchChats();
 getProfile();
+
