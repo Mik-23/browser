@@ -200,6 +200,7 @@
             width: 100%;
         }
 
+        /* Форма профиля */
         .profile-form {
             display: none;
             position: fixed;
@@ -227,7 +228,9 @@
             letter-spacing: 0.3px;
         }
 
+        /* Поля ввода формы профиля */
         .form-profile input[type="file"],
+        .form-profile input[type="text"],
         .form-profile input[type="date"] {
             width: 100%;
             background: rgba(255, 255, 255, 0.06);
@@ -242,12 +245,14 @@
         }
 
         .form-profile input[type="file"]:hover,
+        .form-profile input[type="text"]:hover,
         .form-profile input[type="date"]:hover {
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.15);
         }
 
         .form-profile input[type="file"]:focus,
+        .form-profile input[type="text"]:focus,
         .form-profile input[type="date"]:focus {
             border-color: #1F9494;
             background: rgba(31, 148, 148, 0.1);
