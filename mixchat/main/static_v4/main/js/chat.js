@@ -3,6 +3,7 @@ let selectedUserId = null; // Переменная для хранения ID в
 let currentChatId = null;
 let type = null;
 const senderId = localStorage.getItem('user_id');
+let profileId = senderId
 
 console.log(senderId)
 // Функция для получения пользователей из API
@@ -28,6 +29,7 @@ function fetchUsers() {
     })
     .catch(error => console.error('Ошибка при получении пользователей:', error));
 }
+
 
 // Функция для отображения пользователей
 function displayUsers() {
@@ -132,52 +134,88 @@ function openChat(userId) {
     .catch(error => console.error('Ошибка:', error));
 }
 
+document.querySelector('.user-name img').addEventListener('click', () => {
+
+    const name = document.querySelector('.user-name p').textContent
+    for (user of users){
+        if (user.username === name && user.type === 'user') {
+            profileId = user.id
+        }
+    }
+    getProfile()
+    const profileForm = document.getElementById('profileForm');
+    profileForm.style.display = 'block';
+    document.querySelector('.save-btn').style.display = 'none'
+    document.getElementById('photo_input').style.display = 'none'
+    document.getElementById('name_input').disabled = 1
+    document.getElementById('date_birth_input').disabled = 1
+    document.getElementById('bio_input').disabled = 1
+});
+
 document.getElementById('profile').addEventListener('click', () => {
     const profileForm = document.getElementById('profileForm');
     profileForm.style.display = 'block';
 });
 
-const url = `/api/profile_form/`;
-fetch(url, {
-    method: 'GET',
-    headers: {
-        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
-    }
-})
-.then(response => response.json())
-.then(data => {
-    console.log(data)
-    const formPhoto = document.querySelector('.form-profile')
-    let photo = document.getElementById('photoProfile');
-    let photoFile = document.getElementById('photo_input');
-    let date_birth = document.getElementById('date_birth_input');
-    console.log(photoFile.files)
-    date_birth.value = data.date_birth;
-    console.log(date_birth)
-    photo.src = data.photo;
-    console.log(photo)
-    photo.style.width = '150px';
-    photo.style.height = '150px';
-    formPhoto.appendChild(photo)
-    const avatar = document.getElementById('avatar');
-    console.log(photo)
-    avatar.src = photo.src;
-    avatar.style.width = '50px';
-    avatar.style.height = '50px';
-   });
+function getCurrentUser() {
+    return fetch('/api/current_user/', {
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+        }
+    })
+    .then(res => res.json())
+    .then(userData => {
+        return userData;
+    });
+}
 
-function saveProfile(photo, date_birth) {
+function getProfile() {
+    console.log('profileId:', profileId);
+    console.log('users array length:', users.length);
+    console.log('users array:', users); // Посмотрите, что в массиве
+    const url = `/api/profile_form/?user_id=${profileId}`;
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        getCurrentUser().then(currentUser => {
+            const formPhoto = document.querySelector('.form-profile')
+            let photo = document.getElementById('photoProfile');
+            let photoFile = document.getElementById('photo_input');
+            let name_of_user = document.getElementById('name_input');
+            let date_birth = document.getElementById('date_birth_input');
+            let bio = document.getElementById('bio_input');
+            name_of_user.value = data.name;
+            date_birth.value = data.date_birth;
+            bio.value = data.bio;
+            photo.src = data.photo;
+            photo.style.width = '150px';
+            photo.style.height = '150px';
+            formPhoto.appendChild(photo)
+            const avatar = document.getElementById('avatar');
+            avatar.src = currentUser.photo;
+            avatar.style.width = '50px';
+            avatar.style.height = '50px';
+            });
+       });
+    }
+
+function saveProfile(photo, name, date_birth, bio) {
    const formData = new FormData();
-   console.log(photo_input.files.length)
    if (photo_input.files.length > 0) {
       for (let i = 0; i < photo_input.files.length; i++) {
           console.log(photo_input.files[i])
           formData.append('photo', photo_input.files[i]);
       }
    }
+   formData.append('name', name);
    formData.append('date_birth', date_birth);
+   formData.append('bio', bio);
    const url = `/api/profile_form/`;
-   console.log(formData)
    fetch(url, {
        method: 'PUT',
        headers: {
@@ -193,7 +231,6 @@ function loadMessages(chatId) {
     const messageList = document.querySelector('.message-message-list');
     const messageContainer = document.querySelector('.message-list');
     const userName = document.querySelector('.user-name') ;
-    console.log(chatId)
     let button = document.querySelector('button');
     let mediaButton = document.getElementById('mediaButton');
     messageList.innerHTML = ''; // Очистить предыдущие сообщения
@@ -502,3 +539,4 @@ function displayChats(chats) {
 // Инициализация списка пользователей при загрузке страницы
 fetchUsers();
 fetchChats();
+getProfile();
