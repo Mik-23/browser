@@ -14,6 +14,7 @@ urlpatterns = [
     path('api/profile_form/', api.ProfileformView.as_view(), name='profile_form'),
     path('api/message/', api.MessageView.as_view(), name='message'),
     path('api/search_user/', api.SearchUserView.as_view(), name='search_user'),
+    path('api/current_user/', api.GetCurrentUserView.as_view(), name='current_user'),
     path('api/chat/', api.ChatView.as_view(), name='chat'),
     path('api/get_chats/', api.GetChatsView.as_view(), name='get_chats'),
     path('api/create_channel/', api.GreateChannelView.as_view(), name='create_channel'),
