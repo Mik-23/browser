@@ -53,6 +53,14 @@
             <input type="file" accept="image/*" id="photo_input" name="photo">
         </div>
         <div class="form-profile">
+            <label for="name_input">Имя</label>
+            <input type="text" id="name_input" name="name">
+        </div>
+        <div class="form-profile">
+            <label for="bio_input">Статус</label>
+            <input type="text" id="bio_input" name="bio">
+        </div>
+        <div class="form-profile">
             <label for="date_birth_input">Дата рождения</label>
             <input type="date" id="date_birth_input" name="date_birth">
         </div>
@@ -63,9 +71,11 @@
         <script>
             document.querySelector('.save-btn').addEventListener('click', () => {
                 const photo = document.getElementById('photo_input').value;
+                const name_of_user = document.getElementById('name_input').value;
                 const date_birth = document.getElementById('date_birth_input').value;
-                console.log('gfdgdgdgf',photo.length)
-                saveProfile(photo, date_birth)
+                const bio = document.getElementById('bio_input').value;
+                saveProfile(photo, name_of_user, date_birth, bio)
+                getProfile();
                 const form = document.getElementById('profileForm');
                 form.style.display = 'none'
             });
