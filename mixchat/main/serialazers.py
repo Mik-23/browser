@@ -38,7 +38,9 @@ class LoginSerializer(serializers.Serializer):
 
 class ProfileformSerializer(serializers.Serializer):
     photo = serializers.ImageField(required=False, allow_null=True)
+    name = serializers.CharField(required=False, allow_null=True)
     date_birth = serializers.DateField(required=False, allow_null=True)
+    bio = serializers.CharField(required=False, allow_null=True)
 
 
 class MessageSerializer(serializers.Serializer):
@@ -92,3 +94,4 @@ class SendMessageToChannelSerializer(serializers.Serializer):
     chanel_id = serializers.IntegerField()
     sender_id = serializers.IntegerField()
     content = serializers.CharField()
+
