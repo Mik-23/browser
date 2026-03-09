@@ -12,11 +12,13 @@ def search_view(request):
         page_number = int(page)
     except ValueError:
         page_number = 1
-    results = search(search_query, page)
-    len_results = len(results)
-    return render(request, 'search/result.html',
-                      {'results': results, 'query': search_query, 'page': page_number, 'total_results': len_results})
-
+    try:
+        results = search(search_query, page)
+        len_results = len(results)
+        return render(request, 'search/result.html',
+                          {'results': results, 'query': search_query, 'page': page_number, 'total_results': len_results})
+    except Exception:
+        return render(request, 'main/site.html')
 
 def image_view(request):
     # Функция поиска фото
@@ -81,3 +83,4 @@ def news_view(request):
     len_results = len(results)
     return render(request, 'search/result.html',
                       {'results': results, 'query': query, 'page': page_number, 'total_results': len_results})
+
