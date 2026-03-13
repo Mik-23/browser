@@ -17,10 +17,16 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path, include
 from django.conf import settings
+from django.views.generic import TemplateView
 from django.conf.urls.static import static
 from debug_toolbar.toolbar import debug_toolbar_urls
 
 urlpatterns = [
     path('chatstaff/', admin.site.urls),
     path('', include('main.urls')),
+    path('firebase-messaging-sw.js',
+         TemplateView.as_view(
+             template_name='firebase-messaging-sw.js',
+             content_type='application/javascript'
+         )),
 ] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + debug_toolbar_urls()

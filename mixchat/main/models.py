@@ -17,6 +17,7 @@ class ChatUser(AbstractUser):
     photo = models.ImageField(upload_to='photo/profilephoto/', default='photo/profilephoto/default.png', null=False, blank=True, verbose_name="Фотография")
     date_birth = models.DateField(null=True, blank=True)
     bio = models.CharField(null=True, blank=True)
+    fcm_token = models.CharField(null=True, blank=True)
     USERNAME_FIELD = 'email'
     REQUIRED_FIELDS = ['phone', 'country_code']
 

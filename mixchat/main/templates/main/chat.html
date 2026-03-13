@@ -140,7 +140,27 @@
 </div>
 
 <script src="{% static 'main/js/logout_redirect.js' %}"></script>
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-app.js";
+  import { getMessaging } from "https://www.gstatic.com/firebasejs/12.10.0/firebase-messaging.js";
 
+  const firebaseConfig = {
+    appName: "Mixchat",
+    apiKey: "AIzaSyD08JKJDTwhqjrgb42-KroubdoNk8iXoI4",
+    authDomain: "mixchat-89071.firebaseapp.com",
+    projectId: "mixchat-89071",
+    storageBucket: "mixchat-89071.firebasestorage.app",
+    messagingSenderId: "681799476649",
+    appId: "1:681799476649:web:f393a22b5cc606aae950b8",
+    measurementId: "G-8Q0P5KVF3Q"
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const messaging = getMessaging (app);
+  console.log(messaging)
+
+</script>
+<script type="module" src="{% static 'main/js/fcm-sw.js' %}"> </script>
 <script>
 document.getElementById('logout-form').addEventListener('submit', (event) => {
     event.preventDefault();

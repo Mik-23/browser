@@ -13,6 +13,7 @@ urlpatterns = [
     path('api/send_code/', api.SendCodeView.as_view(), name='send_code'),
     path('api/profile_form/', api.ProfileformView.as_view(), name='profile_form'),
     path('api/message/', api.MessageView.as_view(), name='message'),
+    path('api/save_fcm/', api.SaveFCMToken.as_view(), name='save_fcm'),
     path('api/search_user/', api.SearchUserView.as_view(), name='search_user'),
     path('api/current_user/', api.GetCurrentUserView.as_view(), name='current_user'),
     path('api/chat/', api.ChatView.as_view(), name='chat'),
