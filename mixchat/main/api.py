@@ -1,5 +1,4 @@
 import json
-from datetime import datetime
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -10,7 +9,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import authenticate
 from django.db.models import Q
 from django.urls import reverse
-from django.http import HttpResponse
+from .firebase import send_push_notification
 from .microservice_functions import mixrech, send_to_mqtt, get_mqtt
 from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, MessageBot
 from .serialazers import (UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
@@ -183,12 +182,11 @@ class MessageView(generics.GenericAPIView):
                 message.audio.save(audio_file.name, audio_file)
             else:
                 message.audio = None
-
+            user = ChatUser.objects.filter(id=recipient_id).first()
             message.save()
-            print(message.recipient)
-            print('image', message.image.url if message.image else None)
-            print('video', message.video.url if message.video else None)
-            print('audio', message.audio.url if message.audio else None)
+            # Отправляем уведомление получателю
+            if message.sender.username != message.recipient.username:
+                send_push_notification(user.fcm_token, message.sender.username, content, user.photo.url)
             return Response({
                 'sender_id': sender_id,
                 'recipient_id': recipient_id,
@@ -245,7 +243,6 @@ class MessageView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         # Получение сообщений
         chat_id = request.GET.get('chat_id')
-        print('hgfhfhfhf',chat_id)
         messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
         messages_bot = MessageBot.objects.filter(chat_id=chat_id).order_by('timestamp')
         list_messages = [{
@@ -276,6 +273,20 @@ class MessageView(generics.GenericAPIView):
         list_messages.extend(list_messages_bot)
         return Response({
             'messages': list_messages
+        })
+
+
+class SaveFCMToken(generics.GenericAPIView):
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def put(self, request, *args, **kwargs):
+        user = request.user
+        data = request.data
+        user.fcm_token = data['token']
+        user.save()
+        return Response({
+            'users': 'Успешно'
         })
 
 
