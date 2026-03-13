@@ -383,6 +383,21 @@ function loadMessages(chatId) {
     .catch(error => console.error('Ошибка:', error));
 }
 
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/firebase-messaging-sw.js', {scope: '/'}).then(function(registration) {
+      
+      console.log('ServiceWorker registration successful with scope: ', registration.scope);
+    }, function(err) {
+      // registration failed :(
+      console.log('ServiceWorker registration failed: ', err);
+    });
+  });
+}
+
+
+
 function createChat(senderId, recipientId, type) {
    fetch('/api/chat/', { // Эндпоинт для создания нового чата
        method: 'POST',
@@ -542,4 +557,3 @@ function displayChats(chats) {
 fetchUsers();
 fetchChats();
 getProfile();
-
