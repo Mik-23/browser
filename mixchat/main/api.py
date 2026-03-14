@@ -186,7 +186,7 @@ class MessageView(generics.GenericAPIView):
             message.save()
             # Отправляем уведомление получателю
             if message.sender.username != message.recipient.username:
-                send_push_notification(user.fcm_token, message.sender.username, content, user.photo.url)
+                send_push_notification(user.fcm_token, message.sender.username, content, message.sender.photo.url)
             return Response({
                 'sender_id': sender_id,
                 'recipient_id': recipient_id,
