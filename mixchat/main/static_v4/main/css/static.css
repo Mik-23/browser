@@ -482,6 +482,60 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
+        .profile-group-form.users-list {
+            margin-top: 16px;
+            max-height: 150px;
+            overflow-y: auto;
+            min-width: 0;
+            padding-right: 6px;
+        }
+
+        /* Базовые стили для списка */
+        .profile-group-form.users-list ul {
+            margin: 8px 0 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        /* Стили для каждого элемента списка (пользователя) */
+        .profile-group-form.users-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #FFFFFF;
+            font-size: 14px;
+        }
+
+        /* Убираем нижнюю границу у последнего элемента */
+        .profile-group-form.users-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Стили для чекбоксов внутри списка */
+        .profile-group-form.users-list input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #1F9494;
+            margin: 0;
+        }
+
+        .profile-group-form.users-list::-webkit-scrollbar {
+            width: 4px;
+        }
+        
+        .profile-group-form.users-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+        
+        .profile-group-form.users-list::-webkit-scrollbar-thumb {
+            background: #1F9494;
+            border-radius: 4px;
+        }
+
         .users-list li {
             background: #0E1621;
             border-radius: 16px;
