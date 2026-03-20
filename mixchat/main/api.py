@@ -319,7 +319,10 @@ class ChatView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         # Показать пользователей в чате
         chat_id = request.GET.get('chat_id')
+        print(chat_id)
         chat = Chat.objects.filter(id=chat_id).first()
+        print(chat)
+        print(chat.photo)
         if chat.photo == '':
             photo = ''
         else:
