@@ -124,6 +124,7 @@ function openUserChat(userId) {
     let selected_chat = null
     const name = null
     const photo = null
+    const bio = null
 
     for (user of users) {
        if(user.id === userId) {
@@ -135,11 +136,10 @@ function openUserChat(userId) {
          selected_chat = obj
        }
     }
-    console.log(selected_chat)
     if (selected_chat) {
         openChat(selected_chat.id)
     } else {
-        createChat([senderId, userId], name, photo, selectedUser.type)
+        createChat([senderId, userId], name, bio, photo, selectedUser.type)
     }
 
 }
@@ -537,7 +537,7 @@ function editChat(chat_id, name, bio, photo, type) {
    .then(response => response.json())
 }
 
-function createChat(groupUsers, name, bio, photo, type) {
+function createChat(groupUsers, name, bio, photo, chat_type) {
    const formData = new FormData();
    for (let i = 0; i <= groupUsers.length - 1; i++) {
       formData.append(`users[${i}]`, groupUsers[i]);;
@@ -551,7 +551,7 @@ function createChat(groupUsers, name, bio, photo, type) {
           formData.append('photo', photo_group_input.files[i]);
       }
    }
-   formData.append('type', type);
+   formData.append('type', chat_type);
    fetch('/api/chat/', { // Эндпоинт для создания нового чата
        method: 'POST',
        headers: {
