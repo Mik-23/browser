@@ -64,7 +64,7 @@ class SearchUserSerializer(serializers.Serializer):
 
 
 class ChatSerializer(serializers.Serializer):
-    chat_id = serializers.IntegerField()
+    chat_id = serializers.IntegerField(required=False)
     users = serializers.ListField(max_length=200, required=False, allow_empty=True)
     name = serializers.CharField(max_length=200, required=False, allow_null=True)
     photo = serializers.ImageField(required=False, allow_null=True)
