@@ -324,15 +324,15 @@ class ChatView(generics.GenericAPIView):
             photo = ''
         else:
             photo = chat.photo.url
-        memberships = ChatMembership.objects.filter(chat_id=chat.id)
+        memberships = ChatMembership.objects.filter(chat_id=chat.id).all()
         users_and_bots = list(ChatUser.objects.all())
         bots = list(Bot.objects.all())
         users_and_bots.extend(bots)
         users = []
         print(users_and_bots)
-        member_group = [user for user in users_and_bots if user.id in [membership.user_id for membership in memberships]]
+        member_group = sorted([user for user in users_and_bots if user.id in [membership.user_id for membership in memberships]], key=lambda user: user.id)
         print(member_group)
-        roles = [membership.user_role for membership in memberships]
+        roles = [membership.user_role for membership in sorted(memberships, key=lambda member: member.user_id)]
         print(roles)
         for member, role in zip(member_group, roles):
             if isinstance(member, ChatUser):
