@@ -34,14 +34,22 @@ class Bot(models.Model):
     photo = models.ImageField(upload_to='photo/profilephoto/', default='photo/profilephoto/default.png', null=False,
                               blank=True, verbose_name="Фотография")
 
+    def __str__(self):
+        return self.name
+
 
 class Chat(models.Model):
-    user_id_1 = models.TextField()
-    user_id_2 = models.TextField()
+    name = models.TextField("Название чата")
+    photo = models.ImageField(upload_to='photo/profilephoto/', null=True,
+                              blank=True, verbose_name="Фотография чата")
+    bio = models.TextField("Описание")
     type = models.TextField("Тип")
 
-    def __str__(self):
-        return f"Chat between {self.user_id_1} and {self.user_id_2}"
+
+class ChatMembership(models.Model):
+    user_id = models.UUIDField()
+    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='id_chat')
+    user_role = models.TextField("Роль пользователя")
 
 
 class Channel(models.Model):
@@ -57,8 +65,8 @@ class ChannelMembership(models.Model):
 
 class Message(models.Model):
     id = models.AutoField(primary_key=True)
-    sender = models.ForeignKey(ChatUser, verbose_name="Имя отправителя", on_delete=models.CASCADE, related_name='sent_messages')
-    recipient = models.ForeignKey(ChatUser, verbose_name="Имя получателя", on_delete=models.CASCADE, related_name='received_messages')
+    sender_user = models.ForeignKey(ChatUser, verbose_name="Пользователь отправитель", null=True, blank=True, on_delete=models.CASCADE, related_name='sent_messages')
+    sender_bot = models.ForeignKey(Bot, verbose_name="Бот отправитель", null=True, blank=True, on_delete=models.CASCADE, related_name='sent_messages')
     content = models.TextField("Текст")
     image = models.ImageField("Картинка", upload_to='messages/images/', null=True, blank=True)
     video = models.FileField("Видео", upload_to='messages/videos/', null=True, blank=True)
@@ -68,15 +76,3 @@ class Message(models.Model):
 
     def __str__(self):
         return f"Message from {self.sender} to {self.recipient} in chat {self.chat.id}"
-
-
-class MessageBot(models.Model):
-    id = models.AutoField(primary_key=True)
-    sender_id = models.TextField()
-    bot_id = models.TextField()
-    sender = models.TextField("Имя пользователя")
-    bot = models.TextField("Название бота")
-    content = models.TextField("Текст")
-    image = models.ImageField(upload_to='messages/images/', null=True, blank=True)
-    timestamp = models.DateTimeField("Дата", auto_now=True)
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages_bot')

@@ -7,11 +7,10 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from django.contrib.auth import authenticate
-from django.db.models import Q
 from django.urls import reverse
 from .firebase import send_push_notification
 from .microservice_functions import mixrech, send_to_mqtt, get_mqtt
-from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, MessageBot
+from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, ChatMembership
 from .serialazers import (UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer,
                           CreateChannelSerializer, SubscribeToChannelSerializer,
@@ -143,9 +142,7 @@ class MessageView(generics.GenericAPIView):
         # Получаем текущего пользователя
         sender_id = request.user.id
         # Получаем отправителя
-        recipient_id = serializer.validated_data['recipient_id']
         print('Отправитель', sender_id)
-        print('Получатель', recipient_id)
         content = serializer.validated_data['content']
         chat_id = serializer.validated_data['chat_id']
         chat = Chat.objects.filter(id=chat_id).first()
@@ -157,11 +154,10 @@ class MessageView(generics.GenericAPIView):
         video_file = request.FILES.get('video')
         audio_file = request.FILES.get('audio')
         print('VIDEO', video_file)
-        if chat_type == 'user':
+        if chat_type == 'user' or chat_type == 'group':
             message = Message(
-                sender_id=sender_id,
+                sender_user_id=sender_id,
                 content=content,
-                recipient_id=recipient_id,
                 chat_id=chat_id
             )
 
@@ -182,14 +178,21 @@ class MessageView(generics.GenericAPIView):
                 message.audio.save(audio_file.name, audio_file)
             else:
                 message.audio = None
-            user = ChatUser.objects.filter(id=recipient_id).first()
+            membership = ChatMembership.objects.filter(chat_id=chat_id)
+            membership = membership.exclude(user_id=sender_id).first()
+            if membership:
+                users = ChatUser.objects.filter(id=membership.user_id).all()
+            else:
+                users = ChatUser.objects.filter(id=sender_id).all()
             message.save()
             # Отправляем уведомление получателю
-            if message.sender.username != message.recipient.username:
-                send_push_notification(user.fcm_token, message.sender.username, content, message.sender.photo.url)
+            print('1', message.sender_user.username)
+            print('2', users)
+            for user in users:
+                if message.sender_user.username != user.username:
+                    send_push_notification(user.fcm_token, message.sender_user.username, content, message.sender_user.photo.url)
             return Response({
                 'sender_id': sender_id,
-                'recipient_id': recipient_id,
                 'content': content,
                 'image': message.image.url if message.image else None,
                 'video': message.video.url if message.video else None,
@@ -199,15 +202,16 @@ class MessageView(generics.GenericAPIView):
         elif chat_type == 'bot':
             user = ChatUser.objects.filter(id=sender_id).first()
             sender = user.username
-            bot = Bot.objects.filter(id=recipient_id).first()
+            membership = ChatMembership.objects.filter(chat_id=chat_id)
+            membership = membership.exclude(user_id=sender_id).first()
+            bot = Bot.objects.filter(id=membership.user_id).first()
+            print('ewewewew', bot)
+            print(f'ewewewew {chat_id}      {chat_type}')
             recipient = bot.name
-            message = MessageBot(
-                sender_id=sender_id,
+            message = Message(
+                sender_user_id=sender_id,
                 content=content,
-                bot_id=recipient_id,
-                chat_id=chat_id,
-                sender=sender,
-                bot=recipient
+                chat_id=chat_id
             )
 
             # Сохраняем фото в БД если оно есть
@@ -223,18 +227,14 @@ class MessageView(generics.GenericAPIView):
             elif recipient == 'SmartMix':
                 send_to_mqtt(content)
                 message_content = get_mqtt()
-            message_bot = MessageBot(
-                sender_id=recipient_id,
+            message_bot = Message(
+                sender_bot_id=bot.id,
                 content=message_content,
-                bot_id=sender_id,
                 chat_id=chat_id,
-                sender=recipient,
-                bot=sender
             )
             message_bot.save()
             return Response({
                 'sender_id': sender_id,
-                'recipient_id': recipient_id,
                 'content': content,
                 'image': image_file,
                 'message_id': message.id
@@ -244,13 +244,12 @@ class MessageView(generics.GenericAPIView):
         # Получение сообщений
         chat_id = request.GET.get('chat_id')
         messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
-        messages_bot = MessageBot.objects.filter(chat_id=chat_id).order_by('timestamp')
         list_messages = [{
                 "id": message.id,
-                "sender": str(message.sender),
-                "recipient": str(message.recipient),
-                "sender_id": str(message.sender_id),
-                "recipient_id": str(message.recipient_id),
+                "sender_user": str(message.sender_user),
+                "sender_user_id": str(message.sender_user_id),
+                "sender_bot": str(message.sender_bot),
+                "sender_bot_id": str(message.sender_bot_id),
                 "content": message.content,
                 "image": message.image.url if message.image else None,
                 "video": message.video.url if message.video else None,
@@ -258,19 +257,6 @@ class MessageView(generics.GenericAPIView):
                 "date": message.timestamp.date(),
                 "time": message.timestamp.strftime('%H:%m'),
             } for message in messages]
-        list_messages_bot = [{
-                "id": message.id,
-                "sender": str(message.sender),
-                "recipient": str(message.bot),
-                "sender_id": str(message.sender_id),
-                "recipient_id": str(message.bot_id),
-                "content": message.content,
-                "image": message.image.url if message.image else None,
-                "date": message.timestamp.date(),
-                "time": message.timestamp.strftime('%H:%m')
-            } for message in messages_bot]
-        print(list_messages_bot)
-        list_messages.extend(list_messages_bot)
         return Response({
             'messages': list_messages
         })
@@ -331,38 +317,93 @@ class ChatView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def get(self, request, *args, **kwargs):
-        # Открыть один чат
-        sender_id = request.GET.get('sender_id')
-        recipient_id = request.GET.get('recipient_id')
-
-        # Упорядочиваем ID пользователей
-        user_ids = sorted([sender_id, recipient_id])
-        # Логика для поиска существующего чата
-        chat = Chat.objects.filter(
-            user_id_1=user_ids[0],
-            user_id_2=user_ids[1]
-        ).first()
-
-        if chat:
-            return Response({'chat_id': chat.id})  # Возвращаем ID существующего чата
+        # Показать пользователей в чате
+        chat_id = request.GET.get('chat_id')
+        chat = Chat.objects.filter(id=chat_id).first()
+        if chat.photo == '':
+            photo = ''
         else:
-            return Response({'chat_id': None})
-
-    def post(self, request, *args, **kwargs):
-        # Создать чат
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        sender_id = serializer.validated_data['sender_id']
-        recipient_id = serializer.validated_data['recipient_id']
-        type = serializer.validated_data['type']
-        user_ids = sorted([sender_id, recipient_id])
-        serializer.is_valid(raise_exception=True)
-        chat = Chat.objects.create(user_id_1=user_ids[0], user_id_2=user_ids[1], type=type)
+            photo = chat.photo.url
+        memberships = ChatMembership.objects.filter(chat_id=chat.id)
+        users_and_bots = list(ChatUser.objects.all())
+        bots = list(Bot.objects.all())
+        users_and_bots.extend(bots)
+        users = []
+        print(users_and_bots)
+        member_group = [user for user in users_and_bots if user.id in [membership.user_id for membership in memberships]]
+        print(member_group)
+        roles = [membership.user_role for membership in memberships]
+        print(roles)
+        for member, role in zip(member_group, roles):
+            if isinstance(member, ChatUser):
+                users.append((member.username, member.photo.url, role))
+            elif isinstance(member, Bot):
+                users.append((member.name, member.photo.url, role))
+        print(users)
         return Response({
             'id': chat.id,
-            'user_id_1': chat.user_id_1,
-            'user_id_2': chat.user_id_2
+            'name': chat.name,
+            'photo': photo,
+            'users': users
         })
+
+    def post(self, request, *args, **kwargs):
+        # Создать чат/группу
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        name = serializer.validated_data['name']
+        photo = request.FILES.get('photo')
+        users = serializer.validated_data['users']
+        type = serializer.validated_data['type']
+        bio = serializer.validated_data['bio']
+        if users != []:
+            chat = Chat.objects.create(name=name, type=type, bio=bio)
+            if photo != None:
+                chat.photo.save(photo.name, photo)
+                photo = chat.photo.url
+            for user in users:
+                membership = ChatMembership.objects.create(user_id=user, chat_id=chat.id)
+                if str(membership.user_id) == str(request.user.id) and type == 'group':
+                    print('membership 2',membership)
+                    membership.user_role = 'Создатель'
+                    membership.save()
+            return Response({
+                'id': chat.id,
+                'name': chat.name,
+                'photo': photo,
+                'bio': bio
+            })
+        else:
+            return Response({
+                'message': 'Ошибка. Невозможно создать чат без пользователей.'
+            })
+
+    def put(self, request, *args, **kwargs):
+        # Редактировать чат (групповой)
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        chat_id = serializer.validated_data['chat_id']
+        name = serializer.validated_data['name']
+        photo = request.FILES.get('photo')
+        type = serializer.validated_data['type']
+        bio = serializer.validated_data['bio']
+        chat = Chat.objects.filter(id=chat_id).first()
+        membership = ChatMembership.objects.filter(chat_id=chat_id, user_role='Создатель').first()
+        # Проверяем: является ли текущий пользователь создателем группы
+        if membership.user_id == request.user.id and chat.type == type:
+            # Если да, то изменяем информацию о группе
+            chat.name = name
+            chat.bio = bio
+            if photo != None:
+                chat.photo.save(photo.name, photo)
+            chat.save()
+            return Response({
+                'message': 'Информация о группе изменилась.'
+            })
+        else:
+            return Response({
+                'message': 'Ошибка. Недостаточно прав для редактирования группы.'
+            })
 
 
 class GetChatsView(generics.GenericAPIView):
@@ -374,32 +415,31 @@ class GetChatsView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # Выбираем список чатов, где есть текущий пользователь
-        chats = Chat.objects.filter(
-            Q(user_id_1=request.user.id) |
-            Q(user_id_2=request.user.id))
-        users = ChatUser.objects.all()
+        # Создаём список чатов
+        chats = []
+        # Создаём список участников чатов с текущим пользователем
+        memberships = ChatMembership.objects.filter(user_id=request.user.id).all()
+        for membership in memberships:
+            chat = Chat.objects.filter(id=membership.chat_id).first()
+            # Добавляем чат с текущим пользователем в список
+            chats.append(chat)
         bots = Bot.objects.all()
         chat_with_user = []
         chats_users = list(filter(lambda x: x.type == 'user', chats))
-        for user, chat in zip(users, sorted(chats_users, key=lambda user: user.user_id_2)):
-            print(f'{user}      {chat}')
+        print(f'chats {set(chats_users)}          {chats}')
+        for chat in list(set(chats_users)):
             message = Message.objects.filter(chat=chat.id).order_by('-timestamp').first()
-            print(chat.user_id_1)
-            print('Auth User', request.user.id)
-            if chat.user_id_1 < str(request.user.id) and chat.user_id_2 == str(request.user.id):
-                user = ChatUser.objects.filter(id=chat.user_id_1).first()
-                print('Condition 1', user)
-            elif chat.user_id_1 == str(request.user.id) and chat.user_id_2 > str(request.user.id):
-                user = ChatUser.objects.filter(id=chat.user_id_2).first()
-                print('Condition 2', user)
-            elif chat.user_id_1 == chat.user_id_2 == str(request.user.id):
-                user = ChatUser.objects.filter(id=chat.user_id_1).first()
-                print('Condition 3', user)
+            memberships = ChatMembership.objects.filter(chat_id=chat.id)
+            memberships = memberships.exclude(user_id=request.user.id).all()
+            if list(memberships) == []:
+                user = ChatUser.objects.filter(id=request.user.id).first()
+            else:
+                user = ChatUser.objects.filter(id=memberships[0].user_id).first()
+
             if message is not None:
                 content = message.content
-                sender_name = message.sender.username + ': '
-                print('SENDER_NAME', type(message.sender))
+                sender_name = message.sender_user.username + ': '
+                print('SENDER_NAME', type(message.sender_user))
                 print('SENDER_NAME', sender_name)
                 if message.image and not content:
                     content = 'Фотография'
@@ -425,20 +465,20 @@ class GetChatsView(generics.GenericAPIView):
             print('CONTENT', content)
             chat_with_user.append({
                 "id": chat.id,
-                "user_id_1": chat.user_id_1,
-                "user_id_2": chat.user_id_2,
                 "username": user.username,
                 "content": content,
                 "photo": photo,
-                "sender_name": sender_name
+                "bio": chat.bio,
+                "sender_name": sender_name,
+                "type": chat.type
             })
         chats_bots = list(filter(lambda x: x.type == 'bot', chats))
         for bot, chat in zip(bots, chats_bots):
-            message = MessageBot.objects.filter(chat=chat.id).order_by('-timestamp').first()
+            message = Message.objects.filter(chat=chat.id).order_by('-timestamp').first()
             if message is not None:
                 content = message.content
-                sender_name = message.sender + ': '
-                print('bot',type(message.sender))
+                sender_name = str(message.sender_bot) + ': '
+                print('bot',type(message.sender_bot))
                 print('SENDER_NAME', sender_name)
                 if message.image and not content:
                     content = 'Фотография'
@@ -448,29 +488,60 @@ class GetChatsView(generics.GenericAPIView):
             print('CONTENT', content)
             try:
                 new_content = ''
-                update_content = content.replace("'", '"')
+                update_content = content.replace('"', '#')
+                update_content = update_content.replace("'", '"')
                 json_content = json.loads(update_content)
+
                 if isinstance(json_content, dict):
                     for con in json_content:
                         new_content = new_content + con + ' '
                 else:
                     new_content = str(json_content)
                 content = new_content
-            except json.JSONDecodeError:
-                print('(BOTS)Ошибка: Невозможно декодировать формат отличный от JSON')
+            except json.JSONDecodeError as e:
+                print(f'(BOTS)Ошибка: {e}')
             if bot.photo is not None or bot.photo == '':
                 photo = bot.photo.url
             else:
                 photo = ''
             chat_with_user.append({
                 "id": chat.id,
-                "user_id_1": chat.user_id_1,
-                "user_id_2": chat.user_id_2,
                 "username": bot.name,
                 "content": content,
                 "photo": photo,
-                "sender_name": sender_name
+                "bio": chat.bio,
+                "sender_name": sender_name,
+                "type": chat.type
             })
+        group_chats = list(filter(lambda x: x.type == 'group', chats))
+        for chat in group_chats:
+            message = Message.objects.filter(chat=chat.id).order_by('-timestamp').first()
+            if message is not None:
+                content = message.content
+                sender_name = message.sender_user.username + ': '
+                if message.image and not content:
+                    content = 'Фотография'
+                if message.video and not content:
+                    content = 'Видеозапись'
+                if message.audio and not content:
+                    content = 'Аудиозапись'
+            else:
+                content = ''
+                sender_name = ''
+            if chat.photo is not None or chat.photo == '':
+                photo = chat.photo.url
+            else:
+                photo = ''
+            chat_with_user.append({
+                "id": chat.id,
+                "username": chat.name,
+                "content": content,
+                "photo": photo,
+                "bio": chat.bio,
+                "sender_name": sender_name,
+                "type": chat.type
+            })
+
         return Response({
             'chats': chat_with_user
         })

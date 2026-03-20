@@ -39,8 +39,8 @@
         <div id="chatList" class="chat-list">
             <ul id="chats"></ul> <!-- Здесь будут отображаться чаты -->
         </div>
-
         <div class="vertical-line"></div>
+        <button id="group-create">Создать группу</button>
 
         <h2 class="message-align" style="display: none;">Сообщения</h2>
     </div>
@@ -81,6 +81,60 @@
             });
             document.querySelector('.cancel-btn').addEventListener('click', () => {
                 const form = document.getElementById('profileForm');
+                form.style.display = 'none'
+            });
+        </script>
+    </form>
+
+    <form class="profile-group" id="profileGroup" style="display: none;">
+        <div class="profile-group-form"><img src="media/photo/profilephoto/default.png" style="width: 50px; height: 50px" id="photoGroup"></div>
+        <div class="profile-group-form">
+            <label for="photo_group_input">Фотография группы</label>
+            <input type="file" accept="image/*" id="photo_group_input" name="photo">
+        </div>
+        <div class="profile-group-form">
+            <label for="name_group_input">Название группы</label>
+            <input type="text" id="name_group_input" name="name">
+        </div>
+        <div class="profile-group-form">
+            <label for="bio_group_input">Описание</label>
+            <input type="text" id="bio_group_input" name="bio">
+        </div>
+        <div class="profile-group-form users-list">
+            <label>Выберите участников:</label>
+            <input type="checkbox" id="checkboxId" style="display: none">
+            <ul id="groupUsers" style="list-style-type: none;"></ul>
+        </div>
+        <div class="profile-group-buttons">
+            <button type="button" class="save-group">Сохранить</button>
+            <button type="button" class="edit-group" style="display: none">Изменить</button>
+            <button type="button" class="cancel-group" id="cancelGroup">Отмена</button>
+        </div>
+        <script>
+            document.querySelector('.save-group').addEventListener('click', () => {
+                const photo = document.getElementById('photo_group_input').value;
+                const name = document.getElementById('name_group_input').value;
+                const bio = document.getElementById('bio_group_input').value;
+                if (photo === '') {
+
+                }
+                createChat(selectedUserIds, name, bio, photo, 'group')
+                const form = document.getElementById('profileGroup');
+                form.style.display = 'none'
+            });
+            document.querySelector('.edit-group').addEventListener('click', () => {
+                const photo = document.getElementById('photo_group_input').value;
+                const name = document.getElementById('name_group_input').value;
+                const bio = document.getElementById('bio_group_input').value;
+                if (photo === '') {
+
+                }
+                editChat(currentChatId, name, bio, photo, 'group')
+                const form = document.getElementById('profileGroup');
+                form.style.display = 'none'
+            });
+            document.querySelector('.cancel-group').addEventListener('click', () => {
+                const form = document.getElementById('profileGroup');
                 form.style.display = 'none'
             });
         </script>
