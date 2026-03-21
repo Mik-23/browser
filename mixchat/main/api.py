@@ -1,4 +1,5 @@
 import json
+from django.utils import timezone
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -255,7 +256,7 @@ class MessageView(generics.GenericAPIView):
                 "video": message.video.url if message.video else None,
                 "audio": message.audio.url if message.audio else None,
                 "date": message.timestamp.date(),
-                "time": message.timestamp.strftime('%H:%m'),
+                "time": timezone.localtime(message.timestamp).strftime('%H:%M'),
             } for message in messages]
         return Response({
             'messages': list_messages
