@@ -275,12 +275,12 @@ function saveProfile(photo, name, date_birth, bio) {
 function loadMessages(chatId) {
     const messageList = document.querySelector('.message-message-list');
     const messageContainer = document.querySelector('.message-list');
-    const userName = document.querySelector('.user-name') ;
+    const userName = document.querySelector('.user-name');
     let button = document.querySelector('button');
     let mediaButton = document.getElementById('mediaButton');
     messageList.innerHTML = ''; // Очистить предыдущие сообщения
 
-    const url = `/api/message/?chat_id=${chatId}`; // Эндпоинт для получения сообщений по ID чата
+    const url = `/api/message/?chat_id=${chatId}`;
 
     fetch(url, {
         method: 'GET',
@@ -292,59 +292,98 @@ function loadMessages(chatId) {
     .then(data => {
         let lastDate = null;
         const targetElement = Array.from(document.querySelectorAll('#chats li')).find((li, index) => {
-                const bgColor = window.getComputedStyle(li).backgroundColor;
-                return bgColor === 'rgb(31, 148, 148)';
-            });
-        console.log(data)
-        const img = document.querySelector('.user-name img')
-        const p = document.querySelector('.user-name p')
+            const bgColor = window.getComputedStyle(li).backgroundColor;
+            return bgColor === 'rgb(31, 148, 148)';
+        });
+        console.log(data);
+
+        const img = document.querySelector('.user-name img');
+        const p = document.querySelector('.user-name p');
+
         if (targetElement) {
-            const current_img = targetElement.querySelector('img').src
-            const current_p = targetElement.querySelector('span').textContent
-            p.textContent = current_p
-            p.style.color = '#D9FFFD'
-            img.src = current_img
-            img.style.width = '50px'
-            img.style.height = '50px'
-        } else {
+            const current_img = targetElement.querySelector('img').src;
+            const current_p = targetElement.querySelector('span').textContent;
+            p.textContent = current_p;
+            p.style.color = '#D9FFFD';
+            img.src = current_img;
+            img.style.width = '50px';
+            img.style.height = '50px';
         }
-        userName.appendChild(img)
-        userName.appendChild(p)
+
+        userName.appendChild(img);
+        userName.appendChild(p);
+
         data.messages.forEach(message => {
             const li = document.createElement('li');
             const messageContainer = document.createElement('div');
 
+            // Создаем контейнер для времени
+            const timeContainer = document.createElement('div');
+            timeContainer.style.fontSize = '12px';
+            timeContainer.style.marginTop = '5px';
+            timeContainer.style.opacity = '0.7';
+
+            // Форматируем время
+            let messageTime = '';
+            if (message.date) {
+                const date = new Date(message.date);
+                messageTime = message.time;
+
+                // Проверяем, нужно ли показать дату
+                const currentDate = date.toLocaleDateString();
+                if (lastDate !== currentDate) {
+                    // Добавляем разделитель даты
+                    const dateDivider = document.createElement('div');
+                    dateDivider.textContent = currentDate;
+                    dateDivider.style.textAlign = 'center';
+                    dateDivider.style.color = '#888';
+                    dateDivider.style.fontSize = '12px';
+                    dateDivider.style.margin = '10px 0';
+                    dateDivider.style.padding = '5px';
+                    messageList.appendChild(dateDivider);
+                    lastDate = currentDate;
+                }
+            }
+
             if (message.sender_user_id === senderId) {
-                li.style.backgroundColor = '#1F9494'
+                li.style.backgroundColor = '#1F9494';
                 li.style.alignSelf = 'flex-end';
                 li.style.marginLeft = 'auto';
+                timeContainer.style.textAlign = 'right';
             } else {
+                li.style.backgroundColor = '#3a3a3a';
                 li.style.alignSelf = 'flex-start';
-                li.style.marginLeft = 'auto';
+                li.style.marginRight = 'auto';
+                timeContainer.style.textAlign = 'left';
             }
+
             // Добавляем текстовое сообщение, если есть
             if (message.content) {
                 if (message.content.includes("https://")) {
                     const textSpan = document.createElement('span');
-                    console.log(message.sender_bot)
+                    console.log(message.sender_bot);
                     textSpan.textContent = message.sender_bot;
                     textSpan.style.maxWidth = '300px';
                     textSpan.style.wordWrap = 'break-word';
-                    console.log(message.content)
+                    console.log(message.content);
+
                     let jsonString = message.content.replace(/"/g, '#');
                     jsonString = jsonString.replace(/'/g, '"');
-                    console.log(jsonString)
-                    contentArray = JSON.parse(jsonString);
+                    console.log(jsonString);
+
+                    let contentArray = JSON.parse(jsonString);
                     messageContainer.appendChild(textSpan);
-                    console.log(contentArray)
-                    for (key in contentArray) {
+                    console.log(contentArray);
+
+                    for (let key in contentArray) {
                         const link = document.createElement('a');
-                        console.log(key)
+                        console.log(key);
                         link.style.display = 'block';
                         link.style.maxWidth = '300px';
                         link.style.wordWrap = 'break-word';
                         link.href = contentArray[key];
                         link.textContent = key;
+                        link.style.color = '#D9FFFD';
                         messageContainer.appendChild(link);
                     }
                 } else {
@@ -359,75 +398,87 @@ function loadMessages(chatId) {
             // Проверяем наличие изображения
             if (message.image) {
                 const messageWrapper = document.createElement('div');
-                messageWrapper.style.display = 'flex'; // горизонтальное расположение
-                messageWrapper.style.alignItems = 'center'; // по вертикали по центру
+                messageWrapper.style.display = 'flex';
+                messageWrapper.style.alignItems = 'center';
                 messageWrapper.style.marginBottom = '10px';
+                messageWrapper.style.flexDirection = 'column';
+                messageWrapper.style.gap = '5px';
 
                 const img = document.createElement('img');
                 img.src = message.image;
-                img.style.maxWidth = '200px'; // Ограничение ширины для удобства
+                img.style.maxWidth = '200px';
                 img.style.height = 'auto';
-                img.style.display = 'block'; // Чтобы изображение было на отдельной строке
+                img.style.display = 'block';
+                img.style.borderRadius = '10px';
                 img.alt = `${message.sender}`;
 
                 const senderName = document.createElement('span');
-                senderName.textContent = message.sender; // или другое поле с именем
+                senderName.textContent = message.sender;
                 senderName.style.fontSize = '14px';
                 senderName.style.fontWeight = 'bold';
 
-                // Добавляем изображение и имя в контейнер
                 messageWrapper.appendChild(senderName);
                 messageWrapper.appendChild(img);
-
                 messageContainer.appendChild(messageWrapper);
             }
 
+            // Проверяем наличие видео
             if (message.video) {
                 const mediaWrapper = document.createElement('div');
                 mediaWrapper.style.display = 'flex';
                 mediaWrapper.style.alignItems = 'center';
+                mediaWrapper.style.flexDirection = 'column';
+                mediaWrapper.style.gap = '5px';
 
                 const video = document.createElement('video');
                 video.src = message.video;
                 video.controls = true;
                 video.style.maxWidth = '300px';
                 video.style.height = 'auto';
-                video.style.marginRight = '10px';
+                video.style.borderRadius = '10px';
 
                 const senderName = document.createElement('span');
-                senderName.textContent = message.sender_name; // или другое поле
+                senderName.textContent = message.sender_name;
                 senderName.style.fontSize = '14px';
 
                 mediaWrapper.appendChild(video);
                 mediaWrapper.appendChild(senderName);
-
                 messageContainer.appendChild(mediaWrapper);
             }
 
-            // Для аудио
+            // Проверяем наличие аудио
             if (message.audio) {
                 const mediaWrapper = document.createElement('div');
                 mediaWrapper.style.display = 'flex';
                 mediaWrapper.style.alignItems = 'center';
+                mediaWrapper.style.flexDirection = 'column';
+                mediaWrapper.style.gap = '5px';
 
                 const audio = document.createElement('audio');
                 audio.src = message.audio;
                 audio.controls = true;
-                audio.style.marginRight = '10px';
+                audio.style.maxWidth = '300px';
 
                 const senderName = document.createElement('span');
                 senderName.textContent = message.sender_name;
+                senderName.style.fontSize = '14px';
 
                 mediaWrapper.appendChild(audio);
                 mediaWrapper.appendChild(senderName);
-
                 messageContainer.appendChild(mediaWrapper);
+            }
+
+            // Добавляем время в конец сообщения
+            if (messageTime) {
+                timeContainer.textContent = messageTime;
+                messageContainer.appendChild(timeContainer);
             }
 
             li.appendChild(messageContainer);
             messageList.appendChild(li);
-            console.log(messageList)
+            console.log(messageList);
         });
+
         messageContainer.scrollTop = messageContainer.scrollHeight;
     })
     .catch(error => console.error('Ошибка:', error));
