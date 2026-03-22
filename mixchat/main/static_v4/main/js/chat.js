@@ -448,6 +448,41 @@ function loadMessages(chatId) {
 
             // Проверяем наличие аудио
             if (message.audio) {
+                if (!document.getElementById('audio-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'audio-styles';
+                    style.textContent = `
+                        audio::-webkit-media-controls-panel {
+                            background: #50ADA9 !important;
+                        }
+                        audio::-webkit-media-controls-play-button {
+                            background-color: #E31C24 !important;
+                            filter: brightness(1) invert(1) !important;
+                            border-radius: 50% !important;
+                            transform: scale(1.3) !important;
+                        }
+                        audio::-webkit-media-controls-current-time-display,
+                        audio::-webkit-media-controls-time-remaining-display {
+                            color: white !important;
+                        }
+                        audio::-webkit-media-controls-timeline {
+                            background-color: #AD4D51 !important;
+                            filter: brightness(1) invert(1) !important;
+                            border-radius: 10px !important;
+                        }
+
+                         audio::-webkit-media-controls-mute-button,
+                         audio::-webkit-media-controls-volume-slider {
+                            background-color: transparent !important;
+                            filter: brightness(0) invert(1) !important;
+                        }
+                        audio::-webkit-media-controls-toggle-closed-captions-button {
+                            background-color: transparent !important;
+                            filter: brightness(0) invert(1) !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
                 const mediaWrapper = document.createElement('div');
                 mediaWrapper.style.display = 'flex';
                 mediaWrapper.style.alignItems = 'center';
@@ -460,11 +495,11 @@ function loadMessages(chatId) {
                 audio.style.maxWidth = '300px';
 
                 const senderName = document.createElement('span');
-                senderName.textContent = message.sender_name;
+                senderName.textContent = message.sender_user;
                 senderName.style.fontSize = '14px';
 
-                mediaWrapper.appendChild(audio);
                 mediaWrapper.appendChild(senderName);
+                mediaWrapper.appendChild(audio);
                 messageContainer.appendChild(mediaWrapper);
             }
 
