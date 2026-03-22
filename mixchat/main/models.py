@@ -40,7 +40,7 @@ class Bot(models.Model):
 
 class Chat(models.Model):
     name = models.TextField("Название чата")
-    photo = models.ImageField(upload_to='photo/profilephoto/', null=True,
+    photo = models.ImageField(upload_to='photo/profilephoto/', default='photo/profilephoto/default.png', null=True,
                               blank=True, verbose_name="Фотография чата")
     bio = models.TextField("Описание")
     type = models.TextField("Тип")
