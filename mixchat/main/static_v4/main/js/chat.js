@@ -398,6 +398,8 @@ function loadMessages(chatId) {
             // Проверяем наличие изображения
             if (message.image) {
                 const messageWrapper = document.createElement('div');
+                const imageLink = document.createElement('a');
+                imageLink.href = message.image;
                 messageWrapper.style.display = 'flex';
                 messageWrapper.style.alignItems = 'center';
                 messageWrapper.style.marginBottom = '10px';
@@ -418,7 +420,8 @@ function loadMessages(chatId) {
                 senderName.style.fontWeight = 'bold';
 
                 messageWrapper.appendChild(senderName);
-                messageWrapper.appendChild(img);
+                imageLink.appendChild(img);
+                messageWrapper.appendChild(imageLink);
                 messageContainer.appendChild(messageWrapper);
             }
 
