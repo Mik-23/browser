@@ -525,12 +525,12 @@
         .profile-group-form.users-list::-webkit-scrollbar {
             width: 4px;
         }
-        
+
         .profile-group-form.users-list::-webkit-scrollbar-track {
             background: rgba(255, 255, 255, 0.05);
             border-radius: 4px;
         }
-        
+
         .profile-group-form.users-list::-webkit-scrollbar-thumb {
             background: #1F9494;
             border-radius: 4px;
@@ -797,6 +797,26 @@
             height: 24px;
             fill: white;
             stroke: none;
+        }
+
+        .action-button {
+            background: transparent;
+            border: none;
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: #b0c8ff;
+        }
+
+        .action-button:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: white;
+            transform: scale(1.05);
         }
 
         @media (max-width: 800px) {
