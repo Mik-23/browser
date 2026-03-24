@@ -17,6 +17,7 @@
         .container {
             background: #3b3b3b;
             max-width: 400px;
+            margin: auto;
             padding: 30px 40px;
             border-radius: 8px;
             box-shadow: 0 4px 12px rgba(0,0,0,0.1);
@@ -33,14 +34,26 @@
             margin-bottom: 30px;
         }
 
-        a {
+        .success a {
             display: inline-block;
             padding: 12px 25px;
             background-color: #4CAF50;
             color: white;
         }
-        a:hover {
+        .success a:hover {
             background-color: #45a049;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2c2c2c;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button a:hover {
+            color: #009BDE;
         }
 
     </style>
@@ -49,8 +62,13 @@
     <div class="container">
         <h1>Регистрация прошла успешно!</h1>
         <p>Теперь вы можете войти в свой аккаунт.</p>
-        <a href="{% url 'auth_in_chat' %}" class="button">Войти</a>
+        <div class="success">
+            <a href="{% url 'auth_in_chat' %}" class="button">Войти</a>
+        </div>
+    </div>
+    <div class="text-buttons">
+        <button><a href="{% url 'privacy_policy' %}">Политика конфиденциальности</a></button>
+        <button><a href="{% url 'agreement' %}">Пользовательское соглашение</a></button>
     </div>
 </body>
 </html>
-
