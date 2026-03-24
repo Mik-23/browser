@@ -32,16 +32,19 @@
             <ul id="users" style="display: none;"></ul> <!-- Здесь будут отображаться пользователи -->
         </div>
 
-         <div class="chats-header">
-             <h2>Чаты</h2>
-         </div>
+        <div class="chats-header">
+            <h2>Чаты</h2>
+        </div>
 
         <div id="chatList" class="chat-list">
             <ul id="chats"></ul> <!-- Здесь будут отображаться чаты -->
         </div>
         <div class="vertical-line"></div>
-        <button id="group-create">Создать группу</button>
-
+        <div class="down-buttons">
+            <button id="group-create">Создать группу</button>
+            <button style="overflow: hidden;"><a href="{% url 'privacy_policy' %}" style="color: #D9FFFD">Политика конфиденциальности</a></button>
+            <button style="overflow: hidden;"><a href="{% url 'agreement' %}" style="color: #D9FFFD">Пользовательское соглашение</a></button>
+        </div>
         <h2 class="message-align" style="display: none;">Сообщения</h2>
     </div>
 
@@ -193,6 +196,19 @@
                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
                 </svg>
             </button>
+            <script>
+
+                // Подключаемся к SSE
+                const eventSource = new EventSource(`/api/messages/sse/?chat_id=${currentChatId}`);
+
+                eventSource.onmessage = (event) => {
+                    // Пропускаем keepalive
+                    if (event.data === '') return;
+
+                    //const message = JSON.parse(event.data);
+                    displayMessage(currentChatId);
+                };
+            </script>
         </div>
     </div>
 </div>
