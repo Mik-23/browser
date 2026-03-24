@@ -29,3 +29,11 @@ def successfully(request):
 
 def confirmation_code(request):
     return render(request, 'main/confirmation_code.html')
+
+
+def privacy_policy(request):
+    return render(request, 'main/privacy_policy.html')
+
+
+def agreement(request):
+    return render(request, 'main/agreement.html')
