@@ -34,13 +34,13 @@
             margin-bottom: 30px;
         }
 
-        .success a {
+        a {
             display: inline-block;
             padding: 12px 25px;
             background-color: #4CAF50;
             color: white;
         }
-        .success a:hover {
+        a:hover {
             background-color: #45a049;
         }
         button {
@@ -62,13 +62,7 @@
     <div class="container">
         <h1>Регистрация прошла успешно!</h1>
         <p>Теперь вы можете войти в свой аккаунт.</p>
-        <div class="success">
-            <a href="{% url 'auth_in_chat' %}" class="button">Войти</a>
-        </div>
-    </div>
-    <div class="text-buttons">
-        <button><a href="{% url 'privacy_policy' %}">Политика конфиденциальности</a></button>
-        <button><a href="{% url 'agreement' %}">Пользовательское соглашение</a></button>
+        <a href="{% url 'auth_in_chat' %}" class="button">Войти</a>
     </div>
 </body>
 </html>
