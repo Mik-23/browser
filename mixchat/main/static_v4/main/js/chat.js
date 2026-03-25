@@ -7,6 +7,7 @@ let profileId = senderId
 let chatObj = []
 let selectedUserIds = [];
 let lastMessageCount = 0;
+let pollingInterval = null
 
 console.log(senderId)
 // Функция для получения пользователей из API
@@ -147,11 +148,14 @@ function openUserChat(userId) {
 
 
 function openChat(currentChatId) {
+     if (pollingInterval) {
+        clearInterval(pollingInterval);
+     }
      loadMessages(currentChatId);
-     // Подключаемся к SSE
-     setInterval(() => {
+     pollingInterval = setInterval(() => {
+        console.log(currentChatId)
         checkForNewMessages(currentChatId);
-    }, 2000);
+     }, 2000);
      document.getElementById('chatWindow').style.display = 'block';
 }
 
