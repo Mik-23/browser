@@ -42,7 +42,7 @@
             border: 1px solid #ccc;
 
         }
-        button {
+        .form-button {
             width: 100%;
             padding: 10px;
             background-color: #28a745;
@@ -51,8 +51,19 @@
             border-radius: 5px;
             cursor: pointer;
         }
-        button:hover {
+        .form-button:hover {
             background-color: #218838;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #2c2c2c;
+            color: blue;
+            border: none;
+        }
+
+        button a:hover {
+            color: #009BDE;
         }
         .email-error {
           color: red;
@@ -62,6 +73,18 @@
           color: red;
           font-weight: bold;
         }
+        p {
+            text-align: center;
+            color: white
+        }
+
+        .links a {
+            color: #006E9E;
+        }
+
+        .links a:hover {
+            color: #00A9F2;
+        }
     </style>
 </head>
 <body>
@@ -69,6 +92,10 @@
 <div class="container">
 
     <h2>Регистрация</h2>
+    <div class="links">
+        <a href="{% url 'auth_in_chat' %}">Войти</a>
+        <a href="{% url 'register_in_chat' %}">Зарегистрироваться</a>
+    </div>
     <form id="registerForm">
         <!-- <label for="selectCountry">Выберете страну</label>
         <select id="selectCountry" name="selectCountry"></select> -->
@@ -87,12 +114,18 @@
             <input type="password" id="reg_password" name="password" required>
         </div>
         <div id="passwordError" class="password-error" style="font-size: 14px;"></div>
-        <button type="submit">Далее</button>
+        <button class="form-button" type="submit">Далее</button>
     </form>
+</div>
+<div class="text-buttons" >
+    <p> Регистрируясь, вы соглашаетесь с
+    <button><a href="{% url 'privacy_policy' %}" style="color: blue">Политикой конфиденциальности</a></button>
+        и
+    <button><a href="{% url 'agreement' %}" style="color: blue">Пользовательским соглашением</a></button>
+    </p>
 </div>
 
 <script src="{% static 'main/js/register_to_login.js' %}"></script>
 
 </body>
 </html>
-
