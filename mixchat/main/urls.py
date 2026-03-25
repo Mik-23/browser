@@ -13,6 +13,7 @@ urlpatterns = [
     path('agreement', views.agreement, name='agreement'),
     path('api/reg/', api.RegisterView.as_view(), name='reg'),
     path('api/send_code/', api.SendCodeView.as_view(), name='send_code'),
+    path('api/resend_code/', api.ResendCodeView.as_view(), name='resend_code'),
     path('api/profile_form/', api.ProfileformView.as_view(), name='profile_form'),
     path('api/message/', api.MessageView.as_view(), name='message'),
     path('api/message/count/', api.MessageCountView.as_view(), name='message_count'),

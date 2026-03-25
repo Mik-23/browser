@@ -4,6 +4,15 @@ from .models import ChatUser
 from django.core.mail import send_mail
 
 
+def send_code_to_email(email, user_name, code):
+    send_mail(
+        f"{user_name}, ваш код подтверждения",
+        f"Mixchat, Код подтверждения: {code}. Никому не передавайте этот код!",
+        "mixrechecosystem@gmail.com",
+        [email]
+    )
+
+
 class UserSerializer(serializers.ModelSerializer):
     password = serializers.CharField(max_length=128, min_length=8, write_only=True)
 
@@ -18,12 +27,7 @@ class UserSerializer(serializers.ModelSerializer):
         validated_data["code"] = code
         user = ChatUser.objects.create_user(**validated_data)
         print('EMAIL', email)
-        send_mail(
-            f"{user.username}, ваш код подтверждения",
-            f"Mixchat, Код подтверждения: {code}",
-            "mixrechecosystem@gmail.com",
-            [email]
-        )
+        send_code_to_email(email, user.username, code)
         return user
 
 

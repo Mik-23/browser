@@ -3,126 +3,261 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Вход и Регистрация</title>
+    <title>Регистрация в MixChat</title>
     {% load static %}
     <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
     <style>
-        body {
-            font-family: Arial, sans-serif;
+        * {
             margin: 0;
-            padding: 20px;
-            background-color: #2c2c2c;
+            padding: 0;
+            box-sizing: border-box;
         }
-        .container {
-            max-width: 400px;
-            margin: auto;
-            background: #3b3b3b;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #FFFFFF
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #FFFFFF
-        }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
-            width: 95%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
 
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a35 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        .form-button {
+
+        /* Основной контейнер - две колонки */
+        .auth-wrapper {
+            max-width: 1200px;
             width: 100%;
-            padding: 10px;
-            background-color: #28a745;
+            background: #2c2c2c;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* Левая панель с информацией о MixChat */
+        .mixchat-info {
+            flex: 1;
+            min-width: 280px;
+            background: linear-gradient(135deg, #1f8f4a 0%, #0f5c2e 100%);
+            padding: 48px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
             color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .form-button:hover {
-            background-color: #218838;
-        }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #2c2c2c;
-            color: blue;
-            border: none;
         }
 
-        button a:hover {
-            color: #009BDE;
+        .mixchat-info img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
         }
-        .email-error {
-          color: red;
-          font-weight: bold;
+
+        .mixchat-info h2 {
+            font-size: 28px;
+            margin-bottom: 16px;
+            font-weight: 600;
         }
-        .password-error {
-          color: red;
-          font-weight: bold;
+
+        .mixchat-info h3 {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+            opacity: 0.9;
+            max-width: 280px;
         }
-        p {
+
+        /* Правая панель с формой */
+        .container {
+            flex: 1;
+            min-width: 320px;
+            background: #3b3b3b;
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .container h2 {
             text-align: center;
-            color: white
+            color: #ffffff;
+            font-size: 28px;
+            margin-bottom: 24px;
+        }
+
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 32px;
         }
 
         .links a {
-            color: #006E9E;
+            color: #28a745;
+            text-decoration: none;
+            font-weight: 500;
+            padding-bottom: 6px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
         }
 
         .links a:hover {
-            color: #00A9F2;
+            border-bottom-color: #28a745;
+            color: #34ce57;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #555;
+            background: #2a2a2a;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+        }
+
+        .form-button:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .email-error, .password-error {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 8px;
+            text-align: center;
+        }
+
+        /* Блок с соглашением */
+        .agreement-text {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid #555;
+            text-align: center;
+        }
+
+        .agreement-text p {
+            color: #aaa;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .agreement-text a {
+            color: #28a745;
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .agreement-text a:hover {
+            color: #34ce57;
+            text-decoration: underline;
+        }
+
+        /* Адаптивность для мобильных */
+        @media (max-width: 768px) {
+            .auth-wrapper {
+                flex-direction: column;
+            }
+
+            .mixchat-info {
+                padding: 32px 20px;
+            }
+
+            .mixchat-info h2 {
+                font-size: 24px;
+            }
+
+            .container {
+                padding: 32px 24px;
+            }
         }
     </style>
 </head>
 <body>
 
-<div class="container">
-
-    <h2>Регистрация</h2>
-    <div class="links">
-        <a href="{% url 'auth_in_chat' %}">Войти</a>
-        <a href="{% url 'register_in_chat' %}">Зарегистрироваться</a>
+<div class="auth-wrapper">
+    <!-- Левая панель: информация о MixChat -->
+    <div class="mixchat-info">
+        <img src="{% static 'main/png/favicon.ico' %}" alt="MixChat Logo">
+        <h2>Присоединяйтесь к MixChat!</h2>
+        <h3>Создайте аккаунт и начните общаться с друзьями и коллегами в безопасном и удобном мессенджере</h3>
     </div>
-    <form id="registerForm">
-        <!-- <label for="selectCountry">Выберете страну</label>
-        <select id="selectCountry" name="selectCountry"></select> -->
-        <div class="form-group">
-            <label for="reg_email">Электронная почта:</label>
-            <input type="email" id="reg_email" name="email" required>
-            <!-- <script src="https://unpkg.com/imask"></script> -->
+
+    <!-- Правая панель: форма регистрации -->
+    <div class="container">
+        <h2>Регистрация</h2>
+        <div class="links">
+            <a href="{% url 'auth_in_chat' %}">Войти</a>
+            <a href="{% url 'register_in_chat' %}">Зарегистрироваться</a>
         </div>
-        <div id="emailError" class="email-error" style="font-size: 14px;"></div>
-        <div class="form-group">
-            <label for="reg_login">Логин:</label>
-            <input type="text" id="reg_login" name="username" required>
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="reg_email">Электронная почта:</label>
+                <input type="email" id="reg_email" name="email" required>
+                <div id="emailError" class="email-error"></div>
+            </div>
+            <div class="form-group">
+                <label for="reg_login">Логин:</label>
+                <input type="text" id="reg_login" name="username" required>
+            </div>
+            <div class="form-group">
+                <label for="reg_password">Пароль:</label>
+                <input type="password" id="reg_password" name="password" required>
+                <div id="passwordError" class="password-error"></div>
+            </div>
+            <button class="form-button" type="submit">Далее</button>
+        </form>
+
+        <!-- Блок с соглашением -->
+        <div class="agreement-text">
+            <p>
+                Регистрируясь, вы соглашаетесь с
+                <a href="{% url 'privacy_policy' %}">Политикой конфиденциальности</a>
+                и
+                <a href="{% url 'agreement' %}">Пользовательским соглашением</a>
+            </p>
         </div>
-        <div class="form-group">
-            <label for="reg_password">Пароль:</label>
-            <input type="password" id="reg_password" name="password" required>
-        </div>
-        <div id="passwordError" class="password-error" style="font-size: 14px;"></div>
-        <button class="form-button" type="submit">Далее</button>
-    </form>
-</div>
-<div class="text-buttons" >
-    <p> Регистрируясь, вы соглашаетесь с
-    <button><a href="{% url 'privacy_policy' %}" style="color: blue">Политикой конфиденциальности</a></button>
-        и
-    <button><a href="{% url 'agreement' %}" style="color: blue">Пользовательским соглашением</a></button>
-    </p>
+    </div>
 </div>
 
 <script src="{% static 'main/js/register_to_login.js' %}"></script>

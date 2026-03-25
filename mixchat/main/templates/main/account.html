@@ -6,111 +6,269 @@
     <meta name="google-site-verification" content="vnjAp1AKyXtiq31oJzrNQ05cxWc7mYnkm1GgrygVYIg" />
     <meta name="yandex-verification" content="8b55df76bf69b889" />
     <title>Вход и Регистрация в MixChat</title>
-    <meta name=”description” content="MixChat - это современный мессенджер, обеспечивающий быстрый и безопасный обмен сообщениями с друзьями и коллегами." />
-    <meta name=”keywords” content="мессенджер, messenger, общение, communication" />
+    <meta name="description" content="MixChat - это современный мессенджер, обеспечивающий быстрый и безопасный обмен сообщениями с друзьями и коллегами." />
+    <meta name="keywords" content="мессенджер, messenger, общение, communication" />
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     {% load static %}
     <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-            background-color: #2c2c2c;
-        }
-        .container {
-            max-width: 400px;
-            margin: auto;
-            background: #3b3b3b;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-        }
-        h2 {
-            text-align: center;
-            color: #FFFFFF
-        }
-        p {
-            font-size: 18px;
-            color: #ffffff;
-            margin-bottom: 30px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            color: #FFFFFF
-        }
-        input[type="text"],
-        input[type="email"],
-        input[type="password"] {
-            width: 95%;
-            padding: 10px;
-            border-radius: 5px;
-            border: 1px solid #ccc;
-
-        }
-        .form-button {
-            width: 100%;
-            padding: 10px;
-            background-color: #28a745;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        .form-button:hover {
-            background-color: #218838;
-        }
-
-        .link-container a button{
-            float: right;
-            width: 5%;
-            text-align: center;
+        * {
             margin: 0;
             padding: 0;
-            margin-top: 15px;
-            font-size: 12px;
+            box-sizing: border-box;
         }
-        .error-message {
-          color: red;
-          font-weight: bold;
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #1e1e2f 0%, #2a2a35 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* Основной контейнер - две колонки */
+        .auth-wrapper {
+            max-width: 1200px;
+            width: 100%;
+            background: #2c2c2c;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        /* Левая панель с информацией о MixChat */
+        .mixchat {
+            flex: 1;
+            min-width: 280px;
+            background: linear-gradient(135deg, #1f8f4a 0%, #0f5c2e 100%);
+            padding: 48px 32px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            color: white;
+        }
+
+        .mixchat img {
+            width: 80px;
+            height: 80px;
+            margin-bottom: 24px;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+
+        .mixchat h2 {
+            font-size: 28px;
+            margin-bottom: 16px;
+            font-weight: 600;
+        }
+
+        .mixchat h3 {
+            font-size: 16px;
+            font-weight: 400;
+            line-height: 1.5;
+            opacity: 0.9;
+            max-width: 280px;
+        }
+
+        /* Правая панель с формой */
+        .container {
+            flex: 1;
+            min-width: 320px;
+            background: #3b3b3b;
+            padding: 48px 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        .container h2 {
+            text-align: center;
+            color: #ffffff;
+            font-size: 28px;
+            margin-bottom: 24px;
+        }
+
+        .links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-bottom: 32px;
         }
 
         .links a {
-            color: #006E9E;
+            color: #28a745;
+            text-decoration: none;
+            font-weight: 500;
+            padding-bottom: 6px;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
         }
 
         .links a:hover {
-            color: #00A9F2;
+            border-bottom-color: #28a745;
+            color: #34ce57;
         }
-        .down-buttons {
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="password"] {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            border: 1px solid #555;
+            background: #2a2a2a;
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="password"]:focus {
+            outline: none;
+            border-color: #28a745;
+            box-shadow: 0 0 0 3px rgba(40, 167, 69, 0.2);
+        }
+
+        .form-button {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 12px;
+        }
+
+        .form-button:hover {
+            background-color: #218838;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .error-message {
+            color: #ff6b6b;
+            font-size: 13px;
+            margin-top: 8px;
             text-align: center;
-            padding: 155px 20px;
-            background-color: #2c2c2c;
+        }
+
+        /* Фиксированная кнопка настроек (как у тебя была) */
+        .settings-btn {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.5);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(4px);
+            border: none;
+        }
+
+        .settings-btn:hover {
+            background: rgba(0, 0, 0, 0.7);
+            transform: rotate(45deg);
+        }
+
+        .settings-btn img {
+            width: 32px;
+            height: 32px;
+        }
+
+        /* Нижние ссылки на документы */
+        .down-buttons {
+            position: fixed;
+            bottom: 20px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 12px;
+            background: transparent;
+            display: flex;
+            justify-content: center;
+            gap: 24px;
         }
 
         .down-buttons button {
             background: transparent;
             border: none;
-            margin: 0 10px;
-            padding: 5px 10px;
             cursor: pointer;
         }
 
         .down-buttons a {
             color: #858585;
             text-decoration: none;
-            font-size: 11px;
+            font-size: 12px;
             transition: opacity 0.3s ease;
         }
 
         .down-buttons a:hover {
             opacity: 0.8;
             text-decoration: underline;
+            color: #aaa;
+        }
+
+        /* Адаптивность для мобильных */
+        @media (max-width: 768px) {
+            .auth-wrapper {
+                flex-direction: column;
+            }
+
+            .mixchat {
+                padding: 32px 20px;
+            }
+
+            .mixchat h2 {
+                font-size: 24px;
+            }
+
+            .container {
+                padding: 32px 24px;
+            }
+
+            .settings-btn {
+                top: 20px;
+                right: 20px;
+                width: 48px;
+                height: 48px;
+            }
+
+            .settings-btn img {
+                width: 24px;
+                height: 24px;
+            }
+
+            .down-buttons {
+                gap: 16px;
+                bottom: 12px;
+            }
         }
     </style>
     <script type="text/javascript">
@@ -122,58 +280,63 @@
     })(window, document,'script','https://mc.yandex.ru/metrika/tag.js?id=103658800', 'ym');
 
     ym(103658800, 'init', {ssr:true, webvisor:true, clickmap:true, ecommerce:"dataLayer", accurateTrackBounce:true, trackLinks:true});
-</script>
-<noscript><div><img src="https://mc.yandex.ru/watch/103658800" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
+    </script>
+    <noscript><div><img src="https://mc.yandex.ru/watch/103658800" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 </head>
 <body>
 
-<div class="container">
-    <h2>Войти</h2>
-    <div class="links">
-        <a href="{% url 'auth_in_chat' %}">Войти</a>
-        <a href="{% url 'register_in_chat' %}">Зарегистрироваться</a>
+<div class="auth-wrapper">
+    <!-- Левая панель: информация о MixChat -->
+    <div class="mixchat">
+        <img src="{% static 'main/png/favicon.ico' %}" alt="MixChat Logo">
+        <h2>Добро пожаловать в MixChat!</h2>
+        <h3>Быстрый и удобный мессенджер для общения с друзьями и коллегами</h3>
     </div>
-    <form id="loginForm"> <!-- Добавлен id для формы -->
-        <div class="form-group">
-            <label for="email">Электронная почта:</label>
-            <input type="email" id="email" name="email" required>
+
+    <!-- Правая панель: форма входа -->
+    <div class="container">
+        <h2>Войти</h2>
+        <div class="links">
+            <a href="{% url 'auth_in_chat' %}">Войти</a>
+            <a href="{% url 'register_in_chat' %}">Зарегистрироваться</a>
         </div>
-        <div class="form-group">
-            <label for="password">Пароль:</label>
-            <input type="password" id="password" name="password" required>
-        </div>
-        <div id="errorMessage" class="error-message" style="font-size: 14px;"></div>
-        <button class="form-button" type="submit">Войти</button>
-    </form>
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Электронная почта:</label>
+                <input type="email" id="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Пароль:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            <div id="errorMessage" class="error-message"></div>
+            <button class="form-button" type="submit">Войти</button>
+        </form>
+    </div>
 </div>
 
-<div class="link-container">
+<!-- Кнопка настроек -->
+<div class="settings-btn">
     <a href="">
-        <button class="form-button" type="submit" style="position: fixed; top: 30px; right: 50px;">
-            <img src="{% static 'main/png/load.png' %}" width="50">
-        </button>
+        <img src="{% static 'main/png/load.png' %}" width="50" alt="settings">
     </a>
 </div>
+
+<!-- Нижние ссылки -->
 <div class="down-buttons">
     <button><a href="{% url 'privacy_policy' %}">Политика конфиденциальности</a></button>
     <button><a href="{% url 'agreement' %}">Пользовательское соглашение</a></button>
 </div>
 
 <script src="{% static 'main/js/redirect_url.js' %}"></script>
-
 <script>
-// Обработчик события для формы входа
-document.getElementById('loginForm').addEventListener('submit', (event) => {
-    event.preventDefault(); // Предотвращаем стандартное поведение формы
-    const email = document.getElementById('email').value; // Получаем значение phone
-    const password = document.getElementById('password').value; // Получаем значение пароля
-    loginUser(email, password); // Вызов функции входа
-});
+    document.getElementById('loginForm').addEventListener('submit', (event) => {
+        event.preventDefault();
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        loginUser(email, password);
+    });
 </script>
 
 </body>
-
 </html>
-
-
-
