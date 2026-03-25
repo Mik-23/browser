@@ -42,8 +42,6 @@
         <div class="vertical-line"></div>
         <div class="down-buttons">
             <button id="group-create">Создать группу</button>
-            <button style="overflow: hidden;"><a href="{% url 'privacy_policy' %}" style="color: #D9FFFD">Политика конфиденциальности</a></button>
-            <button style="overflow: hidden;"><a href="{% url 'agreement' %}" style="color: #D9FFFD">Пользовательское соглашение</a></button>
         </div>
         <h2 class="message-align" style="display: none;">Сообщения</h2>
     </div>
@@ -212,6 +210,8 @@
         </div>
     </div>
 </div>
+<button style="background: transparent; font-size: 11px; overflow: hidden;"><a href="{% url 'privacy_policy' %}" style="color: #D9FFFD">Политика конфиденциальности</a></button>
+<button style="background: transparent; font-size: 11px; overflow: hidden;"><a href="{% url 'agreement' %}" style="color: #D9FFFD">Пользовательское соглашение</a></button>
 
 <script src="{% static 'main/js/logout_redirect.js' %}"></script>
 <script type="module">

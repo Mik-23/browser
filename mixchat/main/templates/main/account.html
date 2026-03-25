@@ -65,18 +65,7 @@
         .form-button:hover {
             background-color: #218838;
         }
-        button {
-            width: 100%;
-            padding: 10px;
-            background-color: #2c2c2c;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-        }
-        button a:hover {
-            color: #009BDE;
-        }
+
         .link-container a button{
             float: right;
             width: 5%;
@@ -89,6 +78,14 @@
         .error-message {
           color: red;
           font-weight: bold;
+        }
+
+        .links a {
+            color: #006E9E;
+        }
+
+        .links a:hover {
+            color: #00A9F2;
         }
     </style>
     <script type="text/javascript">
@@ -107,6 +104,10 @@
 
 <div class="container">
     <h2>Войти</h2>
+    <div class="links">
+        <a href="{% url 'auth_in_chat' %}">Войти</a>
+        <a href="{% url 'register_in_chat' %}">Зарегистрироваться</a>
+    </div>
     <form id="loginForm"> <!-- Добавлен id для формы -->
         <div class="form-group">
             <label for="email">Электронная почта:</label>
@@ -118,8 +119,6 @@
         </div>
         <div id="errorMessage" class="error-message" style="font-size: 14px;"></div>
         <button class="form-button" type="submit">Войти</button>
-        <p>или</p>
-        <button class="form-button"><a href="{% url 'register_in_chat' %}" style="text-decoration: none; color: inherit;">Зарегистрироваться</a></button>
     </form>
 </div>
 
@@ -130,10 +129,7 @@
         </button>
     </a>
 </div>
-<div class="text-buttons">
-    <button><a href="{% url 'privacy_policy' %}">Политика конфиденциальности</a></button>
-    <button><a href="{% url 'agreement' %}">Пользовательское соглашение</a></button>
-</div>
+
 <script src="{% static 'main/js/redirect_url.js' %}"></script>
 
 <script>
