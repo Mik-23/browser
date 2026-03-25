@@ -1,4 +1,5 @@
 import json
+import random
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views import View
@@ -14,7 +15,7 @@ from django.urls import reverse
 from .firebase import send_push_notification
 from .microservice_functions import mixrech, send_to_mqtt, get_mqtt
 from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, ChatMembership
-from .serialazers import (UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
+from .serialazers import (send_code_to_email, UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer,
                           CreateChannelSerializer, SubscribeToChannelSerializer,
                           SendMessageToChannelSerializer, ProfileformSerializer)
@@ -62,6 +63,18 @@ class SendCodeView(generics.GenericAPIView):
                 'message': 'Неверный код, пожалуйста, повторите попытку.',
                 'login_url': request.build_absolute_uri(reverse('confirmation_code'))
             })
+
+
+class ResendCodeView(generics.GenericAPIView):
+    # Повторная отправка кода
+    def put(self, request, *args, **kwargs):
+        user = ChatUser.objects.order_by("-date_joined").first()
+        print(user.email)
+        code = random.randint(1000, 9999)
+        user.code = code
+        user.save()
+        send_code_to_email(user.email, user.username, code)
+        return Response({"message": "Ваш код был отправлен повторно"})
 
 
 class LoginView(generics.GenericAPIView):
@@ -269,6 +282,7 @@ class MessageCountView(View):
     def get(self, request):
         chat_id = request.GET.get('chat_id')
         count = Message.objects.filter(chat_id=chat_id).count()
+
         return JsonResponse({'count': count})
 
 
