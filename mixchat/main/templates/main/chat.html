@@ -204,14 +204,14 @@
                     if (event.data === '') return;
 
                     //const message = JSON.parse(event.data);
-                    displayMessage(currentChatId);
+                    loadMessages(currentChatId);
                 };
             </script>
         </div>
     </div>
 </div>
-<button style="background: transparent; font-size: 11px; overflow: hidden;"><a href="{% url 'privacy_policy' %}" style="color: #D9FFFD">Политика конфиденциальности</a></button>
-<button style="background: transparent; font-size: 11px; overflow: hidden;"><a href="{% url 'agreement' %}" style="color: #D9FFFD">Пользовательское соглашение</a></button>
+<button style="background: transparent; font-size: 11px; overflow: hidden;"><a href="{% url 'privacy_policy' %}" style="color: #999999">Политика конфиденциальности</a></button>
+<button style="background: transparent; font-size: 11px; overflow: hidden;"><a href="{% url 'agreement' %}" style="color: #999999">Пользовательское соглашение</a></button>
 
 <script src="{% static 'main/js/logout_redirect.js' %}"></script>
 <script type="module">

@@ -87,6 +87,31 @@
         .links a:hover {
             color: #00A9F2;
         }
+        .down-buttons {
+            text-align: center;
+            padding: 155px 20px;
+            background-color: #2c2c2c;
+        }
+
+        .down-buttons button {
+            background: transparent;
+            border: none;
+            margin: 0 10px;
+            padding: 5px 10px;
+            cursor: pointer;
+        }
+
+        .down-buttons a {
+            color: #858585;
+            text-decoration: none;
+            font-size: 11px;
+            transition: opacity 0.3s ease;
+        }
+
+        .down-buttons a:hover {
+            opacity: 0.8;
+            text-decoration: underline;
+        }
     </style>
     <script type="text/javascript">
     (function(m,e,t,r,i,k,a){
@@ -128,6 +153,10 @@
             <img src="{% static 'main/png/load.png' %}" width="50">
         </button>
     </a>
+</div>
+<div class="down-buttons">
+    <button><a href="{% url 'privacy_policy' %}">Политика конфиденциальности</a></button>
+    <button><a href="{% url 'agreement' %}">Пользовательское соглашение</a></button>
 </div>
 
 <script src="{% static 'main/js/redirect_url.js' %}"></script>
