@@ -1,7 +1,6 @@
 import json
-import time
 from django.utils import timezone
-from django.http import StreamingHttpResponse
+from django.http import JsonResponse
 from django.views import View
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
@@ -266,29 +265,11 @@ class MessageView(generics.GenericAPIView):
         })
 
 
-class MessageSSEView(View):
-    # Server-Sent Events — получаем сообщения в реальном времени
-
+class MessageCountView(View):
     def get(self, request):
         chat_id = request.GET.get('chat_id')
-
-        def event_stream():
-            old_messages = Message.objects.filter(chat_id=chat_id).all()
-            while True:
-                print('1')
-                new_messages = Message.objects.filter(chat_id=chat_id).all()
-                if len(new_messages) > len(old_messages):
-                    old_messages = new_messages
-                    # Отправляем сигнал "обновиться"
-                    yield f"data: refresh\n\n"
-                time.sleep(5)  # раз в секунду
-
-        response = StreamingHttpResponse(
-            event_stream(),
-            content_type='text/event-stream'
-        )
-        response['Cache-Control'] = 'no-cache'
-        return response
+        count = Message.objects.filter(chat_id=chat_id).count()
+        return JsonResponse({'count': count})
 
 
 class SaveFCMToken(generics.GenericAPIView):
