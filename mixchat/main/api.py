@@ -2,6 +2,7 @@ import json
 import time
 from django.utils import timezone
 from django.http import StreamingHttpResponse
+from django.views import View
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -265,34 +266,22 @@ class MessageView(generics.GenericAPIView):
         })
 
 
-class MessageSSEView(generics.GenericAPIView):
+class MessageSSEView(View):
     # Server-Sent Events — получаем сообщения в реальном времени
 
     def get(self, request):
-        user = request.user
         chat_id = request.GET.get('chat_id')
 
         def event_stream():
-
+            old_messages = Message.objects.filter(chat_id=chat_id).all()
             while True:
-                # Получаем новые сообщения из БД
-                new_messages = Message.objects.filter(chat_id=chat_id)
-
-                # Отправляем каждое сообщение
-                for msg in new_messages:
-                    data = {
-                        'id': msg.id,
-                        'from': msg.sender_user.username,
-                        'text': msg.content,
-                        'time': msg.timestamp.isoformat()
-                    }
-                    yield f"data: {json.dumps(data)}\n\n"
-
-
-                # Если нет новых сообщений, отправляем keepalive
-                # и ждем 1 секунду
-                yield ": keepalive\n\n"
-                time.sleep(1)  # ← простая задержка, ничего сложного
+                print('1')
+                new_messages = Message.objects.filter(chat_id=chat_id).all()
+                if len(new_messages) > len(old_messages):
+                    old_messages = new_messages
+                    # Отправляем сигнал "обновиться"
+                    yield f"data: refresh\n\n"
+                time.sleep(5)  # раз в секунду
 
         response = StreamingHttpResponse(
             event_stream(),
