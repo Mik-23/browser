@@ -75,4 +75,5 @@ class Message(models.Model):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
 
     def __str__(self):
-        return f"Message from {self.sender} to {self.recipient} in chat {self.chat.id}"
+        return f"Message from {self.sender_user} to chat {self.chat.id}"
+
