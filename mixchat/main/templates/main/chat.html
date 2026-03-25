@@ -197,7 +197,7 @@
             <script>
 
                 // Подключаемся к SSE
-                const eventSource = new EventSource(`/api/messages/sse/?chat_id=${currentChatId}`);
+                const eventSource = new EventSource(`/api/message/sse/?chat_id=${currentChatId}`);
 
                 eventSource.onmessage = (event) => {
                     // Пропускаем keepalive
