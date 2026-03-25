@@ -11,7 +11,7 @@ services:
 
    mixchat:
       build: ./mixchat
-      command: gunicorn mixchat.wsgi:application --bind 0.0.0.0:8001 --timeout 120
+      command: gunicorn mixchat.wsgi:application --bind 0.0.0.0:8001 --workers 4 --worker-class gevent --timeout 120
       volumes:
       - .:/app
       - media_data:/mixchat/main/media_v4/
