@@ -58,11 +58,10 @@
             width: 100%;
             padding: 10px;
             background-color: #2c2c2c;
-            color: white;
+            color: blue;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
         }
+
         button a:hover {
             color: #009BDE;
         }
@@ -74,6 +73,18 @@
           color: red;
           font-weight: bold;
         }
+        p {
+            text-align: center;
+            color: white
+        }
+
+        .links a {
+            color: #006E9E;
+        }
+
+        .links a:hover {
+            color: #00A9F2;
+        }
     </style>
 </head>
 <body>
@@ -81,6 +92,10 @@
 <div class="container">
 
     <h2>Регистрация</h2>
+    <div class="links">
+        <a href="{% url 'auth_in_chat' %}">Войти</a>
+        <a href="{% url 'register_in_chat' %}">Зарегистрироваться</a>
+    </div>
     <form id="registerForm">
         <!-- <label for="selectCountry">Выберете страну</label>
         <select id="selectCountry" name="selectCountry"></select> -->
@@ -102,9 +117,12 @@
         <button class="form-button" type="submit">Далее</button>
     </form>
 </div>
-<div class="text-buttons">
-    <button><a href="{% url 'privacy_policy' %}">Политика конфиденциальности</a></button>
-    <button><a href="{% url 'agreement' %}">Пользовательское соглашение</a></button>
+<div class="text-buttons" >
+    <p> Регистрируясь, вы соглашаетесь с
+    <button><a href="{% url 'privacy_policy' %}" style="color: blue">Политикой конфиденциальности</a></button>
+        и
+    <button><a href="{% url 'agreement' %}" style="color: blue">Пользовательским соглашением</a></button>
+    </p>
 </div>
 
 <script src="{% static 'main/js/register_to_login.js' %}"></script>
