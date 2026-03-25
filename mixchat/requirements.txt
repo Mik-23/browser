@@ -11,4 +11,3 @@ requests==2.32.3
 beautifulsoup4==4.12.3
 paho-mqtt==2.1.0
 firebase-admin==6.5.0
-gevent==25.9.1
