@@ -6,7 +6,7 @@ const senderId = localStorage.getItem('user_id');
 let profileId = senderId
 let chatObj = []
 let selectedUserIds = [];
-let eventSource = null
+let lastMessageCount = 0;
 
 console.log(senderId)
 // Функция для получения пользователей из API
@@ -149,28 +149,25 @@ function openUserChat(userId) {
 function openChat(currentChatId) {
      loadMessages(currentChatId);
      // Подключаемся к SSE
-     console.log(eventSource)
-     if (eventSource) {
-         eventSource.close();
-     }
-
-     // Подключаем SSE
-     eventSource = new EventSource(`/api/message/sse/?chat_id=${currentChatId}&token=${localStorage.getItem('access_token')}`);
-
-     eventSource.onmessage = (event) => {
-         // Когда получаем сигнал "обновиться" — просто перезагружаем сообщения
-         if (event.data === 'refresh') {
-             loadMessages(currentChatId);
-         }
-     };
-
-     eventSource.onerror = (error) => {
-         console.error('SSE error:', error);
-         eventSource.close();
-         // Попробуем переподключиться через 5 секунд
-         setTimeout(() => openChat(chatId), 5000);
-     };
+     setInterval(() => {
+        checkForNewMessages(currentChatId);
+    }, 2000);
      document.getElementById('chatWindow').style.display = 'block';
+}
+
+function checkForNewMessages(chatId) {
+    fetch(`/api/message/count/?chat_id=${chatId}`, {
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+        }
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.count !== lastMessageCount) {
+            lastMessageCount = data.count;
+            loadMessages(chatId);  // есть новое сообщение!
+        }
+    });
 }
 
 document.querySelector('.user-name img').addEventListener('click', () => {
