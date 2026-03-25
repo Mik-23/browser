@@ -194,19 +194,6 @@
                     <path d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z" />
                 </svg>
             </button>
-            <script>
-
-                // Подключаемся к SSE
-                const eventSource = new EventSource(`/api/message/sse/?chat_id=${currentChatId}`);
-
-                eventSource.onmessage = (event) => {
-                    // Пропускаем keepalive
-                    if (event.data === '') return;
-
-                    //const message = JSON.parse(event.data);
-                    loadMessages(currentChatId);
-                };
-            </script>
         </div>
     </div>
 </div>
