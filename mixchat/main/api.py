@@ -68,13 +68,17 @@ class SendCodeView(generics.GenericAPIView):
 class ResendCodeView(generics.GenericAPIView):
     # Повторная отправка кода
     def put(self, request, *args, **kwargs):
-        user = ChatUser.objects.order_by("-date_joined").first()
-        print(user.email)
+        email = request.GET.get('email')
+        if not email:
+            return Response({"error": "Email обязателен!"})
+        user = ChatUser.objects.filter(email=email).first()
+        if not user:
+            return Response({"error": "Такого пользователя не существует."})
         code = random.randint(1000, 9999)
         user.code = code
         user.save()
         send_code_to_email(user.email, user.username, code)
-        return Response({"message": "Ваш код был отправлен повторно"})
+        return Response({"message": "Ваш код был отправлен повторно."})
 
 
 class LoginView(generics.GenericAPIView):
@@ -88,7 +92,6 @@ class LoginView(generics.GenericAPIView):
         password = serializer.validated_data['password']
         try:
             user = authenticate(username=email, password=password)
-            print('user', type(user.id))
             refresh = RefreshToken.for_user(user)
             return Response({
                 'refresh': str(refresh),
@@ -119,10 +122,22 @@ class ProfileformView(generics.GenericAPIView):
         # Открыть профиль пользователя
         user_id = request.GET.get('user_id')
         user = ChatUser.objects.filter(id=user_id).first()
-        return Response({"photo": user.photo.url,
-                         "name": user.username,
-                         'date_birth': user.date_birth,
-                         'bio': user.bio})
+        if not user:
+            return Response({"error": "Ошибка. Такого пользователя не существует"})
+        # Собираем список чатов с текущим пользователем
+        member = [chat.chat_id for chat in ChatMembership.objects.filter(user_id=request.user.id)]
+        # Проверяем, существует ли чат текущего пользователя и выбранного
+        is_member = ChatMembership.objects.filter(
+            chat_id__in=member,
+            user_id=user_id
+        ).exists()
+        if not is_member:
+            return Response({"error": "Невозможно просмотреть профиль, если отсутствует чат."})
+        else:
+            return Response({"photo": user.photo.url,
+                             "name": user.username,
+                             'date_birth': user.date_birth,
+                             'bio': user.bio})
 
     def put(self, request, *args, **kwargs):
         # Редактировать профиль пользователя
@@ -151,20 +166,21 @@ class MessageView(generics.GenericAPIView):
 
     def post(self, request, *args, **kwargs):
         # Отправить сообщение
-        print(request.user.id)
         serializer = self.get_serializer(data=request.data)
-        print(request.data)
         serializer.is_valid(raise_exception=True)
         # Получаем текущего пользователя
         sender_id = request.user.id
         # Получаем отправителя
-        print('Отправитель', sender_id)
         content = serializer.validated_data['content']
         chat_id = serializer.validated_data['chat_id']
+        member = ChatMembership.objects.filter(user_id=sender_id, chat_id=chat_id)
+        if not member:
+            return Response({"error": "Ошибка. Невозможно отправлять сообщения, где вас нет в чате"})
         chat = Chat.objects.filter(id=chat_id).first()
+        if not chat:
+            return Response({"error": "Чат не найден"})
         chat_type = chat.type
         # type = serializer.validated_data['type']
-        print('ID чата', chat_id)
         # Получаем файлы фото, видео и аудио
         image_file = request.FILES.get('image')
         video_file = request.FILES.get('video')
@@ -202,8 +218,6 @@ class MessageView(generics.GenericAPIView):
                 users = ChatUser.objects.filter(id=sender_id).all()
             message.save()
             # Отправляем уведомление получателю
-            print('1', message.sender_user.username)
-            print('2', users)
             for user in users:
                 if message.sender_user.username != user.username:
                     send_push_notification(user.fcm_token, message.sender_user.username, content, message.sender_user.photo.url)
@@ -221,8 +235,6 @@ class MessageView(generics.GenericAPIView):
             membership = ChatMembership.objects.filter(chat_id=chat_id)
             membership = membership.exclude(user_id=sender_id).first()
             bot = Bot.objects.filter(id=membership.user_id).first()
-            print('ewewewew', bot)
-            print(f'ewewewew {chat_id}      {chat_type}')
             recipient = bot.name
             message = Message(
                 sender_user_id=sender_id,
@@ -259,6 +271,9 @@ class MessageView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         # Получение сообщений
         chat_id = request.GET.get('chat_id')
+        member = ChatMembership.objects.filter(user_id=request.user.id, chat_id=chat_id)
+        if not member:
+            return Response({"error": "Ошибка. Невозможно просматривать сообщения в чате, где вас нет"})
         messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
         list_messages = [{
                 "id": message.id,
@@ -344,26 +359,27 @@ class ChatView(generics.GenericAPIView):
         # Показать пользователей в чате
         chat_id = request.GET.get('chat_id')
         chat = Chat.objects.filter(id=chat_id).first()
+        if not chat:
+            return Response({"error": "Чат не найден"})
         if not chat.photo:
             photo = ''
         else:
             photo = chat.photo.url
+        current_user_chat = [str(member.chat_id) for member in ChatMembership.objects.filter(user_id=request.user.id)]
+        if str(chat_id) not in current_user_chat:
+            return Response({"error": "Невозможно просматривать чаты в которых нет текущего пользователя"})
         memberships = ChatMembership.objects.filter(chat_id=chat.id).all()
         users_and_bots = list(ChatUser.objects.all())
         bots = list(Bot.objects.all())
         users_and_bots.extend(bots)
         users = []
-        print(users_and_bots)
         member_group = sorted([user for user in users_and_bots if user.id in [membership.user_id for membership in memberships]], key=lambda user: user.id)
-        print(member_group)
         roles = [membership.user_role for membership in sorted(memberships, key=lambda member: member.user_id)]
-        print(roles)
         for member, role in zip(member_group, roles):
             if isinstance(member, ChatUser):
                 users.append((member.username, member.photo.url, role))
             elif isinstance(member, Bot):
                 users.append((member.name, member.photo.url, role))
-        print(users)
         return Response({
             'id': chat.id,
             'name': chat.name,
@@ -388,7 +404,6 @@ class ChatView(generics.GenericAPIView):
             for user in users:
                 membership = ChatMembership.objects.create(user_id=user, chat_id=chat.id)
                 if str(membership.user_id) == str(request.user.id) and type == 'group':
-                    print('membership 2',membership)
                     membership.user_role = 'Создатель'
                     membership.save()
             return Response({
@@ -412,7 +427,11 @@ class ChatView(generics.GenericAPIView):
         type = serializer.validated_data['type']
         bio = serializer.validated_data['bio']
         chat = Chat.objects.filter(id=chat_id).first()
+        if not chat:
+            return Response({"error": "Чат не найден"})
         membership = ChatMembership.objects.filter(chat_id=chat_id, user_role='Создатель').first()
+        if not membership:
+            return Response({"error": "Участник чата не найден"})
         # Проверяем: является ли текущий пользователь создателем группы
         if membership.user_id == request.user.id and chat.type == type:
             # Если да, то изменяем информацию о группе
@@ -450,7 +469,6 @@ class GetChatsView(generics.GenericAPIView):
         bots = Bot.objects.all()
         chat_with_user = []
         chats_users = list(filter(lambda x: x.type == 'user', chats))
-        print(f'chats {set(chats_users)}          {chats}')
         for chat in list(set(chats_users)):
             message = Message.objects.filter(chat=chat.id).order_by('-timestamp').first()
             memberships = ChatMembership.objects.filter(chat_id=chat.id)
@@ -463,8 +481,6 @@ class GetChatsView(generics.GenericAPIView):
             if message is not None:
                 content = message.content
                 sender_name = message.sender_user.username + ': '
-                print('SENDER_NAME', type(message.sender_user))
-                print('SENDER_NAME', sender_name)
                 if message.image and not content:
                     content = 'Фотография'
                 if message.video and not content:
@@ -479,7 +495,6 @@ class GetChatsView(generics.GenericAPIView):
                 photo = user.photo.url
             else:
                 photo = ''
-            print('PHOTO', photo)
             print('CONTENT 1', content)
             try:
                 content = json.loads(content)
@@ -502,8 +517,6 @@ class GetChatsView(generics.GenericAPIView):
             if message is not None:
                 content = message.content
                 sender_name = str(message.sender_bot) + ': '
-                print('bot',type(message.sender_bot))
-                print('SENDER_NAME', sender_name)
                 if message.image and not content:
                     content = 'Фотография'
             else:
@@ -608,9 +621,7 @@ class SendMessageToChannelView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        print(request.GET.get('sender_id'))
         serializer = self.get_serializer(data=request.data)
-        print(request.data)
         serializer.is_valid(raise_exception=True)
         channel_id = serializer.validated_data['channel_id']
         sender_id = serializer.validated_data['sender_id']

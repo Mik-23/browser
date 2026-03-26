@@ -27,6 +27,7 @@ document.getElementById('registerForm').addEventListener('submit', (event) => {
         }
         if (status === 200) { // Проверяем статус ответа
             window.location.href = data.login_url; // Перенаправляем пользователя на страницу авторизации
+            localStorage.setItem('email', data.email);
         } else {
             console.error(data); // Обработка ошибок
         }

@@ -9,7 +9,6 @@ let selectedUserIds = [];
 let lastMessageCount = 0;
 let pollingInterval = null
 
-console.log(senderId)
 // Функция для получения пользователей из API
 function fetchUsers() {
     fetch('/api/search_user/', { // Замените на ваш реальный эндпоинт
@@ -37,12 +36,9 @@ function fetchUsers() {
 function displayUsers() {
     const userList = document.getElementById('groupUsers');
     userList.innerHTML = ''; // Очистить список
-    console.log(users)
     if (users.length > 0) { // Проверяем, есть ли пользователи
         users.forEach(user => {
             const li = document.createElement('li');
-            console.log(user.id)
-            console.log(user)
             const input = document.createElement('input')
             input.type = 'checkbox'
             input.value = user.id
@@ -87,22 +83,18 @@ function selectUser(userId) {
 // Функция для поиска пользователей
 function searchUsers() {
     const input = document.getElementById('userSearch').value.toLowerCase();
-    console.log(input);
     const filteredUsers = users.filter(user => user.username.toLowerCase().includes(input));
-    console.log(filteredUsers)
     const userList = document.getElementById('users');
     userList.innerHTML = ''; // Очистить список
 
     if (filteredUsers.length > 0) { // Проверяем, есть ли отфильтрованные пользователи
         filteredUsers.forEach(user => {
             const li = document.createElement('li');
-            console.log(user.id)
             li.textContent = user.username; // Имя пользователя
             li.onclick = () => selectUser(user.id); // Выбор пользователя
 
             userList.appendChild(li);
         });
-        console.log(userList)
         userList.style.display = 'block'; // Показываем список
         userList.style.marginLeft = 'auto';
     } else {
@@ -153,7 +145,6 @@ function openChat(currentChatId) {
      }
      loadMessages(currentChatId);
      pollingInterval = setInterval(() => {
-        console.log(currentChatId)
         checkForNewMessages(currentChatId);
      }, 2000);
      document.getElementById('chatWindow').style.display = 'block';
@@ -175,7 +166,6 @@ function checkForNewMessages(chatId) {
 }
 
 document.querySelector('.user-name img').addEventListener('click', () => {
-    console.log(chatObj)
     const name = document.querySelector('.user-name p').textContent
     let current_chat = {}
     for (chat of chatObj) {
@@ -184,7 +174,6 @@ document.querySelector('.user-name img').addEventListener('click', () => {
         }
     }
     for (user of users) {
-        console.log(user)
         if (user.username === name && user.type === 'user') {
             profileId = user.id
         }
@@ -239,9 +228,6 @@ function getCurrentUser() {
 }
 
 function getProfile() {
-    console.log('profileId:', profileId);
-    console.log('users array length:', users.length);
-    console.log('users array:', users); // Посмотрите, что в массиве
     const url = `/api/profile_form/?user_id=${profileId}`;
     fetch(url, {
         method: 'GET',
@@ -319,7 +305,6 @@ function loadMessages(chatId) {
             const bgColor = window.getComputedStyle(li).backgroundColor;
             return bgColor === 'rgb(31, 148, 148)';
         });
-        console.log(data);
 
         const img = document.querySelector('.user-name img');
         const p = document.querySelector('.user-name p');
@@ -385,7 +370,6 @@ function loadMessages(chatId) {
             if (message.content) {
                 if (message.content.includes("https://")) {
                     const textSpan = document.createElement('span');
-                    console.log(message.sender_bot);
                     textSpan.textContent = message.sender_bot;
                     textSpan.style.maxWidth = '300px';
                     textSpan.style.wordWrap = 'break-word';
@@ -393,7 +377,6 @@ function loadMessages(chatId) {
 
                     let jsonString = message.content.replace(/"/g, '#');
                     jsonString = jsonString.replace(/'/g, '"');
-                    console.log(jsonString);
 
                     let contentArray = JSON.parse(jsonString);
                     messageContainer.appendChild(textSpan);
@@ -401,14 +384,20 @@ function loadMessages(chatId) {
 
                     for (let key in contentArray) {
                         const link = document.createElement('a');
-                        console.log(key);
                         link.style.display = 'block';
                         link.style.maxWidth = '300px';
                         link.style.wordWrap = 'break-word';
-                        link.href = contentArray[key];
-                        link.textContent = key;
                         link.style.color = '#D9FFFD';
-                        messageContainer.appendChild(link);
+                        let url = contentArray[key];
+                        if (url.startsWith('http://') || url.startsWith('https://')) {
+                            link.href = url;
+                            link.textContent = key;
+                            messageContainer.appendChild(link);
+                        } else {
+                            const textSpan = document.createElement('span');
+                            textSpan.textContent = `${key}: ${url}`;
+                            messageContainer.appendChild(textSpan);
+                        }
                     }
                 } else {
                     const textSpan = document.createElement('span');
@@ -538,7 +527,6 @@ function loadMessages(chatId) {
 
             li.appendChild(messageContainer);
             messageList.appendChild(li);
-            console.log(messageList);
         });
 
         messageContainer.scrollTop = messageContainer.scrollHeight;
@@ -560,7 +548,6 @@ if ('serviceWorker' in navigator) {
 }
 
 function chatUserView(chatId) {
-    console.log(chatId)
     fetch(`/api/chat/?chat_id=${chatId}`, {
        method: 'GET',
        headers: {
@@ -710,7 +697,6 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
    // Добавляем остальные параметры
    formData.append('chat_id', currentChatId);
    formData.append('type', type);
-   console.log(type)
    fetch('/api/message/', {
        method: 'POST',
        headers: {
@@ -724,7 +710,6 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
        document.getElementById('imageInput').value = '';
        document.getElementById('videoInput').value = '';
        document.getElementById('audioInput').value = '';
-       console.log(data)
        loadMessages(currentChatId); // Обновить чат с выбранным пользователем после отправки сообщения
    })
    .catch(error => console.error('Ошибка:', error));
@@ -753,7 +738,6 @@ function fetchChats() {
     })
     .then(response => response.json())
     .then(data => {
-        console.log(data)
         displayChats(data.chats); // Отображаем полученные чаты
     })
     .catch(error => console.error('Ошибка при получении чатов:', error));
@@ -762,10 +746,8 @@ function fetchChats() {
 // Функция для отображения списка чатов
 function displayChats(chats) {
     const chatList = document.getElementById('chats');
-    console.log(chatList)
     chatList.innerHTML = ''; // Очистить список
     const numSenderId = senderId
-    console.log(chats)
     chatObj = chats
     chats.forEach(chat => {
         const li = document.createElement('li');
@@ -777,7 +759,6 @@ function displayChats(chats) {
         img.src = chat.photo;
         img.style.width = '50px'
         img.style.height = '50px'
-        console.log(chat)
         if (chat.content.length > 13) {
             p.textContent = chat.sender_name + chat.content.substring(0, 14) + '...';
         } else {
@@ -793,7 +774,6 @@ function displayChats(chats) {
             }
             currentChatId = chat.id
             type = chat.type
-            console.log(chat.type)
             openChat(chat.id);
             chatUserView(chat.id)
             li.style.backgroundColor = '#1F9494';

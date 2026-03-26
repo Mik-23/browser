@@ -241,18 +241,18 @@
 <script>
     // Обработчик для повторной отправки кода
     function resendCode() {
+        const email = localStorage.getItem('email')
         fetch('/api/resend_code/', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json'
         }
+        body: JSON.stringify({email}),
     })
     .then(res => res.json())
     }
     document.getElementById('resendCodeLink').addEventListener('click', function(e) {
         e.preventDefault();
-        // Здесь можно вызвать функцию для повторной отправки кода
-        // Например: resendConfirmationCode();
         if (typeof resendCode === 'function') {
             resendCode();
             const alertDiv = document.getElementById('alertMessage');
@@ -266,7 +266,6 @@
                 }, 3000);
             }, 500);
         } else {
-            // Временное уведомление, если функция ещё не подключена
             const alertDiv = document.getElementById('alertMessage');
             alertDiv.textContent = 'Не удалось отправить код';
             alertDiv.style.color = '#ff6b6b;'
