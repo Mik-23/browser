@@ -7,6 +7,7 @@ import requests
 import subprocess
 from django.http import HttpResponse
 from bs4 import BeautifulSoup
+import xml.etree.ElementTree as ET
 
 
 load_dotenv()
@@ -38,7 +39,7 @@ def search(search_query, page):
         },
         "folderId": folderid,
         "userAgent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/141.0.0.0 Safari/537.36",
-        "responseFormat": "FORMAT_HTML",
+        "responseFormat": "FORMAT_XML",
     }
     response = requests.post(url, headers=headers, json=body)
     if response.status_code == 200:
@@ -47,51 +48,25 @@ def search(search_query, page):
         # декодируем из base64
         decoded_bytes = base64.b64decode(encode_response)
         # преобразуем байты в строку (UTF-8)
-        text_html = decoded_bytes.decode('utf-8')
-        soup = BeautifulSoup(text_html)  # Парсим HTML-код
-        logging.info("Время запроса: %.2f секунд", time.time() - start_time)
-        # Извлечение всех ссылок и заголовков
-        links = [item.get('href') for item in soup.find_all('a')]
-        titles = [item.text for item in soup.find_all('a')]
-        # Заводим переменные счётчик и элемент
-        count = 1
-        favicon_count = 0
-        favicon_url = ''
-        for index, (link, title) in enumerate(zip(links, titles)):
-            """Если элемент отличается от ссылки из списка, то увеличиваем счётчик 
-            и присваиваем элементу значение ссылки из списка. В противном случае оставляем счётчик равным 1"""
-            if index % 2 == 0:
-                count += 1
+        xml_data = decoded_bytes.decode('utf-8')
+        # Парсим XML
+        root = ET.fromstring(xml_data)
+
+        # Ищем все документы
+        for doc in root.findall('.//doc'):
+            url_elem = doc.find('url')
+            title_elem = doc.find('title')
+            domain = doc.find('domain')
+            print(f'https://{domain.text}/favicon.ico')
+            header = ''.join([title for title in title_elem.itertext()])
+            if 'Украин' in header or 'украин' in header:
+                continue
             else:
-                count = 1
-
-            """Проверяем, что ссылку и текст можно извлечь, 
-            а также извлекаем ссылки без доменов yandex.ru, ya.ru, google.ru, bing.com,
-            без символов /video/preview, video/search, # и текст без символов
-            Коммерческие предложения, дальше и, если текст содержит только цифры.
-            Нужно это для корректного отображения ссылок в браузере"""
-
-            if (link and title and 'yandex.ru' not in link and 'ya.ru' not in link
-                and link[0] != '#' and '/video/preview' not in link and 'google.ru' not in link
-                and 'bing.com' not in link and title != 'Коммерческие предложения' and not title.isdigit()
-                and title != 'дальше' and 'video/search' not in link and count == 1
-                and '/search' not in link):
-                # Находим фавиконы
-                for elem in link:
-                    # Извлекаем основной адрес ссылки
-                    if '/' in elem:
-                        favicon_count += 1
-                    favicon_url += elem
-
-                    if favicon_count == 3:
-                        break
-                favicon_url = favicon_url + 'favicon.ico'
-                results.append({'title': title, 'url': link, 'favicon_url': favicon_url})
-                favicon_url = ''
-                favicon_count = 0
-        print(len(results))
-        len_results = len(results)
-        print(results)
+                results.append({
+                    'url': url_elem.text if url_elem is not None else '',
+                    'title': header if header is not None else '',
+                    'favicon_url': f'https://{domain.text}/favicon.ico'
+                })
         return results
     else:
         print(f"Error: {response.status_code} - {response.text}")
