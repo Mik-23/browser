@@ -373,12 +373,10 @@ function loadMessages(chatId) {
                     textSpan.textContent = message.sender_bot;
                     textSpan.style.maxWidth = '300px';
                     textSpan.style.wordWrap = 'break-word';
-                    console.log(message.content);
+                    //let jsonString = message.content.replace(/"/g, '#');
+                    //jsonString = jsonString.replace(/'/g, '"');
 
-                    let jsonString = message.content.replace(/"/g, '#');
-                    jsonString = jsonString.replace(/'/g, '"');
-
-                    let contentArray = JSON.parse(jsonString);
+                    let contentArray = JSON.parse(message.content);
                     messageContainer.appendChild(textSpan);
                     console.log(contentArray);
 
@@ -531,7 +529,7 @@ function loadMessages(chatId) {
 
         messageContainer.scrollTop = messageContainer.scrollHeight;
     })
-    .catch(error => console.error('Ошибка:', error));
+
 }
 
 
