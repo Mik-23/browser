@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ru">
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta charset="UTF-8">
-    <title>Title</title>
+    <title>Группа {{ name }}</title>
     {% load static %}
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <link rel="stylesheet" href="{% static 'main/css/forms.css' %}">
@@ -53,11 +53,7 @@
                 })
                 .then(response => response.json())
                 .then(data => {
-                    for (chat of data.chats) {
-                        if (chat.username === name) {
-                            chatUserView(chat.id)
-                        }
-                    }
+                     chatUserView(name)
                 })
                 .catch(error => console.error('Ошибка при получении чатов:', error));
             }
