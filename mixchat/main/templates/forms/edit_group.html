@@ -42,7 +42,8 @@
         </div>
         <script>
             const path = window.location.pathname;
-            const name = path.split("/").pop()
+            const begin_name = path.split("/").pop()
+            const name = begin_name.replace('%20', ' ')
             function fetchChats() {
                 fetch('/api/get_chats/', { // Замените на ваш реальный эндпоинт
                     method: 'GET',
