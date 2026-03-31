@@ -211,6 +211,7 @@ function chatUserView(chatId) {
                 const button = document.createElement('button')
                 button.id = 'delete-user'
                 button.textContent = 'Удалить';
+                button.disabled = 1;
                 button.style.backgroundColor = 'transparent';
                 button.style.color = 'red';
                 button.style.borderRadius = '20px';
@@ -235,6 +236,7 @@ function chatUserView(chatId) {
                     document.getElementById('name_group_input').disabled = 0
                     document.getElementById('bio_group_input').disabled = 0
                     document.querySelector('.select-user').disabled = 0
+                    document.getElementById('delete-user').disabled = 0
                 }
             })
         });
