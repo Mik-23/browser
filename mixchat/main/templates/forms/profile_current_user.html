@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <title>Личный профиль</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/css/forms.css' %}">
+    <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
+</head>
+<body>
+    <form class="profile-form" id="profileForm" enctype="multipart/form-data" method="POST">
+        {% csrf_token %}
+        <div class="form-profile"><img src="" id="photoProfile"></div>
+        <div class="form-profile">
+            <label for="photo_input">Фотография профиля</label>
+            <input type="file" accept="image/*" id="photo_input" name="photo">
+        </div>
+        <div class="form-profile">
+            <label for="name_input">Имя</label>
+            <input type="text" id="name_input" name="name">
+        </div>
+        <div class="form-profile">
+            <label for="bio_input">Статус</label>
+            <input type="text" id="bio_input" name="bio">
+        </div>
+        <div class="form-profile">
+            <label for="date_birth_input">Дата рождения</label>
+            <input type="date" id="date_birth_input" name="date_birth">
+        </div>
+        <div class="profile-form-buttons">
+            <button type="submit" class="save-btn">Сохранить</button>
+            <a href="{% url 'chat_url' %}">
+                <button type="button" class="cancel-btn" id="cancelProfile">Назад</button>
+            </a>
+        </div>
+        <script>
+
+            document.querySelector('.save-btn').addEventListener('click', () => {
+                const photo = document.getElementById('photo_input').value;
+                const name_of_user = document.getElementById('name_input').value;
+                const date_birth = document.getElementById('date_birth_input').value;
+                const bio = document.getElementById('bio_input').value;
+                saveProfile(photo, name_of_user, date_birth, bio)
+                //getProfile();
+                //const form = document.getElementById('profileForm');
+                //form.style.display = 'none'
+            });
+        </script>
+    </form>
+    <script src="{% static 'main/js/profile.js' %}"></script>
+</body>
+</html>

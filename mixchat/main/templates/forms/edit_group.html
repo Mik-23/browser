@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <link rel="stylesheet" href="{% static 'main/css/forms.css' %}">
+    <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
+</head>
+<body>
+    <form class="profile-group" id="profileGroup">
+        <div class="profile-group-form"><img src="" style="width: 50px; height: 50px" id="photoGroup"></div>
+        <div class="profile-group-form">
+            <label for="photo_group_input">Фотография группы</label>
+            <input type="file" accept="image/*" id="photo_group_input" name="photo" disabled>
+        </div>
+        <div class="profile-group-form">
+            <label for="name_group_input">Название группы</label>
+            <input type="text" id="name_group_input" name="name" disabled>
+        </div>
+        <div class="profile-group-form">
+            <label for="bio_group_input">Описание</label>
+            <input type="text" id="bio_group_input" name="bio" disabled>
+        </div>
+        <div class="form-group">
+            <button type="button" class="select-user" disabled>
+                <svg width="20" height="20" viewBox="0 0 24 15" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 5v14M5 12h14"/>
+                </svg>
+                Добавить участника
+            </button>
+        </div>
+        <div class="profile-group-form users-list">
+            <label>Участники</label>
+            <ul id="groupUsersEdit" style="list-style-type: none;"></ul>
+        </div>
+        <div class="profile-group-buttons">
+            <button type="button" class="edit-group" style="display: none">Изменить</button>
+            <button type="button" class="cancel-group" id="cancelGroup">Отмена</button>
+        </div>
+        <script>
+            const path = window.location.pathname;
+            const name = path.split("/").pop()
+            function fetchChats() {
+                fetch('/api/get_chats/', { // Замените на ваш реальный эндпоинт
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    for (chat of data.chats) {
+                        if (chat.username === name) {
+                            chatUserView(chat.id)
+                        }
+                    }
+                })
+                .catch(error => console.error('Ошибка при получении чатов:', error));
+            }
+
+            fetchChats()
+        </script>
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                document.querySelector('.select-user').addEventListener('click', () => {
+                    document.getElementById('addUser').style.display = 'block';
+                    displayUsers(rest_usernames);
+                });
+
+                document.querySelector('.cancel-group').addEventListener('click', () => {
+                    window.location.href = '/'
+                });
+
+                document.querySelector('.no-class').addEventListener('click', () => {
+                    document.querySelector('.delete-or-no').style.display = 'none';
+                });
+
+                document.querySelector('.close').addEventListener('click', () => {
+                    document.querySelector('.add-user').style.display = 'none';
+                });
+
+                document.querySelector('.yes-class').addEventListener('click', () => {
+                    deleteUserFromGroup(currentChatId, selectedUser)
+                    window.location.href = '/'
+                });
+            });
+
+            document.querySelector('.edit-group').addEventListener('click', () => {
+                const photo = document.getElementById('photo_group_input').value;
+                const name = document.getElementById('name_group_input').value;
+                const bio = document.getElementById('bio_group_input').value;
+                if (photo === '') {
+
+                }
+                editChat(selectedUserIds, currentChatId, name, bio, photo, 'group')
+                window.location.href = '/'
+            });
+        </script>
+    </form>
+    <form class="add-user" id="addUser" style="display: none">
+        <div class="profile-group-form users-list">
+            <label>Выберите участников:</label>
+            <input type="checkbox" id="checkboxId" style="display: none">
+            <ul id="groupUsers" style="list-style-type: none;"></ul>
+            <button type="button" class="close">Закрыть</button>
+        </div>
+    </form>
+    <div class="delete-or-no" style="display: none" >
+        Вы уверены, что хотите удалить пользователя?
+        <div class="yes-no-buttons">
+            <button type="button" class="yes-class">Да</button>
+            <button type="button" class="no-class">Нет</button>
+        </div>
+    </div>
+<script src="{% static 'main/js/group.js' %}"></script>
+</body>
+</html>

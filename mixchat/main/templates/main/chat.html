@@ -19,7 +19,11 @@
     <div class="sidebar">
         <div class="sidebar-header">
             <h1>Mixchat</h1>
-            <button id="profile" class="btn" type="submit"><img src="" id="avatar"></button>
+            <a href="{% url 'profile_current_user' %}">
+                <button id="profile" class="btn" type="submit">
+                    <img src="" id="avatar">
+                </button>
+            </a>
             <form id="logout-form" style="top: 10px; right: 95px; border-radius: 10px">
               <button class="btn" type="submit">Выйти</button>
             </form>
@@ -41,109 +45,18 @@
         </div>
         <div class="vertical-line"></div>
         <div class="down-buttons">
-            <button id="group-create">Создать группу</button>
+            <a href="{% url 'create_group' %}">
+                <button id="group-create">Создать группу</button>
+            </a>
         </div>
         <h2 class="message-align" style="display: none;">Сообщения</h2>
     </div>
 
-    <form class="profile-form" id="profileForm" enctype="multipart/form-data" method="POST" style="display: none;">
-        {% csrf_token %}
-        <div class="form-profile"><img src="" id="photoProfile"></div>
-        <div class="form-profile">
-            <label for="photo_input">Фотография профиля</label>
-            <input type="file" accept="image/*" id="photo_input" name="photo">
-        </div>
-        <div class="form-profile">
-            <label for="name_input">Имя</label>
-            <input type="text" id="name_input" name="name">
-        </div>
-        <div class="form-profile">
-            <label for="bio_input">Статус</label>
-            <input type="text" id="bio_input" name="bio">
-        </div>
-        <div class="form-profile">
-            <label for="date_birth_input">Дата рождения</label>
-            <input type="date" id="date_birth_input" name="date_birth">
-        </div>
-        <div class="profile-form-buttons">
-            <button type="submit" class="save-btn">Сохранить</button>
-            <button type="button" class="cancel-btn" id="cancelProfile">Отмена</button>
-        </div>
-        <script>
-            document.querySelector('.save-btn').addEventListener('click', () => {
-                const photo = document.getElementById('photo_input').value;
-                const name_of_user = document.getElementById('name_input').value;
-                const date_birth = document.getElementById('date_birth_input').value;
-                const bio = document.getElementById('bio_input').value;
-                saveProfile(photo, name_of_user, date_birth, bio)
-                getProfile();
-                const form = document.getElementById('profileForm');
-                form.style.display = 'none'
-            });
-            document.querySelector('.cancel-btn').addEventListener('click', () => {
-                const form = document.getElementById('profileForm');
-                form.style.display = 'none'
-            });
-        </script>
-    </form>
-
-    <form class="profile-group" id="profileGroup" style="display: none;">
-        <div class="profile-group-form"><img src="media/photo/profilephoto/default.png" style="width: 50px; height: 50px" id="photoGroup"></div>
-        <div class="profile-group-form">
-            <label for="photo_group_input">Фотография группы</label>
-            <input type="file" accept="image/*" id="photo_group_input" name="photo">
-        </div>
-        <div class="profile-group-form">
-            <label for="name_group_input">Название группы</label>
-            <input type="text" id="name_group_input" name="name">
-        </div>
-        <div class="profile-group-form">
-            <label for="bio_group_input">Описание</label>
-            <input type="text" id="bio_group_input" name="bio">
-        </div>
-        <div class="profile-group-form users-list">
-            <label>Выберите участников:</label>
-            <input type="checkbox" id="checkboxId" style="display: none">
-            <ul id="groupUsers" style="list-style-type: none;"></ul>
-        </div>
-        <div class="profile-group-buttons">
-            <button type="button" class="save-group">Сохранить</button>
-            <button type="button" class="edit-group" style="display: none">Изменить</button>
-            <button type="button" class="cancel-group" id="cancelGroup">Отмена</button>
-        </div>
-        <script>
-            document.querySelector('.save-group').addEventListener('click', () => {
-                const photo = document.getElementById('photo_group_input').value;
-                const name = document.getElementById('name_group_input').value;
-                const bio = document.getElementById('bio_group_input').value;
-                if (photo === '') {
-
-                }
-                createChat(selectedUserIds, name, bio, photo, 'group')
-                const form = document.getElementById('profileGroup');
-                form.style.display = 'none'
-            });
-            document.querySelector('.edit-group').addEventListener('click', () => {
-                const photo = document.getElementById('photo_group_input').value;
-                const name = document.getElementById('name_group_input').value;
-                const bio = document.getElementById('bio_group_input').value;
-                if (photo === '') {
-
-                }
-                editChat(currentChatId, name, bio, photo, 'group')
-                const form = document.getElementById('profileGroup');
-                form.style.display = 'none'
-            });
-            document.querySelector('.cancel-group').addEventListener('click', () => {
-                const form = document.getElementById('profileGroup');
-                form.style.display = 'none'
-            });
-        </script>
-    </form>
-
     <!-- Поле для ввода сообщения -->
     <div class="main-chat" id="chatWindow" style="display: none; background: #0E1621;">
+
         <div class="user-name"><img src=""><p></p></div>
+
         <button class="out-chat" id="outChat">
             <svg viewBox="0 0 24 24" stroke="currentColor";>
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -231,6 +144,7 @@ document.getElementById('logout-form').addEventListener('submit', (event) => {
 
 <script src="{% static 'main/js/chat.js' %}"></script>
 <script src="{% static 'main/js/voice_messages.js' %}"></script>
+
 
 </body>
 </html>

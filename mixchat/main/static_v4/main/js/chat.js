@@ -3,11 +3,52 @@ let selectedUserId = null; // Переменная для хранения ID в
 let currentChatId = null;
 let type = null;
 const senderId = localStorage.getItem('user_id');
-let profileId = senderId
+let profileId = null
 let chatObj = []
 let selectedUserIds = [];
 let lastMessageCount = 0;
 let pollingInterval = null
+
+
+function getCurrentUser() {
+    return fetch('/api/current_user/', {
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+        }
+    })
+    .then(res => res.json())
+    .then(userData => {
+        return userData;
+    });
+}
+
+getCurrentUser().then(currentUser => {
+    avatar.src = currentUser.photo;
+    avatar.style.width = '50px';
+    avatar.style.height = '50px';
+})
+
+
+document.querySelector('.user-name img').addEventListener('click', () => {
+    const name = document.querySelector('.user-name p').textContent
+    let current_chat = {}
+    //console.log(chatObj)
+    for (let chat of chatObj) {
+        if (chat.username === name) {
+            current_chat = chat
+        }
+    }
+    if (current_chat.type === 'user') {
+        for (let user of users) {
+            if (user.username === name && user.type === 'user') {
+                window.location.href = `/profile_other_user/${user.username}`;
+            }
+        }
+    } else if (current_chat.type === 'group') {
+        window.location.href = `/edit_group/${current_chat.username}`;
+    }
+})
+
 
 // Функция для получения пользователей из API
 function fetchUsers() {
@@ -29,49 +70,6 @@ function fetchUsers() {
         users = data.users; // Сохраняем полученных пользователей в переменную
     })
     .catch(error => console.error('Ошибка при получении пользователей:', error));
-}
-
-
-// Функция для отображения пользователей
-function displayUsers() {
-    const userList = document.getElementById('groupUsers');
-    userList.innerHTML = ''; // Очистить список
-    if (users.length > 0) { // Проверяем, есть ли пользователи
-        users.forEach(user => {
-            const li = document.createElement('li');
-            const input = document.createElement('input')
-            input.type = 'checkbox'
-            input.value = user.id
-            const img = document.createElement('img')
-            const span = document.createElement('span')
-            img.src = user.photo
-            img.style.width = '20px'
-            img.style.height = '20px'
-            span.textContent = user.username; // Имя пользователя
-            li.appendChild(input)
-            li.appendChild(img)
-            li.appendChild(span)
-            li.onclick = function(e) {
-                 if (e.target.tagName !== 'INPUT') {
-                     const checkbox = this.querySelector('input');
-                     checkbox.checked = !checkbox.checked;
-                 }
-
-                 const checkbox = this.querySelector('input');
-                 if (checkbox.checked) {
-                     this.classList.add('selected');
-                     selectedUserIds.push(user.id);
-                 } else {
-                     this.classList.remove('selected');
-                     selectedUserIds = selectedUserIds.filter(id => id !== user.id);
-                 }
-             };
-            userList.appendChild(li);
-        });
-        userList.style.display = 'block'; // Показываем список
-    } else {
-        userList.style.display = 'none'; // Скрываем список, если нет пользователей
-    }
 }
 
 // Функция для выбора пользователя
@@ -163,122 +161,6 @@ function checkForNewMessages(chatId) {
             loadMessages(chatId);  // есть новое сообщение!
         }
     });
-}
-
-document.querySelector('.user-name img').addEventListener('click', () => {
-    const name = document.querySelector('.user-name p').textContent
-    let current_chat = {}
-    for (chat of chatObj) {
-        if (chat.username === name) {
-            current_chat = chat
-        }
-    }
-    for (user of users) {
-        if (user.username === name && user.type === 'user') {
-            profileId = user.id
-        }
-    }
-    if (current_chat.type === 'user') {
-        getProfile()
-        const profileForm = document.getElementById('profileForm');
-        profileForm.style.display = 'block';
-        document.querySelector('.save-btn').style.display = 'none'
-        document.getElementById('photo_input').style.display = 'none'
-        document.getElementById('name_input').disabled = 1
-        document.getElementById('date_birth_input').disabled = 1
-        document.getElementById('bio_input').disabled = 1
-    } else if (current_chat.type === 'group') {
-        const profileGroup = document.getElementById('profileGroup');
-        profileGroup.style.display = 'block';
-        chatUserView(current_chat.id)
-        document.querySelector('.save-group').style.display = 'none'
-        document.querySelector('.edit-group').style.display = 'none'
-        document.querySelector('.profile-group-form img').src = current_chat.photo;
-        document.getElementById('name_group_input').value = current_chat.username
-        document.getElementById('bio_group_input').value = current_chat.bio
-        document.getElementById('photo_group_input').style.display = 'none'
-        document.getElementById('name_group_input').disabled = 1
-        document.getElementById('bio_group_input').disabled = 1
-    }
-});
-
-document.getElementById('profile').addEventListener('click', () => {
-    const profileForm = document.getElementById('profileForm');
-    profileId = senderId
-    getProfile()
-    profileForm.style.display = 'block';
-});
-
-document.getElementById('group-create').addEventListener('click', () => {
-    const profileGroup = document.getElementById('profileGroup');
-    profileGroup.style.display = 'block';
-    displayUsers()
-});
-
-function getCurrentUser() {
-    return fetch('/api/current_user/', {
-        headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
-        }
-    })
-    .then(res => res.json())
-    .then(userData => {
-        return userData;
-    });
-}
-
-function getProfile() {
-    const url = `/api/profile_form/?user_id=${profileId}`;
-    fetch(url, {
-        method: 'GET',
-        headers: {
-            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
-        }
-    })
-    .then(response => response.json())
-    .then(data => {
-        getCurrentUser().then(currentUser => {
-            const formPhoto = document.querySelector('.form-profile')
-            let photo = document.getElementById('photoProfile');
-            let photoFile = document.getElementById('photo_input');
-            let name_of_user = document.getElementById('name_input');
-            let date_birth = document.getElementById('date_birth_input');
-            let bio = document.getElementById('bio_input');
-            name_of_user.value = data.name;
-            date_birth.value = data.date_birth;
-            bio.value = data.bio;
-            photo.src = data.photo;
-            photo.style.width = '150px';
-            photo.style.height = '150px';
-            formPhoto.appendChild(photo)
-            const avatar = document.getElementById('avatar');
-            avatar.src = currentUser.photo;
-            avatar.style.width = '50px';
-            avatar.style.height = '50px';
-            });
-       });
-    }
-
-function saveProfile(photo, name, date_birth, bio) {
-   const formData = new FormData();
-   if (photo_input.files.length > 0) {
-      for (let i = 0; i < photo_input.files.length; i++) {
-          console.log(photo_input.files[i])
-          formData.append('photo', photo_input.files[i]);
-      }
-   }
-   formData.append('name', name);
-   formData.append('date_birth', date_birth);
-   formData.append('bio', bio);
-   const url = `/api/profile_form/`;
-   fetch(url, {
-       method: 'PUT',
-       headers: {
-           'Authorization': 'Bearer ' + localStorage.getItem('access_token')
-       },
-       body: formData
-   })
-   .then(response => response.text)
 }
 
 
@@ -536,7 +418,7 @@ function loadMessages(chatId) {
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/firebase-messaging-sw.js', {scope: '/'}).then(function(registration) {
-      
+
       console.log('ServiceWorker registration successful with scope: ', registration.scope);
     }, function(err) {
       // registration failed :(
@@ -553,86 +435,6 @@ function chatUserView(chatId) {
          },
     })
     .then(response => response.json())
-    .then(data => {
-        const userList = document.getElementById('groupUsers');
-        userList.innerHTML = ''; // Очистить список
-        const usersGroup = data.users
-
-        // Добавляем стили для списка
-        userList.style.listStyle = 'none';
-        userList.style.padding = '0';
-        userList.style.margin = '0';
-
-        usersGroup.forEach(user => {
-            const li = document.createElement('li');
-
-            // Стили для каждого элемента
-            li.style.display = 'flex';
-            li.style.alignItems = 'center';
-            li.style.padding = '12px 16px';
-            li.style.marginBottom = '8px';  // ← Отступ между элементами
-            li.style.borderRadius = '8px';
-            li.style.borderBottom = '1px solid #e0e0e0';  // ← Разделительная линия
-
-            const img = document.createElement('img')
-            img.src = user[1]
-            img.style.width = '40px';  // Увеличил размер
-            img.style.height = '40px';
-            img.style.borderRadius = '50%';  // Круглая аватарка
-            img.style.marginRight = '12px';
-            img.style.objectFit = 'cover';
-
-            const span = document.createElement('span')
-            span.textContent = user[0]; // Имя пользователя
-            span.style.flex = '1';  // Занимает все доступное место
-            span.style.fontSize = '16px';
-            span.style.fontWeight = '500';
-
-            const role = document.createElement('span')
-            role.textContent = user[2];
-            role.style.padding = '4px 12px';
-            role.style.backgroundColor = '#1F9494';
-            role.style.color = 'white';
-            role.style.borderRadius = '20px';
-            role.style.fontSize = '12px';
-            role.style.fontWeight = '600';
-
-            li.appendChild(img)
-            li.appendChild(span)
-            li.appendChild(role)
-            userList.appendChild(li);
-            getCurrentUser().then(currentUser => {
-                if (currentUser.name === user[0] && user[2] === 'Создатель') {
-                    document.querySelector('.edit-group').style.display = 'block'
-                    document.getElementById('photo_group_input').style.display = 'block'
-                    document.getElementById('name_group_input').disabled = 0
-                    document.getElementById('bio_group_input').disabled = 0
-                }
-            })
-        });
-    })
-}
-
-function editChat(chat_id, name, bio, photo, type) {
-   const formData = new FormData();
-   formData.append('chat_id', chat_id);
-   formData.append('name', name);
-   formData.append('bio', bio);
-   if (photo_group_input.files.length > 0) {
-      for (let i = 0; i < photo_group_input.files.length; i++) {
-          console.log(photo_group_input.files[i])
-          formData.append('photo', photo_group_input.files[i]);
-      }
-   }
-   formData.append('type', type);
-   fetch('/api/chat/', { // Эндпоинт для создания нового чата
-       method: 'PUT',
-       headers: {
-           'Authorization': 'Bearer ' + localStorage.getItem('access_token')
-       },
-       body: formData
-   })
-   .then(response => response.json())
 }
 
 function createChat(groupUsers, name, bio, photo, chat_type) {
@@ -788,4 +590,3 @@ function displayChats(chats) {
 // Инициализация списка пользователей при загрузке страницы
 fetchUsers();
 fetchChats();
-getProfile();

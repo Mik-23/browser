@@ -1,0 +1,537 @@
+* {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: rgba(0, 0, 45, 11);
+            overflow-x: hidden;
+        }
+        .profile-form {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 500px;
+            background: #0E1621;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+        }
+
+        .form-profile label {
+            display: block;
+            color: #D9FFFD;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .form-profile img {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid #1F9494;
+            margin-bottom: 16px;
+        }
+
+        /* Поля ввода формы профиля */
+        .form-profile input[type="file"],
+        .form-profile input[type="text"],
+        .form-profile input[type="date"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            padding: 14px 20px;
+            color: #FFFFFF;
+            font-size: 14px;
+            outline: none;
+            transition: 0.15s;
+            cursor: pointer;
+        }
+
+        .form-profile input[type="file"]:hover,
+        .form-profile input[type="text"]:hover,
+        .form-profile input[type="date"]:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .form-profile input[type="file"]:focus,
+        .form-profile input[type="text"]:focus,
+        .form-profile input[type="date"]:focus {
+            border-color: #1F9494;
+            background: rgba(31, 148, 148, 0.1);
+        }
+
+        .form-profile input[type="file"]::-webkit-file-upload-button {
+            background: #1F9494;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin-right: 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .form-profile input[type="file"]::-webkit-file-upload-button:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.4);
+        }
+
+        .form-profile input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.7;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .form-profile input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        /* Кнопки для формы профиля (если нужно добавить) */
+        .profile-form-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .profile-form-buttons button {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .profile-form-buttons a{
+            flex: 1;
+        }
+
+        .profile-form-buttons .save-btn {
+            background: #1F9494;
+            color: white;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .profile-form-buttons .save-btn:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(31, 148, 148, 0.5);
+        }
+
+        .profile-form-buttons .cancel-btn {
+            flex: 1;
+            padding: 14px 80px;
+            background: rgba(255, 255, 255, 0.06);
+            color: #D9FFFD;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .profile-form-buttons .cancel-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Затемнение фона при открытой форме */
+        .profile-form-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+        }
+
+        .delete-or-no {
+            position: fixed;
+            top: 30%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background: #0E1621;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            color: #FFFFFF;
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.4;
+            margin-bottom: 24px;
+            text-align: center;
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+        }
+        .yes-no-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .delete-or-no button {
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        /* Кнопка "Да" (удалить) */
+        .delete-or-no .yes-class {
+            background: #ff4757;
+            color: white;
+            box-shadow: 0 4px 12px rgba(255, 71, 87, 0.3);
+        }
+
+        .delete-or-no .yes-class:hover {
+            background: #ff6b81;
+            transform: scale(1.02);
+            box-shadow: 0 6px 16px rgba(255, 71, 87, 0.4);
+        }
+
+        /* Кнопка "Нет" (отмена) */
+        .delete-or-no .no-class {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: #D9FFFD;
+        }
+
+        .delete-or-no .no-class:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        /* Форма для создания групп */
+        .add-user {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            max-height: 80vh;
+            background: #0E1621;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        /* Стили для заголовка */
+        .add-user label {
+            display: block;
+            color: #D9FFFD;
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Стили для списка пользователей */
+        .add-user .users-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .add-user .users-list ul {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .add-user .users-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            transition: background 0.2s;
+        }
+
+        .add-user .users-list li:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .add-user .users-list input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #1F9494;
+        }
+
+        .add-user .users-list img {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .add-user .users-list span {
+            flex: 1;
+            color: #FFFFFF;
+            font-size: 14px;
+        }
+
+        /* Кнопка Закрыть */
+        .add-user .close {
+            width: 100%;
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            color: #D9FFFD;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 20px;
+        }
+
+        .add-user .close:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.02);
+        }
+
+        .profile-group {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 90%;
+            max-width: 400px;
+            background: #0E1621;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 24px;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.75);
+            z-index: 1000;
+        }
+
+        .profile-group-form label {
+            display: block;
+            color: #D9FFFD;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        /* Поля ввода формы профиля для групп */
+        .profile-group-form input[type="file"],
+        .profile-group-form input[type="text"],
+        .profile-group-form[type="date"] {
+            width: 100%;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 40px;
+            padding: 14px 20px;
+            color: #FFFFFF;
+            font-size: 14px;
+            outline: none;
+            transition: 0.15s;
+            cursor: pointer;
+        }
+
+        .profile-group-form input[type="file"]:hover,
+        .profile-group-form input[type="text"]:hover,
+        .profile-group-form input[type="date"]:hover {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.15);
+        }
+
+        .profile-group-form input[type="file"]:focus,
+        .profile-group-form input[type="text"]:focus,
+        .profile-group-form input[type="date"]:focus {
+            border-color: #1F9494;
+            background: rgba(31, 148, 148, 0.1);
+        }
+
+        .profile-group-form input[type="file"]::-webkit-file-upload-button {
+            background: #1F9494;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            margin-right: 16px;
+            border-radius: 30px;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .profile-group-form input[type="file"]::-webkit-file-upload-button:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.4);
+        }
+
+        .profile-group-form input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(1);
+            opacity: 0.7;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .profile-group-form input[type="date"]::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        /* Кнопки для формы профиля групп */
+        .profile-group-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .profile-group-buttons button{
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 40px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.15s;
+        }
+
+        .profile-group-buttons .save-group {
+            background: #1F9494;
+            color: white;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .profile-group-buttons .save-group:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(31, 148, 148, 0.5);
+        }
+
+        .profile-group-buttons .edit-group {
+            background: #1F9494;
+            color: white;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .profile-group-buttons .edit-group:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(31, 148, 148, 0.5);
+        }
+
+        .profile-group-buttons .cancel-group {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.06);
+            color: #D9FFFD;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .profile-group-buttons .cancel-group:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .select-user {
+            background: transparent;
+            border: none;
+            border-radius: 40px;
+            padding: 2px;
+            color: #00A0E6;
+        }
+
+        .select-user:hover {
+            color: #3CD5FF;
+            transform: scale(1.02);
+
+        }
+
+        .profile-group-form.users-list {
+            margin-top: 16px;
+            max-height: 150px;
+            overflow-y: auto;
+            min-width: 0;
+            padding-right: 6px;
+        }
+
+        /* Базовые стили для списка */
+        .profile-group-form.users-list ul {
+            margin: 8px 0 0 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        /* Стили для каждого элемента списка (пользователя) */
+        .profile-group-form.users-list li {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            color: #FFFFFF;
+            font-size: 14px;
+        }
+
+        /* Убираем нижнюю границу у последнего элемента */
+        .profile-group-form.users-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* Стили для чекбоксов внутри списка */
+        .profile-group-form.users-list input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #1F9494;
+            margin: 0;
+        }
+
+        .profile-group-form.users-list::-webkit-scrollbar {
+            width: 4px;
+        }
+
+        .profile-group-form.users-list::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 4px;
+        }
+
+        .profile-group-form.users-list::-webkit-scrollbar-thumb {
+            background: #1F9494;
+            border-radius: 4px;
+        }
