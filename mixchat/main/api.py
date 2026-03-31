@@ -383,6 +383,7 @@ class ChatView(generics.GenericAPIView):
         return Response({
             'id': chat.id,
             'name': chat.name,
+            'bio': chat.bio,
             'photo': photo,
             'users': users
         })
@@ -424,29 +425,56 @@ class ChatView(generics.GenericAPIView):
         chat_id = serializer.validated_data['chat_id']
         name = serializer.validated_data['name']
         photo = request.FILES.get('photo')
-        type = serializer.validated_data['type']
+        type_chat = serializer.validated_data['type']
         bio = serializer.validated_data['bio']
+        try:
+            users = serializer.validated_data['users']
+        except KeyError:
+            users = None
         chat = Chat.objects.filter(id=chat_id).first()
         if not chat:
             return Response({"error": "Чат не найден"})
-        membership = ChatMembership.objects.filter(chat_id=chat_id, user_role='Создатель').first()
-        if not membership:
-            return Response({"error": "Участник чата не найден"})
-        # Проверяем: является ли текущий пользователь создателем группы
-        if membership.user_id == request.user.id and chat.type == type:
-            # Если да, то изменяем информацию о группе
-            chat.name = name
-            chat.bio = bio
-            if photo != None:
-                chat.photo.save(photo.name, photo)
-            chat.save()
-            return Response({
-                'message': 'Информация о группе изменилась.'
-            })
+        # Проверяем: является ли чат групповым
+        if type_chat == 'group':
+            membership = ChatMembership.objects.filter(chat_id=chat_id, user_role='Создатель').first()
+            if not membership:
+                return Response({"error": "Участник чата не найден"})
+            # Проверяем: является ли текущий пользователь создателем группы
+            if membership.user_id == request.user.id and chat.type == type_chat:
+                # Если да, то изменяем информацию о группе
+                chat.name = name
+                chat.bio = bio
+                if users:
+                    for user in users:
+                        membership = ChatMembership.objects.filter(user_id=user, chat_id=chat.id).first()
+                        if membership:
+                            return Response({"error": "Такой пользователь уже существует в чате"})
+                        else:
+                            ChatMembership.objects.create(user_id=user, chat_id=chat.id)
+                if photo != None:
+                    chat.photo.save(photo.name, photo)
+                chat.save()
+                return Response({'message': 'Информация о группе изменилась.'})
+            else:
+                return Response({'message': 'Ошибка. Недостаточно прав для редактирования группы.'})
         else:
-            return Response({
-                'message': 'Ошибка. Недостаточно прав для редактирования группы.'
-            })
+            return Response({'message': 'Ошибка. Возможно изменять только группы.'})
+
+
+class DeleteUserFromGroup(generics.GenericAPIView):
+    # Удаляем пользователя из группы
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        data = request.data
+        membership = ChatMembership.objects.filter(chat_id=data['chat_id'], user_id=request.user.id, user_role='Создатель').first()
+        if membership:
+            membership = ChatMembership.objects.filter(chat_id=data['chat_id'], user_id=data['user_id'])
+            membership.delete()
+            return Response({'message': 'Пользователь был удалён из группы'})
+        else:
+            return Response({'message': 'Ошибка. Только создатель может удалить из группы'})
 
 
 class GetChatsView(generics.GenericAPIView):
