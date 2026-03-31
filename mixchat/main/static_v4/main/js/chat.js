@@ -45,7 +45,7 @@ document.querySelector('.user-name img').addEventListener('click', () => {
             }
         }
     } else if (current_chat.type === 'group') {
-        window.location.href = `/edit_group/${current_chat.username}`;
+        window.location.href = `/edit_group/${current_chat.id}`;
     }
 })
 
