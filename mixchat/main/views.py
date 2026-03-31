@@ -37,3 +37,19 @@ def privacy_policy(request):
 
 def agreement(request):
     return render(request, 'main/agreement.html')
+
+
+def profile_current_user(request):
+    return render(request, 'forms/profile_current_user.html')
+
+
+def profile_other_user(request, username):
+    return render(request, 'forms/profile_other_user.html', {'username': username})
+
+
+def create_group(request):
+    return render(request, 'forms/create_group.html')
+
+
+def edit_group(request, name):
+    return render(request, 'forms/edit_group.html', {'name': name})
