@@ -44,7 +44,7 @@ def profile_current_user(request):
 
 
 def profile_other_user(request, username):
-    return render(request, 'forms/profile_other_user.html', {'username': username})
+    return render(request, 'forms/profile_other_user.html', {'username': str(username)})
 
 
 def create_group(request):
