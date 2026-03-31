@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <title>Title</title>
+    {% load static %}
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <link rel="stylesheet" href="{% static 'main/css/forms.css' %}">
+    <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
+</head>
+<body>
+    <form class="profile-group" id="profileGroup">
+        <div class="profile-group-form"><img src="media/photo/profilephoto/default.png" style="width: 50px; height: 50px" id="photoGroup"></div>
+        <div class="profile-group-form">
+            <label for="photo_group_input">Фотография группы</label>
+            <input type="file" accept="image/*" id="photo_group_input" name="photo">
+        </div>
+        <div class="profile-group-form">
+            <label for="name_group_input">Название группы</label>
+            <input type="text" id="name_group_input" name="name">
+        </div>
+        <div class="profile-group-form">
+            <label for="bio_group_input">Описание</label>
+            <input type="text" id="bio_group_input" name="bio">
+        </div>
+        <div class="profile-group-form users-list">
+            <label>Выберите участников:</label>
+            <input type="checkbox" id="checkboxId" style="display: none">
+            <ul id="groupUsers" style="list-style-type: none;"></ul>
+        </div>
+        <div class="profile-group-buttons">
+            <button type="button" class="save-group">Сохранить</button>
+            <button type="button" class="cancel-group" id="cancelGroup">Отмена</button>
+        </div>
+        <script>
+            document.querySelector('.cancel-group').addEventListener('click', () => {
+                window.location.href = '/'
+            });
+
+            document.querySelector('.save-group').addEventListener('click', () => {
+                const photo = document.getElementById('photo_group_input').value;
+                const name = document.getElementById('name_group_input').value;
+                const bio = document.getElementById('bio_group_input').value;
+                if (photo === '') {
+
+                }
+                createChat(selectedUserIds, name, bio, photo, 'group')
+                window.location.href = '/'
+            });
+
+        </script>
+    </form>
+<script src="{% static 'main/js/group.js' %}"></script>
+</body>
+</html>

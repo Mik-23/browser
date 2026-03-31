@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <title>Личный профиль</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/css/forms.css' %}">
+    <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
+</head>
+<body>
+    <form class="profile-form" id="profileForm" enctype="multipart/form-data" method="POST">
+        {% csrf_token %}
+        <div class="form-profile"><img src="" id="photoProfile"></div>
+        <div class="form-profile">
+            <label for="photo_input">Фотография профиля</label>
+            <input type="file" accept="image/*" id="photo_input" name="photo" disabled>
+        </div>
+        <div class="form-profile">
+            <label for="name_input">Имя</label>
+            <input type="text" id="name_input" name="name" disabled>
+        </div>
+        <div class="form-profile">
+            <label for="bio_input">Статус</label>
+            <input type="text" id="bio_input" name="bio" disabled>
+        </div>
+        <div class="form-profile">
+            <label for="date_birth_input">Дата рождения</label>
+            <input type="date" id="date_birth_input" name="date_birth" disabled>
+        </div>
+        <div class="profile-form-buttons">
+            <a href="{% url 'chat_url' %}">
+                <button type="button" class="cancel-btn" id="cancelProfile">Назад</button>
+            </a>
+        </div>
+        <script>
+            let users = [];
+            const path = window.location.pathname;
+            const username = path.split("/").pop()
+            let user_id = null
+
+            function fetchUsers() {
+                fetch('/api/search_user/', { // Замените на ваш реальный эндпоинт
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
+                    }
+                })
+                .then(response => {
+                    if (response.ok) {
+                        return response.json(); // Продолжаем, если ответ успешный
+                    } else {
+                        // Обработка ошибок, например, выброс исключения или возврат отклоненного промиса
+                         window.location.href = '/auth_in_chat';
+                    }
+                })
+                .then(data => {
+                    users = data.users; // Сохраняем полученных пользователей в переменную
+                    getProfile(users)
+                })
+                .catch(error => console.error('Ошибка при получении пользователей:', error));
+            }
+
+            function getProfile(list_users) {
+                for (user of list_users) {
+                    if (user.username === username) {
+                        user_id = user.id
+                    }
+                }
+                const url = `/api/profile_form/?user_id=${user_id}`;
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                     const formPhoto = document.querySelector('.form-profile')
+                     let photo = document.getElementById('photoProfile');
+                     let photoFile = document.getElementById('photo_input');
+                     let name_of_user = document.getElementById('name_input');
+                     let date_birth = document.getElementById('date_birth_input');
+                     let bio = document.getElementById('bio_input');
+                     name_of_user.value = data.name;
+                     date_birth.value = data.date_birth;
+                     bio.value = data.bio;
+                     photo.src = data.photo;
+                     photo.style.width = '150px';
+                     photo.style.height = '150px';
+                     formPhoto.appendChild(photo)
+                   });
+            }
+
+            fetchUsers()
+        </script>
+    </form>
+
+</body>
+</html>
