@@ -211,7 +211,7 @@ function chatUserView(chatId) {
                 const button = document.createElement('button')
                 button.id = 'delete-user'
                 button.textContent = 'Удалить';
-                button.disabled = 1;
+                //button.disabled = 1;
                 button.style.backgroundColor = 'transparent';
                 button.style.color = 'red';
                 button.style.borderRadius = '20px';
