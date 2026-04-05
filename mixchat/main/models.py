@@ -51,6 +51,9 @@ class ChatMembership(models.Model):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='id_chat')
     user_role = models.TextField("Роль пользователя")
 
+    def __str__(self):
+        return f"Membership of chat{self.chat}"
+
 
 class Channel(models.Model):
     id = models.AutoField(primary_key=True)
@@ -71,8 +74,10 @@ class Message(models.Model):
     image = models.ImageField("Картинка", upload_to='messages/images/', null=True, blank=True)
     video = models.FileField("Видео", upload_to='messages/videos/', null=True, blank=True)
     audio = models.FileField("Аудио", upload_to='messages/audios/', null=True, blank=True)
-    timestamp = models.DateTimeField("Дата", auto_now=True)
+    timestamp = models.DateTimeField("Дата", auto_now_add =True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
+    is_edit = models.BooleanField("Редактировано?", null=True, blank=True)
+    delete_at_home = models.BooleanField("Удалено у себя?", null=True, blank=True)
 
     def __str__(self):
         return f"Message from {self.sender_user} to chat {self.chat.id}"
