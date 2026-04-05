@@ -287,10 +287,89 @@ class MessageView(generics.GenericAPIView):
                 "audio": message.audio.url if message.audio else None,
                 "date": message.timestamp.date(),
                 "time": timezone.localtime(message.timestamp).strftime('%H:%M'),
+                "chat_id": message.chat_id,
+                "is_edit": message.is_edit,
+                "delete_at_home": message.delete_at_home
             } for message in messages]
         return Response({
             'messages': list_messages
         })
+
+    def put(self, request, *args, **kwargs):
+        # Редактировать сообщение
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        content = serializer.validated_data['content']
+        chat_id = serializer.validated_data['chat_id']
+        message_id = serializer.validated_data['message_id']
+        #image_file = request.FILES.get('image')
+        #video_file = request.FILES.get('video')
+        #audio_file = request.FILES.get('audio')
+        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
+        if not member:
+            return Response({"error": "Ошибка. Невозможно редактировать сообщения, где вас нет в чате"})
+        chat = Chat.objects.filter(id=chat_id).first()
+        if not chat:
+            return Response({"error": "Чат не найден"})
+        message = Message.objects.filter(id=message_id).first()
+        if not message:
+            return Response({"error": "Сообщение не найдено"})
+
+        if message.sender_user_id != request.user.id:
+            return Response({"error": "Вы можете редактировать только свои сообщения"})
+
+        # Сохраняем фото в БД если оно есть
+        #if image_file != None:
+        #    message.image.save(image_file.name, image_file)
+        #else:
+        #    message.image = None
+#
+        ## Сохраняем видео в БД если оно есть
+        #if video_file:
+        #    message.video.save(video_file.name, video_file)
+        #else:
+        #    message.video = None
+#
+        ## Сохраняем аудио в БД если оно есть
+        #if audio_file:
+        #    message.audio.save(audio_file.name, audio_file)
+        #else:
+        #    message.audio = None
+        message.content = content
+        message.is_edit = True
+        message.save()
+        return Response({
+            'content': content,
+            'image': message.image.url if message.image else None,
+            'video': message.video.url if message.video else None,
+            'audio': message.audio.url if message.audio else None,
+            'message_id': message.id
+        })
+
+    def delete(self, request, *args, **kwargs):
+        # Редактировать сообщение
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        chat_id = serializer.validated_data['chat_id']
+        message_ids = serializer.validated_data['message_ids']
+        delete_type = serializer.validated_data['delete_type']
+        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
+        if not member:
+            return Response({"error": "Ошибка. Невозможно удалить сообщения, где вас нет в чате"})
+        chat = Chat.objects.filter(id=chat_id).first()
+        if not chat:
+            return Response({"error": "Чат не найден"})
+        for message_id in message_ids:
+            message = Message.objects.filter(id=message_id).first()
+            if delete_type == 'Только у себя':
+                message.delete_at_home = True
+                message.save()
+                return Response({'message': 'Вы удалили сообщение у себя.'})
+            elif delete_type == 'У всех':
+                message.delete()
+                return Response({'message': 'Вы удалили сообщение у всех.'})
+            else:
+                return Response({'message': 'Ошибка. Не выбран тип удаления.'})
 
 
 class MessageCountView(View):

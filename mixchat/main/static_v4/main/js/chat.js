@@ -8,6 +8,11 @@ let chatObj = []
 let selectedUserIds = [];
 let lastMessageCount = 0;
 let pollingInterval = null
+let msgId = null
+let msgContent = null
+let msgChatId = null
+let activeEditButton = null;
+let isEditMode = false;
 
 
 function getCurrentUser() {
@@ -165,6 +170,14 @@ function checkForNewMessages(chatId) {
 
 
 function loadMessages(chatId) {
+    editButton = document.querySelector('.temp-edit-btn')
+    if (editButton) {
+       editButton.style.display = 'none'
+    }
+    document.getElementById('messageContent').value = '';
+    document.querySelector('.message-dropdown').style.display = 'none'
+    document.querySelector('.delete-form').style.display = 'none'
+    document.querySelector('.sent').style.display = 'block'
     const messageList = document.querySelector('.message-message-list');
     const messageContainer = document.querySelector('.message-list');
     const userName = document.querySelector('.user-name');
@@ -207,7 +220,26 @@ function loadMessages(chatId) {
         data.messages.forEach(message => {
             const li = document.createElement('li');
             const messageContainer = document.createElement('div');
-
+            const menuBtn = document.createElement('button');
+            menuBtn.innerHTML = '⋮';
+            menuBtn.style.background = 'transparent'
+            menuBtn.style.cssText = `
+                background: transparent;
+                cursor: pointer;
+                width: 8px;
+                height: 8px;
+                align-items: center;
+                justify-content: center;
+                right: 25px;
+                top: -25px;
+            `;
+            menuBtn.classList.add('message-menu-btn');
+            menuBtn.setAttribute('data-message-id', message.id);
+            menuBtn.setAttribute('data-chat-id', message.chat_id);
+            menuBtn.setAttribute('data-message-content', message.content);
+            const dropdown = document.querySelector('.message-dropdown')
+            const editItem = document.querySelector('.edit-item');
+            const deleteItem = document.querySelector('.delete-item');
             // Создаем контейнер для времени
             const timeContainer = document.createElement('div');
             timeContainer.style.fontSize = '12px';
@@ -281,9 +313,13 @@ function loadMessages(chatId) {
                     }
                 } else {
                     const textSpan = document.createElement('span');
+                    const title = document.createElement('span');
                     textSpan.style.maxWidth = '300px';
                     textSpan.style.wordWrap = 'break-word';
-                    textSpan.textContent = `${message.sender_user}: ${message.content}`;
+                    title.style.fontSize = '12px';
+                    title.textContent = message.sender_user;
+                    textSpan.textContent = message.content;
+                    li.appendChild(title);
                     messageContainer.appendChild(textSpan);
                 }
             }
@@ -405,6 +441,54 @@ function loadMessages(chatId) {
                 messageContainer.appendChild(timeContainer);
             }
 
+            if (message.is_edit) {
+                const editedSpan = document.createElement('div');
+                editedSpan.textContent = '(ред.)';
+                editedSpan.style.fontSize = '15px'
+                editedSpan.classList.add('message-edited');
+                messageContainer.appendChild(editedSpan);
+            }
+
+             if (message.delete_at_home && message.sender_user_id === senderId) {
+                li.style.display = 'none'
+             }
+
+            menuBtn.onclick = (e) => {
+                e.stopPropagation();
+                msgId = e.currentTarget.getAttribute('data-message-id');
+                msgContent = e.currentTarget.getAttribute('data-message-content');
+                msgChatId = e.currentTarget.getAttribute('data-chat-id');
+                console.log(dropdown)
+                if (dropdown.style.display === 'block') {
+                    dropdown.style.display = 'none';
+                } else {
+                    dropdown.style.display = 'block';
+                }
+            }
+            if (message.sender_user_id === senderId) {
+                 editItem.onclick = (e) => {
+                    console.log(msgContent)
+                    loadMessageToInput(msgContent, msgChatId, msgId)
+                    dropdown.style.display = 'none'
+                 }
+            }
+            deleteItem.onclick = (e) => {
+                document.querySelector('.delete-form').style.display = 'block'
+                const delete_at_home = document.querySelector('.delete_at_home')
+                const delete_at_all = document.querySelector('.delete_at_all')
+                const close = document.querySelector('.close')
+                delete_at_home.onclick = (e) => {
+                   deleteMessage([msgId], msgContent, msgChatId, 'Только у себя')
+                }
+                delete_at_all.onclick = (e) => {
+                   deleteMessage([msgId], msgContent, msgChatId, 'У всех')
+                }
+                close.onclick = (e) => {
+                   document.querySelector('.delete-form').style.display = 'none'
+                }
+                dropdown.style.display = 'none'
+            }
+            li.appendChild(menuBtn);
             li.appendChild(messageContainer);
             messageList.appendChild(li);
         });
@@ -414,6 +498,84 @@ function loadMessages(chatId) {
 
 }
 
+function loadMessageToInput(content, chat_id, messageId) {
+    const sendButton = document.getElementById('sendMessageButton');
+    const messageInput = document.getElementById('messageContent');
+
+    // Удаляем старую кнопку
+    const oldBtn = document.querySelector('.temp-edit-btn');
+    if (oldBtn) oldBtn.remove();
+
+    // Создаём кнопку
+    const editButton = document.createElement('button');
+    editButton.className = 'temp-edit-btn';
+    editButton.innerHTML = `
+        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+            <path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/>
+            <path d="M0 0h24v24H0z" fill="none"/>
+        </svg>
+    `;
+    editButton.style.cssText = 'background:#4a90e2; border:none; border-radius:50%; width:40px; height:40px; font-size:20px; cursor:pointer; margin-left:10px;';
+
+    sendButton.style.display = 'none';
+    document.querySelector('.input-panel').appendChild(editButton);
+
+    messageInput.value = content;
+    messageInput.focus();
+    //messageInput.style.border = '2px solid #4a90e2';
+    //messageInput.style.backgroundColor = '#1a2a3a';
+
+    // Сохраняем
+    editButton.onclick = () => {
+        if (messageInput.value.trim()) {
+            editMessage(messageInput.value, chat_id, messageId);
+        }
+        // Очищаем
+        editButton.remove();
+        sendButton.style.display = 'block';
+        messageInput.value = '';
+        messageInput.style.border = '';
+        messageInput.style.backgroundColor = '';
+    };
+}
+
+function editMessage(content, chat_id, message_id) {
+    console.log(chat_id)
+    console.log(message_id)
+    fetch('/api/message/', { // Эндпоинт для создания нового чата
+       method: 'PUT',
+       headers: {
+           'Content-Type': 'application/json',
+           'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+       },
+       body: JSON.stringify({ content, chat_id, message_id}),
+   })
+   .then(response => response.json())
+   .then (data => {
+        loadMessages(chat_id);
+   })
+}
+
+function deleteMessage(message_ids, content, chat_id, delete_type) {
+    const formData = new FormData();
+    for (let i = 0; i <= message_ids.length - 1; i++) {
+       formData.append(`message_ids[${i}]`, message_ids[i]);;
+    }
+    formData.append('content', content)
+    formData.append('chat_id', chat_id)
+    formData.append('delete_type', delete_type)
+    fetch('/api/message/', { // Эндпоинт для создания нового чата
+       method: 'DELETE',
+       headers: {
+           'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+       },
+       body: formData,
+    })
+    .then(response => response.json())
+    .then (data => {
+         loadMessages(chat_id);
+    })
+}
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
@@ -525,6 +687,11 @@ mediaIcons.addEventListener('mouseleave', () => {
     mediaIcons.style.display = 'none'
 
 });
+
+//const dropdown = document.querySelector('.message-dropdow')
+//dropdown.addEventListener('mouseleave', () => {
+//    dropdown.style.display = 'none'
+//});
 
 
 
