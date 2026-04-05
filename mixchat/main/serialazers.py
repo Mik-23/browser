@@ -53,6 +53,9 @@ class MessageSerializer(serializers.Serializer):
     image = serializers.ImageField(required=False, allow_null=True)
     video = serializers.FileField(required=False, allow_null=True)
     audio = serializers.FileField(required=False, allow_null=True)
+    message_id = serializers.IntegerField(required=False, allow_null=True)
+    message_ids = serializers.ListField(required=False, allow_null=True)
+    delete_type = serializers.CharField(max_length=200, required=False, allow_null=True)
 
     def validate(self, data):
         # Проверяем, что хотя бы одно из полей content, image, video или audio заполнено
