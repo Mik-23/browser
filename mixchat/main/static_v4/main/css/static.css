@@ -341,6 +341,121 @@
             z-index: -1;
         }
 
+        /* Форма пересылки */
+        .transmission-form {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 350px;
+            max-width: 90%;
+            max-height: 80%;
+            background: #2c3e50;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+            z-index: 1001;
+            overflow: hidden;
+            animation: modalFadeIn 0.2s ease;
+        }
+
+        /* Список чатов */
+        #chats_for_transmission {
+            list-style: none;
+            margin: 0;
+            padding: 10px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        /* Элемент чата */
+        #chats_for_transmission li {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #1a2a3a;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            gap: 12px;
+        }
+
+        #chats_for_transmission li:hover {
+            background: #4a90e2;
+            transform: translateX(5px);
+        }
+
+        /* Аватар чата */
+        #chats_for_transmission li img {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        /* Информация о чате */
+        #chats_for_transmission li span {
+            flex: 1;
+            color: white;
+            font-weight: 500;
+            font-size: 15px;
+        }
+
+        .transmission-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            background: #1a2a3a;
+            border-bottom: 1px solid #3a3a3a;
+        }
+
+        .transmission-header h3 {
+            margin: 0;
+            color: white;
+            font-size: 16px;
+        }
+
+        .close-transmission {
+            background: none;
+            border: none;
+            color: #888;
+            font-size: 20px;
+            cursor: pointer;
+            padding: 0;
+            width: 28px;
+            height: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s;
+        }
+
+        .close-transmission:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+
+        /* Скроллбар */
+        #chats_for_transmission::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #chats_for_transmission::-webkit-scrollbar-track {
+            background: #1a2a3a;
+            border-radius: 3px;
+        }
+
+        #chats_for_transmission::-webkit-scrollbar-thumb {
+            background: #4a90e2;
+            border-radius: 3px;
+        }
+
+        #chats_for_transmission::-webkit-scrollbar-thumb:hover {
+            background: #357abd;
+        }
+
         .chat-align {
             text-align: center; /* Выравнивание текста влево */
         }
