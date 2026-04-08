@@ -66,6 +66,13 @@ class MessageSerializer(serializers.Serializer):
         return data
 
 
+class AnswerAndTransmissionSerializer(serializers.Serializer):
+    answer = serializers.CharField(max_length=200, required=False, allow_blank=True)
+    chat_id = serializers.IntegerField()
+    message_id = serializers.IntegerField()
+    to_chat_id = serializers.IntegerField(required=False, allow_null=True)
+
+
 class SearchUserSerializer(serializers.Serializer):
     pass
 
