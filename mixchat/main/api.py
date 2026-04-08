@@ -16,7 +16,7 @@ from .firebase import send_push_notification
 from .microservice_functions import mixrech, send_to_mqtt, get_mqtt
 from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, ChatMembership
 from .serialazers import (send_code_to_email, UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
-                          SearchUserSerializer,ChatSerializer, GetChatsSerializer,
+                          SearchUserSerializer,ChatSerializer, GetChatsSerializer, AnswerAndTransmissionSerializer,
                           CreateChannelSerializer, SubscribeToChannelSerializer,
                           SendMessageToChannelSerializer, ProfileformSerializer)
 
@@ -289,7 +289,11 @@ class MessageView(generics.GenericAPIView):
                 "time": timezone.localtime(message.timestamp).strftime('%H:%M'),
                 "chat_id": message.chat_id,
                 "is_edit": message.is_edit,
-                "delete_at_home": message.delete_at_home
+                "delete_at_home": message.delete_at_home,
+                "id_for_answer": message.id_for_answer,
+                "is_forwarded": message.is_forwarded,
+                "transmission_content": message.transmission_content,
+                "id_for_transmission": message.id_for_transmission
             } for message in messages]
         return Response({
             'messages': list_messages
@@ -347,7 +351,7 @@ class MessageView(generics.GenericAPIView):
         })
 
     def delete(self, request, *args, **kwargs):
-        # Редактировать сообщение
+        # Удалить сообщение
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         chat_id = serializer.validated_data['chat_id']
@@ -370,6 +374,67 @@ class MessageView(generics.GenericAPIView):
                 return Response({'message': 'Вы удалили сообщение у всех.'})
             else:
                 return Response({'message': 'Ошибка. Не выбран тип удаления.'})
+
+
+class AnswerMessageView(generics.GenericAPIView):
+    serializer_class = AnswerAndTransmissionSerializer
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # Ответить на сообщение
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        message_id = serializer.validated_data['message_id']
+        chat_id = serializer.validated_data['chat_id']
+        answer = serializer.validated_data['answer']
+        chat = Chat.objects.filter(id=chat_id).first()
+        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
+        if not member:
+            return Response({"error": "Ошибка. Невозможно ответить на сообщение, где вас нет в чате"})
+        if not chat:
+            return Response({"error": "Чат не найден"})
+
+        new_message = Message.objects.create(sender_user_id=request.user.id, content=answer,
+                                             id_for_answer=message_id, chat_id=chat_id)
+        return Response({
+            'answer': answer,
+            'id_for_answer': new_message.id_for_answer
+        })
+
+
+class MessageTransmissionView(generics.GenericAPIView):
+    serializer_class = AnswerAndTransmissionSerializer
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # Переслать сообщение
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        message_id = serializer.validated_data['message_id']
+        chat_id = serializer.validated_data['chat_id']
+        answer = serializer.validated_data['answer']
+        to_chat_id = serializer.validated_data['to_chat_id']
+        current_chat = Chat.objects.filter(id=chat_id).first()
+        to_chat = Chat.objects.filter(id=to_chat_id).first()
+        message = Message.objects.filter(id=message_id).first()
+        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
+        if not member:
+            return Response({"error": "Ошибка. Невозможно переслать сообщение из чата, где вас нет."})
+        if not current_chat:
+            return Response({"error": "Чат не найден"})
+        if not to_chat:
+            return Response({"error": "Чат для пересылки не найден"})
+        new_message = Message.objects.create(sender_user_id=request.user.id, content=answer,
+                                             id_for_transmission=message_id, chat_id=to_chat_id,
+                                             is_forwarded=True, transmission_content=message.content)
+        return Response({
+            'answer': answer,
+            'id_for_transmission': new_message.id_for_transmission,
+            'old_chat_id': chat_id,
+            'to_chat_id': new_message.chat_id
+        })
 
 
 class MessageCountView(View):
