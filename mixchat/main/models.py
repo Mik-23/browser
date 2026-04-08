@@ -78,6 +78,10 @@ class Message(models.Model):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
     is_edit = models.BooleanField("Редактировано?", null=True, blank=True)
     delete_at_home = models.BooleanField("Удалено у себя?", null=True, blank=True)
+    id_for_answer = models.IntegerField("Ответное сообщение", null=True, blank=True)
+    id_for_transmission = models.IntegerField("Пересланное сообщение (ID)", null=True, blank=True)
+    is_forwarded = models.BooleanField("Пересылка?", default=False)
+    transmission_content = models.TextField("Пересланное сообщение")
 
     def __str__(self):
         return f"Message from {self.sender_user} to chat {self.chat.id}"

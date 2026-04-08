@@ -13,6 +13,8 @@ let msgContent = null
 let msgChatId = null
 let activeEditButton = null;
 let isEditMode = false;
+let oldChatID = null;
+let isInActionMode = false;
 
 
 function getCurrentUser() {
@@ -154,6 +156,7 @@ function openChat(currentChatId) {
 }
 
 function checkForNewMessages(chatId) {
+    if (isInActionMode) return;
     fetch(`/api/message/count/?chat_id=${chatId}`, {
         headers: {
             'Authorization': 'Bearer ' + localStorage.getItem('access_token')
@@ -173,6 +176,14 @@ function loadMessages(chatId) {
     editButton = document.querySelector('.temp-edit-btn')
     if (editButton) {
        editButton.style.display = 'none'
+    }
+    answerButton = document.querySelector('.temp-answer-btn')
+    if (answerButton) {
+       answerButton.style.display = 'none'
+    }
+    transmissionButton = document.querySelector('.temp-transmission-btn')
+    if (transmissionButton) {
+       transmissionButton.style.display = 'none'
     }
     document.getElementById('messageContent').value = '';
     document.querySelector('.message-dropdown').style.display = 'none'
@@ -240,6 +251,8 @@ function loadMessages(chatId) {
             const dropdown = document.querySelector('.message-dropdown')
             const editItem = document.querySelector('.edit-item');
             const deleteItem = document.querySelector('.delete-item');
+            const answerItem = document.querySelector('.answer-item');
+            const transmissionItem = document.querySelector('.transmission-item');
             // Создаем контейнер для времени
             const timeContainer = document.createElement('div');
             timeContainer.style.fontSize = '12px';
@@ -317,6 +330,8 @@ function loadMessages(chatId) {
                     textSpan.style.maxWidth = '300px';
                     textSpan.style.wordWrap = 'break-word';
                     title.style.fontSize = '12px';
+                    title.style.color = '#99BEFF';
+                    title.style.fontWeight = 'bold';
                     title.textContent = message.sender_user;
                     textSpan.textContent = message.content;
                     li.appendChild(title);
@@ -435,6 +450,75 @@ function loadMessages(chatId) {
                 messageContainer.appendChild(mediaWrapper);
             }
 
+            let answer_message = {}
+            const message_id_answer = message.id_for_answer
+            const message_id_transmission = message.id_for_transmission
+            const is_forwarded = message.is_forwarded
+            if (message_id_answer || message_id_transmission) {
+                const replyWrapper = document.createElement('div');
+                replyWrapper.style.display = 'flex';
+                replyWrapper.style.alignItems = 'stretch';
+                replyWrapper.style.background = '#197575';
+                replyWrapper.style.gap = '8px';
+                replyWrapper.style.marginBottom = '6px';
+                replyWrapper.style.paddingLeft = '4px';
+
+                // Вертикальная линия
+                const line = document.createElement('div');
+                line.style.width = '2px';
+                line.style.background = '#4a90e2';
+                line.style.borderRadius = '2px';
+                line.style.margin = '2px 0';
+
+                const replyInfo = document.createElement('div');
+                replyInfo.style.flex = '1';
+                let found = false;
+                for (let mess of data.messages) {
+                    if (message_id_answer && mess.id === message_id_answer) {
+                        answer_message = mess;
+                        const name = document.createElement('div');
+                        name.style.fontSize = '11px';
+                        name.style.color = '#90C5FF';
+                        name.style.marginBottom = '2px';
+                        name.textContent = `Ответ для ${answer_message.sender_user}`;
+
+                        const preview = document.createElement('div');
+                        preview.style.fontSize = '11px';
+                        preview.style.color = '#D1D1D1';
+                        preview.style.overflow = 'hidden';
+                        preview.textContent = answer_message.content;
+                        replyInfo.appendChild(name);
+                        replyInfo.appendChild(preview);
+                        found = true;
+                        break
+                    } else if (message_id_transmission && is_forwarded) {
+                        answer_message = message;
+                        const name = document.createElement('div');
+                        name.style.fontSize = '11px';
+                        name.style.color = '#90C5FF';
+                        name.style.marginBottom = '2px';
+                        name.textContent = `Переслано от ${answer_message.sender_user}`;
+
+                        const preview = document.createElement('div');
+                        preview.style.fontSize = '11px';
+                        preview.style.color = '#D1D1D1';
+                        preview.style.overflow = 'hidden';
+                        preview.textContent = answer_message.transmission_content;
+
+                        replyInfo.appendChild(name);
+                        replyInfo.appendChild(preview);
+                        found = true;
+                        break
+                    }
+                }
+                if (found) {
+                   replyWrapper.appendChild(line);
+                   replyWrapper.appendChild(replyInfo);
+
+                   messageContainer.appendChild(replyWrapper);
+                }
+            }
+
             // Добавляем время в конец сообщения
             if (messageTime) {
                 timeContainer.textContent = messageTime;
@@ -452,7 +536,6 @@ function loadMessages(chatId) {
              if (message.delete_at_home && message.sender_user_id === senderId) {
                 li.style.display = 'none'
              }
-
             menuBtn.onclick = (e) => {
                 e.stopPropagation();
                 msgId = e.currentTarget.getAttribute('data-message-id');
@@ -467,8 +550,7 @@ function loadMessages(chatId) {
             }
             if (message.sender_user_id === senderId) {
                  editItem.onclick = (e) => {
-                    console.log(msgContent)
-                    loadMessageToInput(msgContent, msgChatId, msgId)
+                    loadMessageToEdit(msgContent, msgChatId, msgId)
                     dropdown.style.display = 'none'
                  }
             }
@@ -488,6 +570,23 @@ function loadMessages(chatId) {
                 }
                 dropdown.style.display = 'none'
             }
+            answerItem.onclick = (e) => {
+                loadMessageToAnswer(msgContent, msgChatId, msgId)
+                dropdown.style.display = 'none'
+            }
+            transmissionItem.onclick = (e) => {
+                document.querySelector('.transmission-form').style.display = 'block'
+                fetch('/api/get_chats/', { // Замените на ваш реальный эндпоинт
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    selectChatForTransmission(data.chats, msgContent, msgId, msgChatId);
+                })
+            }
             li.appendChild(menuBtn);
             li.appendChild(messageContainer);
             messageList.appendChild(li);
@@ -498,7 +597,108 @@ function loadMessages(chatId) {
 
 }
 
-function loadMessageToInput(content, chat_id, messageId) {
+function loadMessageToAnswer(content, chat_id, messageId) {
+    const sendButton = document.getElementById('sendMessageButton');
+    const messageInput = document.getElementById('messageContent');
+
+    // Удаляем старую кнопку
+    const oldBtn = document.querySelector('.temp-answer-btn');
+    if (oldBtn) oldBtn.remove();
+
+    // Создаём кнопку
+    const answerButton = document.createElement('button');
+    answerButton.className = 'temp-answer-btn';
+    answerButton.innerHTML = `
+        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px; fill: none; stroke: white; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;">
+            <path d="M3 10H13C17 10 19 12 19 16"/>
+            <polyline points="8 5 3 10 8 15"/>
+        </svg>
+    `;
+    answerButton.style.cssText = 'background:#4a90e2; border:none; border-radius:50%; width:40px; height:40px; font-size:20px; cursor:pointer; margin-left:10px;';
+
+    sendButton.style.display = 'none';
+    document.querySelector('.input-panel').appendChild(answerButton);
+    messageInput.focus();
+    // Сохраняем
+    answerButton.onclick = () => {
+        const answer = messageInput.value
+        answerMessage(answer, chat_id, messageId);
+        answerButton.remove();
+        sendButton.style.display = 'block';
+        messageInput.value = '';
+        messageInput.style.border = '';
+        messageInput.style.backgroundColor = '';
+    };
+}
+
+function loadMessageToTransmission(content, to_chat_id, messageId, chat_id) {
+    isInActionMode = true;
+    const sendButton = document.getElementById('sendMessageButton');
+    const messageInput = document.getElementById('messageContent');
+
+    // Удаляем старую кнопку
+    const oldBtn = document.querySelector('.temp-transmission-btn');
+    if (oldBtn) oldBtn.remove();
+
+    // Создаём кнопку
+    const transmissionButton = document.createElement('button');
+    transmissionButton.className = 'temp-transmission-btn';
+    transmissionButton.innerHTML = `
+        <svg viewBox="0 0 24 24" style="width: 20px; height: 20px;">
+            <path fill="white" d="M12,4L10.59,5.41L16.17,11H4V13H16.17L10.59,18.59L12,20L20,12L12,4Z"/>
+        </svg>
+    `;
+    transmissionButton.style.cssText = 'background:#4a90e2; border:none; border-radius:50%; width:40px; height:40px; font-size:20px; cursor:pointer; margin-left:10px;';
+
+    sendButton.style.display = 'none';
+    document.querySelector('.input-panel').appendChild(transmissionButton);
+
+    messageInput.focus();
+
+    // Сохраняем
+    transmissionButton.onclick = () => {
+        const answer = messageInput.value
+        transmissionMessage(answer, chat_id, to_chat_id, messageId);
+        transmissionButton.remove();
+        sendButton.style.display = 'block';
+        messageInput.value = '';
+        messageInput.style.border = '';
+        messageInput.style.backgroundColor = '';
+        isInActionMode = false
+    };
+}
+
+function answerMessage(answer, chat_id, message_id) {
+    fetch('/api/message_answer/', { // Эндпоинт для создания нового чата
+       method: 'POST',
+       headers: {
+           'Content-Type': 'application/json',
+           'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+       },
+       body: JSON.stringify({ answer, chat_id, message_id}),
+   })
+   .then(response => response.json())
+   .then (data => {
+        loadMessages(chat_id);
+   })
+}
+
+function transmissionMessage(answer, chat_id, to_chat_id, message_id) {
+    fetch('/api/message_transmission/', { // Эндпоинт для создания нового чата
+       method: 'POST',
+       headers: {
+           'Content-Type': 'application/json',
+           'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+       },
+       body: JSON.stringify({ answer, chat_id, to_chat_id, message_id}),
+   })
+   .then(response => response.json())
+   .then (data => {
+        loadMessages(chat_id);
+   })
+}
+
+function loadMessageToEdit(content, chat_id, messageId) {
     const sendButton = document.getElementById('sendMessageButton');
     const messageInput = document.getElementById('messageContent');
 
@@ -522,8 +722,6 @@ function loadMessageToInput(content, chat_id, messageId) {
 
     messageInput.value = content;
     messageInput.focus();
-    //messageInput.style.border = '2px solid #4a90e2';
-    //messageInput.style.backgroundColor = '#1a2a3a';
 
     // Сохраняем
     editButton.onclick = () => {
@@ -540,8 +738,6 @@ function loadMessageToInput(content, chat_id, messageId) {
 }
 
 function editMessage(content, chat_id, message_id) {
-    console.log(chat_id)
-    console.log(message_id)
     fetch('/api/message/', { // Эндпоинт для создания нового чата
        method: 'PUT',
        headers: {
@@ -744,7 +940,46 @@ function displayChats(chats) {
             openChat(chat.id);
             chatUserView(chat.id)
             li.style.backgroundColor = '#1F9494';
+        }
+        li.appendChild(span);
+        li.appendChild(p);
+        li.appendChild(img)
+        chatList.appendChild(li);
+        chatList.style.display = 'block';
+    });
+}
 
+function selectChatForTransmission(chats, msgContent, msgId, msgChatId) {
+    const chatList = document.getElementById('chats_for_transmission');
+    chatList.innerHTML = ''; // Очистить список
+    const numSenderId = senderId
+    chatObj = chats
+    chats.forEach(chat => {
+        const li = document.createElement('li');
+        const span = document.createElement('span');
+        span.textContent = chat.username; // Имя пользователя в чате
+        const p = document.createElement('p');
+        const img = document.createElement('img');
+        img.src = chat.photo;
+        img.style.width = '50px'
+        img.style.height = '50px'
+        li.onclick = () => {
+            const listChat = document.getElementById('chats_for_transmission')
+            const allLists = listChat.querySelectorAll('li')
+            const mediaIcons = document.getElementById('media')
+            for (const lis of allLists) {
+                lis.style.backgroundColor = '#3a3a3a';
+                mediaIcons.style.display = 'none'
+            }
+            currentChatId = chat.id
+            type = chat.type
+            openChat(chat.id);
+            chatUserView(chat.id)
+            if (msgContent && msgId) {
+                loadMessageToTransmission(msgContent, chat.id, msgId, msgChatId)
+            }
+            li.style.backgroundColor = '#1F9494';
+            document.querySelector('.transmission-form').style.display = 'none'
         }
         li.appendChild(span);
         li.appendChild(p);
