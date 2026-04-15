@@ -21,3 +21,6 @@ mixchat - мессенджер,
 mixrech - поисковик,                      
 docker-compose.yml - файл с контейнерами поисковика, мессенджера и вэб-сервера,                        
 nginx.conf - файл вэб-сервера.
+
+![Uploading mixchat страница.jpg…]()
+
