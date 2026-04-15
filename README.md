@@ -22,4 +22,4 @@ mixrech - поисковик,
 docker-compose.yml - файл с контейнерами поисковика, мессенджера и вэб-сервера,                        
 nginx.conf - файл вэб-сервера.
 
-![Uploading mixrech страница.jpg…]()
+<img width="1913" height="967" alt="mixrech_main_page" src="https://github.com/user-attachments/assets/965b749b-e17a-43f3-a0f5-b402e16169db" />
