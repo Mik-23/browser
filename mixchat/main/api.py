@@ -1,5 +1,7 @@
+import os
 import json
 import random
+from dotenv import load_dotenv
 from django.utils import timezone
 from django.http import JsonResponse
 from django.views import View
@@ -14,11 +16,16 @@ from django.contrib.auth import authenticate
 from django.urls import reverse
 from .firebase import send_push_notification
 from .microservice_functions import mixrech, send_to_mqtt, get_mqtt
+from .cifer import gen_key, encrypt_text, encrypt_file, decrypt_text, decrypt_file
 from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, ChatMembership
 from .serialazers import (send_code_to_email, UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer, AnswerAndTransmissionSerializer,
                           CreateChannelSerializer, SubscribeToChannelSerializer,
                           SendMessageToChannelSerializer, ProfileformSerializer)
+
+
+load_dotenv()
+salt = os.getenv('CIFER_SALT')
 
 
 class CsrfExemptSessionAuthentication(SessionAuthentication):
@@ -185,11 +192,11 @@ class MessageView(generics.GenericAPIView):
         image_file = request.FILES.get('image')
         video_file = request.FILES.get('video')
         audio_file = request.FILES.get('audio')
-        print('VIDEO', video_file)
+        key = gen_key(chat_id, salt)
         if chat_type == 'user' or chat_type == 'group':
             message = Message(
                 sender_user_id=sender_id,
-                content=content,
+                content=encrypt_text(content, key),
                 chat_id=chat_id
             )
 
@@ -198,7 +205,6 @@ class MessageView(generics.GenericAPIView):
                 message.image.save(image_file.name, image_file)
             else:
                 message.image = None
-
             # Сохраняем видео в БД если оно есть
             if video_file:
                 message.video.save(video_file.name, video_file)
@@ -238,7 +244,7 @@ class MessageView(generics.GenericAPIView):
             recipient = bot.name
             message = Message(
                 sender_user_id=sender_id,
-                content=content,
+                content=encrypt_text(content, key),
                 chat_id=chat_id
             )
 
@@ -257,7 +263,7 @@ class MessageView(generics.GenericAPIView):
                 message_content = get_mqtt()
             message_bot = Message(
                 sender_bot_id=bot.id,
-                content=message_content,
+                content=encrypt_text(message_content, key),
                 chat_id=chat_id,
             )
             message_bot.save()
@@ -271,6 +277,7 @@ class MessageView(generics.GenericAPIView):
     def get(self, request, *args, **kwargs):
         # Получение сообщений
         chat_id = request.GET.get('chat_id')
+        key = gen_key(chat_id, salt)
         member = ChatMembership.objects.filter(user_id=request.user.id, chat_id=chat_id)
         if not member:
             return Response({"error": "Ошибка. Невозможно просматривать сообщения в чате, где вас нет"})
@@ -281,7 +288,7 @@ class MessageView(generics.GenericAPIView):
                 "sender_user_id": str(message.sender_user_id),
                 "sender_bot": str(message.sender_bot),
                 "sender_bot_id": str(message.sender_bot_id),
-                "content": message.content,
+                "content": decrypt_text(message.content[2:-1].encode('utf-8'), key) if message.content else '',
                 "image": message.image.url if message.image else None,
                 "video": message.video.url if message.video else None,
                 "audio": message.audio.url if message.audio else None,
@@ -292,7 +299,8 @@ class MessageView(generics.GenericAPIView):
                 "delete_at_home": message.delete_at_home,
                 "id_for_answer": message.id_for_answer,
                 "is_forwarded": message.is_forwarded,
-                "transmission_content": message.transmission_content,
+                "transmission_content": decrypt_text(message.transmission_content[2:-1].encode('utf-8'),
+                                        gen_key(Message.objects.get(id=message.id_for_transmission).chat_id, salt)) if message.transmission_content else '',
                 "id_for_transmission": message.id_for_transmission
             } for message in messages]
         return Response({
@@ -306,9 +314,7 @@ class MessageView(generics.GenericAPIView):
         content = serializer.validated_data['content']
         chat_id = serializer.validated_data['chat_id']
         message_id = serializer.validated_data['message_id']
-        #image_file = request.FILES.get('image')
-        #video_file = request.FILES.get('video')
-        #audio_file = request.FILES.get('audio')
+        key = gen_key(chat_id, salt)
         member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
         if not member:
             return Response({"error": "Ошибка. Невозможно редактировать сообщения, где вас нет в чате"})
@@ -322,24 +328,7 @@ class MessageView(generics.GenericAPIView):
         if message.sender_user_id != request.user.id:
             return Response({"error": "Вы можете редактировать только свои сообщения"})
 
-        # Сохраняем фото в БД если оно есть
-        #if image_file != None:
-        #    message.image.save(image_file.name, image_file)
-        #else:
-        #    message.image = None
-#
-        ## Сохраняем видео в БД если оно есть
-        #if video_file:
-        #    message.video.save(video_file.name, video_file)
-        #else:
-        #    message.video = None
-#
-        ## Сохраняем аудио в БД если оно есть
-        #if audio_file:
-        #    message.audio.save(audio_file.name, audio_file)
-        #else:
-        #    message.audio = None
-        message.content = content
+        message.content = encrypt_text(content, key)
         message.is_edit = True
         message.save()
         return Response({
@@ -388,6 +377,7 @@ class AnswerMessageView(generics.GenericAPIView):
         message_id = serializer.validated_data['message_id']
         chat_id = serializer.validated_data['chat_id']
         answer = serializer.validated_data['answer']
+        key = gen_key(chat_id, salt)
         chat = Chat.objects.filter(id=chat_id).first()
         member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
         if not member:
@@ -395,7 +385,7 @@ class AnswerMessageView(generics.GenericAPIView):
         if not chat:
             return Response({"error": "Чат не найден"})
 
-        new_message = Message.objects.create(sender_user_id=request.user.id, content=answer,
+        new_message = Message.objects.create(sender_user_id=request.user.id, content=encrypt_text(answer, key),
                                              id_for_answer=message_id, chat_id=chat_id)
         return Response({
             'answer': answer,
@@ -416,6 +406,7 @@ class MessageTransmissionView(generics.GenericAPIView):
         chat_id = serializer.validated_data['chat_id']
         answer = serializer.validated_data['answer']
         to_chat_id = serializer.validated_data['to_chat_id']
+        key = gen_key(to_chat_id, salt)
         current_chat = Chat.objects.filter(id=chat_id).first()
         to_chat = Chat.objects.filter(id=to_chat_id).first()
         message = Message.objects.filter(id=message_id).first()
@@ -426,7 +417,7 @@ class MessageTransmissionView(generics.GenericAPIView):
             return Response({"error": "Чат не найден"})
         if not to_chat:
             return Response({"error": "Чат для пересылки не найден"})
-        new_message = Message.objects.create(sender_user_id=request.user.id, content=answer,
+        new_message = Message.objects.create(sender_user_id=request.user.id, content=encrypt_text(answer, key),
                                              id_for_transmission=message_id, chat_id=to_chat_id,
                                              is_forwarded=True, transmission_content=message.content)
         return Response({
@@ -649,9 +640,12 @@ class GetChatsView(generics.GenericAPIView):
                 user = ChatUser.objects.filter(id=request.user.id).first()
             else:
                 user = ChatUser.objects.filter(id=memberships[0].user_id).first()
-
+            key = gen_key(chat.id, salt)
             if message is not None:
-                content = message.content
+                if message.content != '':
+                    content = decrypt_text(message.content[2:-1].encode('utf-8'), key)
+                else:
+                    content = ''
                 sender_name = message.sender_user.username + ': '
                 if message.image and not content:
                     content = 'Фотография'
@@ -667,13 +661,11 @@ class GetChatsView(generics.GenericAPIView):
                 photo = user.photo.url
             else:
                 photo = ''
-            print('CONTENT 1', content)
             try:
                 content = json.loads(content)
             except json.JSONDecodeError:
                 print('Ошибка: Невозможно декодировать формат отличный от JSON')
 
-            print('CONTENT', content)
             chat_with_user.append({
                 "id": chat.id,
                 "username": user.username,
@@ -694,7 +686,6 @@ class GetChatsView(generics.GenericAPIView):
             else:
                 content = ''
                 sender_name = ''
-            print('CONTENT', content)
             try:
                 new_content = ''
                 update_content = content.replace('"', '#')
@@ -713,6 +704,12 @@ class GetChatsView(generics.GenericAPIView):
                 photo = bot.photo.url
             else:
                 photo = ''
+            key = gen_key(chat.id, salt)
+            if len(content) == 0:
+                content = ''
+            else:
+                content = decrypt_text(content[2:-1].encode('utf-8'), key)
+
             chat_with_user.append({
                 "id": chat.id,
                 "username": bot.name,
