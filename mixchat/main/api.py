@@ -3,7 +3,7 @@ import json
 import random
 from dotenv import load_dotenv
 from django.utils import timezone
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 from django.views import View
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
@@ -16,7 +16,7 @@ from django.contrib.auth import authenticate
 from django.urls import reverse
 from .firebase import send_push_notification
 from .microservice_functions import mixrech, send_to_mqtt, get_mqtt
-from .cifer import gen_key, encrypt_text, encrypt_file, decrypt_text, decrypt_file
+from .cifer import gen_key, encrypt_text, decrypt_text
 from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, ChatMembership
 from .serialazers import (send_code_to_email, UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer, AnswerAndTransmissionSerializer,
@@ -100,12 +100,21 @@ class LoginView(generics.GenericAPIView):
         try:
             user = authenticate(username=email, password=password)
             refresh = RefreshToken.for_user(user)
-            return Response({
+            response = Response({
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
                 'user_id': user.id,
                 'redirect_url': '/',  # URL для перенаправления на страницу почты
             })
+            response.set_cookie(
+                'media_token',
+                refresh.access_token,
+                httponly=True,
+                secure=True,
+                samesite='Lax',
+                max_age=30 * 60
+            )
+            return response
         except AttributeError:
             return Response({'error': 'Неверный логин или пароль'})
 
@@ -115,8 +124,11 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        return Response({"detail": "Successfully logged out.",
+        response = Response({"detail": "Successfully logged out.",
                          'logout_redirect': '/auth_in_chat'})
+        response.delete_cookie('media_token')
+        response.delete_cookie('refresh_token')
+        return response
 
 
 class ProfileformView(generics.GenericAPIView):
@@ -163,6 +175,76 @@ class ProfileformView(generics.GenericAPIView):
         user.save()
         return Response({"photo": user.photo.url,
                          'date_birth': user.date_birth})
+
+
+class LoadMediaView(View):
+    # API для загрузки медиа
+    def get(self, request, file_name):
+        # Создаём словарь с типами медиафайлов
+        mime_types = {
+            'jpg': 'image/jpeg',
+            'jpeg': 'image/jpeg',
+            'png': 'image/png',
+            'gif': 'image/gif',
+            'webp': 'image/webp',
+            'bmp': 'image/bmp',
+            'svg': 'image/svg+xml',
+            'mp4': 'video/mp4',
+            'mov': 'video/quicktime',
+            'avi': 'video/x-msvideo',
+            'mkv': 'video/x-matroska',
+            'webm': 'audio/webm',
+            'mp3': 'audio/mpeg',
+            'wav': 'audio/wav',
+            'ogg': 'audio/ogg',
+            'flac': 'audio/flac',
+            'm4a': 'audio/mp4',
+        }
+        # Если это фото для пользователей или чатов
+        if file_name.startswith('photo'):
+            user = ChatUser.objects.filter(photo=file_name).first()
+            # Если пользователь с фото найден
+            if user:
+                # Открываем фото профиля
+                with open(user.photo.path, 'rb') as f:
+                    data = f.read()
+                    return HttpResponse(data, content_type='image/jpeg')
+            else:
+                chat = Chat.objects.filter(photo=file_name).first()
+                # Открываем фото чата
+                with open(chat.photo.path, 'rb') as f:
+                    data = f.read()
+                    return HttpResponse(data, content_type='image/jpeg')
+        # Находим тип выбранного файла
+        file_type = file_name[file_name.rindex('.'):]
+        message = None
+        content_type = None
+        media_file = None
+        for key, value in mime_types.items():
+            if key == file_type[1:] and value[0:value.index('/')] == 'image':
+                # Задаём тип фото
+                message = Message.objects.filter(image=file_name).first()
+                content_type = value
+                media_file = message.image.path
+            elif key == file_type[1:] and value[0:value.index('/')] == 'video':
+                # Задаём тип видео
+                message = Message.objects.filter(video=file_name).first()
+                content_type = value
+                media_file = message.video.path
+            elif key == file_type[1:] and value[0:value.index('/')] == 'audio':
+                # Задаём тип аудио
+                message = Message.objects.filter(audio=file_name).first()
+                content_type = value
+                media_file = message.audio.path
+        chat = Chat.objects.filter(id=message.chat_id).first()
+        members = ChatMembership.objects.filter(chat_id=chat.id).all()
+        members = list(map(lambda x: x.user_id, members))
+        if request.user.id in members:
+            with open(media_file, 'rb') as f:
+                data = f.read()
+                return HttpResponse(data, content_type=content_type)
+        else:
+            return HttpResponse("Ошибка. Пользователя нет в чате.")
 
 
 class MessageView(generics.GenericAPIView):
