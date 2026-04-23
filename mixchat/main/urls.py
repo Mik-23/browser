@@ -15,6 +15,7 @@ urlpatterns = [
     path('profile_other_user/<str:username>', views.profile_other_user, name='profile_other_user'),
     path('create_group', views.create_group, name='create_group'),
     path('edit_group/<int:name>', views.edit_group, name='edit_group'),
+    path('media/<path:file_name>', api.LoadMediaView.as_view(), name='media'),
     path('api/reg/', api.RegisterView.as_view(), name='reg'),
     path('api/send_code/', api.SendCodeView.as_view(), name='send_code'),
     path('api/resend_code/', api.ResendCodeView.as_view(), name='resend_code'),
