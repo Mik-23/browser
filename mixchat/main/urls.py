@@ -4,7 +4,7 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 urlpatterns = [
-    path('media/<path:file_name>', api.LoadMediaView.as_view(), name='media'),
+    path('media/<path:file_name>', api.LoadMediaView.as_view(), name='defense_media'),
     path('', views.chat, name='chat_url'),
     path('auth_in_chat', views.auth_in_chat, name='auth_in_chat'),
     path('register_in_chat', views.register_in_chat, name='register_in_chat'),
