@@ -29,4 +29,6 @@ urlpatterns = [
              template_name='firebase-messaging-sw.js',
              content_type='application/javascript'
          )),
-] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + debug_toolbar_urls()
+]
+if settings.DEBUG:
+    urlpatterns + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT) + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + debug_toolbar_urls()
