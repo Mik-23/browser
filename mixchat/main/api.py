@@ -242,7 +242,9 @@ class LoadMediaView(View):
         if request.user.id in members:
             with open(media_file, 'rb') as f:
                 data = f.read()
-                return HttpResponse(data, content_type=content_type)
+                response = HttpResponse(data, content_type=content_type)
+                response['X-Accel-Redirect'] = f'/media/{file_name}'
+                return response
         else:
             return HttpResponse("Ошибка. Пользователя нет в чате.")
 
