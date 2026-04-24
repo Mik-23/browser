@@ -31,16 +31,7 @@ urlpatterns = [
          )),
 ]
 
-print("=== НАСТРОЙКА URL ====")
-print(f"STATIC_URL: {settings.STATIC_URL}")
-print(f"MEDIA_URL: {settings.MEDIA_URL}")
-print("====================")
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) 
     urlpatterns += debug_toolbar_urls()
-
-print("=== URLPATTERNS ===")
-for pattern in urlpatterns:
-    print(pattern)
-print("===================")
