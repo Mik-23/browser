@@ -243,7 +243,7 @@ class LoadMediaView(View):
             with open(media_file, 'rb') as f:
                 data = f.read()
                 response = HttpResponse(data, content_type=content_type)
-                response['X-Accel-Redirect'] = f'/media/{file_name}'
+                response['X-Accel-Redirect'] = f'/defense_media/{file_name}'
                 return response
         else:
             return HttpResponse("Ошибка. Пользователя нет в чате.")
