@@ -200,10 +200,6 @@ class LoadMediaView(View):
             'flac': 'audio/flac',
             'm4a': 'audio/mp4',
         }
-        print("=== ВСЕ КУКИ, КОТОРЫЕ ВИДИТ СЕРВЕР ===")
-        print(request.COOKIES)
-        print(request.user)
-        print("=====================================")
         # Если это фото для пользователей или чатов
         if file_name.startswith('photo'):
             user = ChatUser.objects.filter(photo=file_name).first()
