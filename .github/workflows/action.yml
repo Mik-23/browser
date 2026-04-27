@@ -3,7 +3,7 @@ name: Deploy to Yandex Cloud
 on:
    push:
       branches:
-         - main  # или ваша основная ветка
+         - main
 
 jobs:
      deploy:
