@@ -19,18 +19,14 @@ document.getElementById('writeVoice').addEventListener('click', () => {
 
       mediaRecorder.onstart = () => console.log('Запись началась');
       mediaRecorder.ondataavailable = event => {
-        console.log('Поступили данные:', event.data);
         audioChunks.push(event.data);
       };
       mediaRecorder.onstop = () => {
-        console.log('Длина массива:', audioChunks.length);
-        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' }); // или другой поддерживаемый тип
+        const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
         audioChunks = [];
 
         const formData = new FormData();
-        formData.append('file', audioBlob, 'audio.webm'); // заменил расширение и тип
-        console.log('Медиа пластина:', mediaRecorder.mimeType);
-        console.log(formData.get('file'));
+        formData.append('file', audioBlob, 'audio.webm');
         fetch('/search/api/voice', {
           method: 'POST',
           body: formData,
@@ -39,7 +35,6 @@ document.getElementById('writeVoice').addEventListener('click', () => {
           return response.json();
           })
           .then(text => {
-              console.log('Распознанный текст:', text)
               const input = document.querySelector('input[name="query"]');
               input.value = text.data.result;
               const searchButton = document.querySelector('button.btn.btn-outline-success[type="submit"]');
