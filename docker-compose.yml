@@ -3,7 +3,7 @@ version: '3.8'
 services:
    mixrech:
       build: ./mixrech
-      command: sh -c "python manage.py makemigrations && python manage.py migrate gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120"
+      command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120"
       volumes:
       - .:/app
       env_file:
@@ -13,7 +13,7 @@ services:
 
    mixchat:
       build: ./mixchat
-      command: sh -c "python manage.py makemigrations && python manage.py migrate gunicorn mixchat.wsgi:application --bind 0.0.0.0:8001 --timeout 120"
+      command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput --verbosity 2 && gunicorn mixchat.wsgi:application --bind 0.0.0.0:8001 --timeout 120"
       volumes:
       - .:/app
       - media_data:/mixchat/main/media_v4/
