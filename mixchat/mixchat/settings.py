@@ -57,6 +57,9 @@ REST_FRAMEWORK = {
 
 AUTH_USER_MODEL = 'main.ChatUser'
 
+SESSION_ENGINE = "django.contrib.sessions.backends.file"
+SESSION_FILE_PATH = BASE_DIR / "main/sessions"
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
