@@ -10,7 +10,4 @@ COPY . .
 RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install --upgrade pip
 
-RUN python manage.py makemigrations --verbosity=3
-RUN python manage.py migrate
-
 RUN python manage.py collectstatic --noinput --verbosity 2
