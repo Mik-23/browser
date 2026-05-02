@@ -14,7 +14,9 @@ from pathlib import Path
 from dotenv import load_dotenv
 from datetime import timedelta
 
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
+
+
+REDIS_PASSWORD = os.getenv('REDIS_PASSWORD', '')
 BASE_DIR = Path(__file__).resolve().parent.parent
 load_dotenv()
 
@@ -60,7 +62,7 @@ AUTH_USER_MODEL = 'main.ChatUser'
 CACHES = {
     "default": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://redis:6379/1",
+        "LOCATION": f"redis://:{REDIS_PASSWORD}@redis:6379/1",
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
         }
