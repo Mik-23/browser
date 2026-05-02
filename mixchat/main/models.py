@@ -6,6 +6,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class ChatUser(AbstractUser):
+    # Кастомная модель пользователя
     id = models.UUIDField(
         primary_key=True,
         default=uuid.uuid4,

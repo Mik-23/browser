@@ -1,9 +1,9 @@
-name: Deploy to Yandex Cloud
+name: Deploy to TimeWeb Cloud
 
 on:
    push:
       branches:
-         - main  # или ваша основная ветка
+         - main
 
 jobs:
      deploy:

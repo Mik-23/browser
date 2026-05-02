@@ -4,7 +4,6 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 
 urlpatterns = [
-    path('media/<path:file_name>', api.LoadMediaView.as_view(), name='defense_media'),
     path('', views.chat, name='chat_url'),
     path('auth_in_chat', views.auth_in_chat, name='auth_in_chat'),
     path('register_in_chat', views.register_in_chat, name='register_in_chat'),
@@ -16,10 +15,13 @@ urlpatterns = [
     path('profile_other_user/<str:username>', views.profile_other_user, name='profile_other_user'),
     path('create_group', views.create_group, name='create_group'),
     path('edit_group/<int:name>', views.edit_group, name='edit_group'),
+    path('media/<path:file_name>', api.LoadMediaView.as_view(), name='defense_media'),
     path('api/reg/', api.RegisterView.as_view(), name='reg'),
     path('api/send_code/', api.SendCodeView.as_view(), name='send_code'),
     path('api/resend_code/', api.ResendCodeView.as_view(), name='resend_code'),
     path('api/profile_form/', api.ProfileformView.as_view(), name='profile_form'),
+    path('api/save_mqtt/', api.SaveMqttView.as_view(), name='save_mqtt'),
+    path('api/check_mqtt/', api.CheckMqttView.as_view(), name='check_mqtt'),
     path('api/message/', api.MessageView.as_view(), name='message'),
     path('api/message/count/', api.MessageCountView.as_view(), name='message_count'),
     path('api/message_answer/', api.AnswerMessageView.as_view(), name='message_answer'),

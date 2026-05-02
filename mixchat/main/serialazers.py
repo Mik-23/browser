@@ -2,13 +2,14 @@ import random
 from rest_framework import serializers
 from .models import ChatUser
 from django.core.mail import send_mail
+from django.conf import settings
 
 
 def send_code_to_email(email, user_name, code):
     send_mail(
         f"{user_name}, ваш код подтверждения",
         f"Mixchat, Код подтверждения: {code}. Никому не передавайте этот код!",
-        "mixrechecosystem@gmail.com",
+        settings.EMAIL_HOST_USER,
         [email]
     )
 
@@ -47,6 +48,16 @@ class ProfileformSerializer(serializers.Serializer):
     bio = serializers.CharField(required=False, allow_null=True)
 
 
+class SaveMqttSerializer(serializers.Serializer):
+    server = serializers.CharField(max_length=200, required=False, allow_null=True)
+    port = serializers.CharField(max_length=200, required=False, allow_null=True)
+    client_id = serializers.CharField(max_length=200, required=False, allow_null=True)
+    mqtt_username = serializers.CharField(max_length=200, required=False, allow_null=True)
+    mqtt_password = serializers.CharField(max_length=200, required=False, allow_null=True)
+    topic_sent = serializers.CharField(max_length=200, required=False, allow_null=True)
+    topic_subscribe = serializers.CharField(max_length=200, required=False, allow_null=True)
+
+
 class MessageSerializer(serializers.Serializer):
     content = serializers.CharField(max_length=200, required=False, allow_blank=True)
     chat_id = serializers.IntegerField()
@@ -56,6 +67,7 @@ class MessageSerializer(serializers.Serializer):
     message_id = serializers.IntegerField(required=False, allow_null=True)
     message_ids = serializers.ListField(required=False, allow_null=True)
     delete_type = serializers.CharField(max_length=200, required=False, allow_null=True)
+
 
     def validate(self, data):
         # Проверяем, что хотя бы одно из полей content, image, video или audio заполнено
@@ -110,4 +122,3 @@ class SendMessageToChannelSerializer(serializers.Serializer):
     chanel_id = serializers.IntegerField()
     sender_id = serializers.IntegerField()
     content = serializers.CharField()
-

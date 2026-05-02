@@ -13,6 +13,22 @@
     {% load static %}
     <link rel="stylesheet" href="{% static 'main/css/static.css' %}">
     <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
+    <style>
+        .option-button:hover {
+            color: #02D6ED;
+            background: #08003B
+         }
+
+        .exit-menu:hover {
+            color: #02D6ED;
+            background: #08003B
+         }
+
+        .out-chat:hover {
+            color: #02D6ED;
+            background: #08003B
+         }
+    </style>
 </head>
 <body>
 <div class="messenger">
@@ -20,13 +36,65 @@
         <div class="sidebar-header">
             <h1>Mixchat</h1>
             <a href="{% url 'profile_current_user' %}">
-                <button id="profile" class="btn" type="submit">
-                    <img src="" id="avatar">
+                <button id="profile" class="btn" type="submit" style="border-radius: 40px">
+                    <img src="" id="avatar" style="border-radius: 30px">
                 </button>
             </a>
-            <form id="logout-form" style="top: 10px; right: 95px; border-radius: 10px">
-              <button class="btn" type="submit">Выйти</button>
-            </form>
+            <button class="option-button" id="Option" style="border-radius: 40px" >
+                <img src="{% static 'main/png/option.png' %}" style="height: 30px">
+            </button>
+            <div class="option-form" style="display: none">
+                <h3>
+                    <img src="" id="menu-photo">
+                    Меню
+                </h3>
+                <button class="exit-menu" style="width: 40px; height: 40px">
+                    <svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor";>
+                        <path d="M19 12H5M12 19l-7-7 7-7"/>
+                    </svg>
+                </button>
+                <p></p>
+                <script>
+                    document.querySelector('.exit-menu').addEventListener('click', () => {
+                        document.querySelector('.option-form').style.display = 'none';
+                    });
+                </script>
+                <a href="{% url 'create_group' %}">
+                    <button class="create-group-btn" id="group-create">
+                        <svg width="20" height="20" viewBox="0 0 20 20" stroke="currentColor"; fill="white">
+                            <path d="M20 18L17 18M17 18L14 18M17 18V15M17 18V21M11 21H4C4 17.134 7.13401 14 11 14C11.695 14 12.3663 14.1013 13 14.2899M15 7C15 9.20914 13.2091 11 11 11C8.79086 11 7 9.20914 7 7C7 4.79086 8.79086 3 11 3C13.2091 3 15 4.79086 15 7Z"/>
+                        </svg>
+                        Создать группу
+                    </button>
+                </a>
+                <button id="logout" class="logout-btn" type="submit">
+                    <svg width="20" height="20" viewBox="0 0 550 550" stroke="currentColor"; fill="white">
+                        <path d="M480,0H32C14.328,0,0,14.328,0,32v64c0,17.672,14.328,32,32,32s32-14.328,32-32V64h384v384H64v-32 c0-17.672-14.328-32-32-32S0,398.328,0,416v64c0,17.672,14.328,32,32,32h448c17.672,0,32-14.328,32-32V32 C512,14.328,497.672,0,480,0z"/>
+                        <path d="M143.094,163.789c-10.391-5.57-23.031-4.969-32.844,1.586l-96,64C5.344,235.313,0,245.297,0,256s5.344,20.688,14.25,26.625 l96,64c5.359,3.57,11.547,5.375,17.75,5.375c5.172,0,10.375-1.258,15.094-3.789C153.5,342.648,160,331.805,160,320v-32h192 c17.672,0,32-14.328,32-32s-14.328-32-32-32H160v-32C160,180.195,153.5,169.352,143.094,163.789z"></path>
+                    </svg>
+                    Выйти
+                </button>
+                <p>Информация</p>
+                <button class="privacy_policy">
+                    <img src="{% static 'main/png/privacy_policy_icon.png' %}" style="height: 25px; color: white">
+                    <a href="{% url 'privacy_policy' %}" style="color: white">
+                        Политика конфиденциальности
+                    </a></button>
+                <button class="agreement">
+                    <img src="{% static 'main/png/agreement_icon.png' %}" style="height: 25px; color: white">
+                    <a href="{% url 'agreement' %}" style="color: white">Пользовательское соглашение</a>
+                </button>
+                <button class="project_support">
+                    <img src="{% static 'main/png/project_support_icon.png' %}" style="height: 25px; color: white">
+                    <a href="https://www.donationalerts.com/r/mixrech" style="color: white">Поддержка проекта</a>
+                </button>
+            </div>
+            <script>
+                document.getElementById('Option').addEventListener('click', () => {
+                    console.log(document.querySelector('.option-form'))
+                    document.querySelector('.option-form').style.display = 'block';
+                });
+            </script>
         </div>
         <div class="form-group">
             <input type="text" id="userSearch" placeholder="Поиск пользователя..." oninput="searchUsers()">
@@ -44,19 +112,16 @@
             <ul id="chats"></ul> <!-- Здесь будут отображаться чаты -->
         </div>
         <div class="vertical-line"></div>
-        <div class="down-buttons">
-            <a href="{% url 'create_group' %}">
-                <button id="group-create">Создать группу</button>
-            </a>
-        </div>
         <h2 class="message-align" style="display: none;">Сообщения</h2>
     </div>
 
     <!-- Поле для ввода сообщения -->
     <div class="main-chat" id="chatWindow" style="display: none; background: #0E1621;">
 
-        <div class="user-name"><img src=""><p></p></div>
-
+        <div class="begin" style="display: flex">
+            <div class="user-name"><img src=""><p></p></div>
+            <button class="open-mqtt" id="openMqtt" style="display: none">Задать параметры MQTT</button>
+        </div>
         <button class="out-chat" id="outChat">
             <svg viewBox="0 0 24 24" stroke="currentColor";>
                 <path d="M19 12H5M12 19l-7-7 7-7"/>
@@ -68,6 +133,76 @@
             });
             </script>
         </button>
+
+        <form class="mqtt-form" id="mqttForm" style="display: none">
+            <h3>Введите параметры сервера</h3>
+            <div class="mqtt-form-form">
+                <label for="server_input">Сервер</label>
+                <input type="text" id="server_input" name="server">
+            </div>
+            <div class="mqtt-form-form">
+                <label for="port_input">Порт</label>
+                <input type="text" id="port_input" name="port">
+            </div>
+            <div class="mqtt-form-form">
+                <label for="client_id_input">ID клиента</label>
+                <input type="text" id="client_id_input" name="client_id">
+            </div>
+            <div class="mqtt-form-form">
+                <label for="mqtt_username_input">Имя пользователя</label>
+                <input type="text" id="mqtt_username_input" name="mqtt_username">
+            </div>
+            <div class="mqtt-form-form">
+                <label for="mqtt_password_input">Пароль</label>
+                <input type="password" id="mqtt_password_input" name="mqtt_password">
+            </div>
+            <div class="mqtt-form-form">
+                <label for="topic_sent_input">Топик для отправки</label>
+                <input type="text" id="topic_sent_input" name="topic_sent">
+            </div>
+            <div class="mqtt-form-form">
+                <label for="topic_subscribe_input">Топик для получения</label>
+                <input type="text" id="topic_subscribe_input" name="topic_subscribe">
+            </div>
+            <div class="mqtt-buttons">
+                <button type="button" class="save-mqtt">Сохранить</button>
+                <button type="button" class="cancel-mqtt" id="cancelMqtt">Закрыть</button>
+            </div>
+        </form>
+        <script>
+            document.getElementById('openMqtt').addEventListener('click', () => {
+               document.getElementById('mqttForm').style.display = 'block';
+            });
+
+            document.querySelector('.save-mqtt').addEventListener('click', () => {
+                const server = document.getElementById('server_input').value;
+                const port = document.getElementById('port_input').value;
+                const client_id = document.getElementById('client_id_input').value;
+                const mqtt_username = document.getElementById('mqtt_username_input').value;
+                const mqtt_password = document.getElementById('mqtt_password_input').value;
+                const topic_sent = document.getElementById('topic_sent_input').value;
+                const topic_subscribe = document.getElementById('topic_subscribe_input').value;
+                fetch('/api/save_mqtt/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                    },
+                    body: JSON.stringify({ server, port, client_id,
+                                        mqtt_username, mqtt_password,
+                                        topic_sent, topic_subscribe}),
+                })
+                .then(response => response.json())
+                document.querySelector('.mqtt-text-panel').style.display = 'none'
+                document.querySelector('.input-panel').style.display = 'flex'
+            });
+            document.querySelector('.save-mqtt').addEventListener('click', () => {
+                document.getElementById('mqttForm').style.display = 'none';
+            });
+            document.querySelector('.cancel-mqtt').addEventListener('click', () => {
+                document.getElementById('mqttForm').style.display = 'none';
+            });
+        </script>
         <div id="message" class="message-list active">
             <ul class="message-message-list" style="list-style: none; display: flex; flex-direction: column; gap: 20px;"></ul> <!-- Здесь будут отображаться сообщения -->
         </div>
@@ -94,7 +229,9 @@
                 document.querySelector('.transmission-form').style.display = 'none'
             })
         </script>
-
+        <div class="mqtt-text-panel" style="display: none">
+            Вы не подключены к MQTT. Введите данные.
+        </div>
         <div class="input-panel">
             <div class="input-wrapper">
                 <input type="text" id="messageContent" placeholder="Введите сообщение...">
@@ -133,8 +270,6 @@
         </div>
     </div>
 </div>
-<button style="background: transparent; font-size: 11px; overflow: hidden;"><a href="{% url 'privacy_policy' %}" style="color: #999999">Политика конфиденциальности</a></button>
-<button style="background: transparent; font-size: 11px; overflow: hidden;"><a href="{% url 'agreement' %}" style="color: #999999">Пользовательское соглашение</a></button>
 
 <script src="{% static 'main/js/logout_redirect.js' %}"></script>
 <script type="module">
@@ -159,7 +294,7 @@
 </script>
 <script type="module" src="{% static 'main/js/fcm-sw.js' %}"> </script>
 <script>
-document.getElementById('logout-form').addEventListener('submit', (event) => {
+document.getElementById('logout').addEventListener('click', (event) => {
     event.preventDefault();
     logoutUser(); // Вызов функции выхода
 });

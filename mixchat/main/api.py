@@ -5,6 +5,7 @@ from dotenv import load_dotenv
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from django.views import View
+from django.conf import settings
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -21,7 +22,7 @@ from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, Ch
 from .serialazers import (send_code_to_email, UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer, AnswerAndTransmissionSerializer,
                           CreateChannelSerializer, SubscribeToChannelSerializer,
-                          SendMessageToChannelSerializer, ProfileformSerializer)
+                          SendMessageToChannelSerializer, ProfileformSerializer, SaveMqttSerializer)
 
 
 load_dotenv()
@@ -249,6 +250,57 @@ class LoadMediaView(View):
             return HttpResponse("Ошибка. Пользователя нет в чате.")
 
 
+class SaveMqttView(generics.GenericAPIView):
+    serializer_class = SaveMqttSerializer
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        user = request.user.id
+        server = serializer.validated_data['server']
+        port = serializer.validated_data['port']
+        client_id = serializer.validated_data['client_id']
+        mqtt_username = serializer.validated_data['mqtt_username']
+        mqtt_password = serializer.validated_data['mqtt_password']
+        topic_sent = serializer.validated_data['topic_sent']
+        topic_subscribe = serializer.validated_data['topic_subscribe']
+        mqtt_values = list(request.session.values())
+        for value in mqtt_values:
+            if value == server or value == mqtt_username:
+                return Response({"message": "Ошибка. Пользователь не может подключиться"
+                                 " к другому серверу"})
+        key = gen_key(user, salt)
+        request.session[f'server_{user}'] = encrypt_text(server, key).decode('utf-8')
+        request.session[f'port_{user}'] = port
+        request.session[f'client_id_{user}'] = client_id
+        request.session[f'mqtt_username_{user}'] = encrypt_text(mqtt_username, key).decode('utf-8')
+        request.session[f'mqtt_password_{user}'] = encrypt_text(mqtt_password, key).decode('utf-8')
+        request.session[f'topic_sent_{user}'] = topic_sent
+        request.session[f'topic_subscribe_{user}'] = topic_subscribe
+        return Response({"message": "Данные MQTT успешно сохранены"})
+
+
+class CheckMqttView(generics.GenericAPIView):
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user_id = request.user.id
+        server = request.session.get(f'server_{user_id}'),
+        port = request.session.get(f'port_{user_id}'),
+        mqtt_username = request.session.get(f'mqtt_username_{user_id}'),
+        mqtt_password = request.session.get(f'mqtt_password_{user_id}'),
+        topic_sent = request.session.get(f'topic_sent_{user_id}'),
+        topic_subscribe = request.session.get(f'topic_subscribe_{user_id}')
+        if all([server, port, mqtt_username,
+                mqtt_password, topic_sent, topic_subscribe]):
+            return Response({"message": "Вы подключены к MQTT."})
+        else:
+            return Response({"message": "Вы не подключены к MQTT. Введите данные."})
+
+
 class MessageView(generics.GenericAPIView):
     # API сообщений
     serializer_class = MessageSerializer
@@ -343,8 +395,9 @@ class MessageView(generics.GenericAPIView):
             if recipient == 'Mixrobot':
                 message_content = mixrech(content)
             elif recipient == 'SmartMix':
-                send_to_mqtt(content)
-                message_content = get_mqtt()
+                mqtt_dict = dict(request.session.items())
+                send_to_mqtt(mqtt_dict, sender_id, content)
+                message_content = get_mqtt(mqtt_dict, sender_id)
             message_bot = Message(
                 sender_bot_id=bot.id,
                 content=encrypt_text(message_content, key),
@@ -366,6 +419,30 @@ class MessageView(generics.GenericAPIView):
         if not member:
             return Response({"error": "Ошибка. Невозможно просматривать сообщения в чате, где вас нет"})
         messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
+        chat = Chat.objects.filter(id=chat_id).first()
+        if chat.type == 'bot':
+            membership = ChatMembership.objects.filter(chat_id=chat_id)
+            membership = membership.exclude(user_id=request.user.id).first()
+            bot = Bot.objects.filter(id=membership.user_id).first()
+            if list(messages) == [] and bot.name == 'SmartMix':
+                content = ('Привет! Я SmartMix.\n'
+                           'Я могу управлять умным домом.'
+                           'Отправьте мне любую команду, и я выполню действие '
+                           'по управлению вашим умным домом. '
+                           'Для работы со мной, введите параметры вашего MQTT сервера по кнопке вверху.\n'
+                           '- led_on - Включить светодиод,\n'
+                           '- led_off - Выключить светодиод,\n'
+                           '- temp - Вывести температуру окружающец среды.')
+                message = Message.objects.create(sender_bot_id=bot.id,
+                                                 content= encrypt_text(content, key),
+                                                 chat_id=chat_id)
+            elif list(messages) == [] and bot.name == 'Mixrobot':
+                content = ('Привет! Я MixRobot.\n'
+                           'Напишите мне любое слово, и я вам выдам '
+                           'результаты поиска по нему в интернете.')
+                message = Message.objects.create(sender_bot_id=bot.id,
+                                                 content= encrypt_text(content, key),
+                                               chat_id=chat_id)
         list_messages = [{
                 "id": message.id,
                 "sender_user": str(message.sender_user),
@@ -443,6 +520,12 @@ class MessageView(generics.GenericAPIView):
                 message.save()
                 return Response({'message': 'Вы удалили сообщение у себя.'})
             elif delete_type == 'У всех':
+                if message.image != '':
+                    os.remove(message.image.path)
+                elif message.video != '':
+                    os.remove(message.video.path)
+                elif message.audio != '':
+                    os.remove(message.audio.path)
                 message.delete()
                 return Response({'message': 'Вы удалили сообщение у всех.'})
             else:
@@ -713,7 +796,6 @@ class GetChatsView(generics.GenericAPIView):
             chat = Chat.objects.filter(id=membership.chat_id).first()
             # Добавляем чат с текущим пользователем в список
             chats.append(chat)
-        bots = Bot.objects.all()
         chat_with_user = []
         chats_users = list(filter(lambda x: x.type == 'user', chats))
         for chat in list(set(chats_users)):
@@ -760,8 +842,14 @@ class GetChatsView(generics.GenericAPIView):
                 "type": chat.type
             })
         chats_bots = list(filter(lambda x: x.type == 'bot', chats))
-        for bot, chat in zip(bots, chats_bots):
+        for chat in chats_bots:
             message = Message.objects.filter(chat=chat.id).order_by('-timestamp').first()
+            memberships = ChatMembership.objects.filter(chat_id=chat.id)
+            memberships = memberships.exclude(user_id=request.user.id).all()
+            if list(memberships) == []:
+                bot = Bot.objects.filter(id=request.user.id).first()
+            else:
+                bot = Bot.objects.filter(id=memberships[0].user_id).first()
             if message is not None:
                 content = message.content
                 sender_name = str(message.sender_bot) + ': '
@@ -793,7 +881,6 @@ class GetChatsView(generics.GenericAPIView):
                 content = ''
             else:
                 content = decrypt_text(content[2:-1].encode('utf-8'), key)
-
             chat_with_user.append({
                 "id": chat.id,
                 "username": bot.name,

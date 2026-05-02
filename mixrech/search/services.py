@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def search(search_query, page):
     # Функция поиска в браузере
     folderid = os.getenv('FOLDERID')
-    api_key = os.getenv('API_KEY')  # Замените на ваш API-ключ
+    api_key = os.getenv('API_KEY')
     print('ПОИСКОВЫЙ ЗАПРОС', search_query)
     print('Страница номер: ', page)
     try:
@@ -76,7 +76,7 @@ def search(search_query, page):
 def image(service_request, search_query):
     # Функция поиска фото
     folderid = os.getenv('FOLDERID')
-    api_key = os.getenv('API_KEY')  # Замените на ваш API-ключ
+    api_key = os.getenv('API_KEY')
     page = service_request.GET.get('page', 1)
     print('ПОИСКОВЫЙ ЗАПРОС КАРТИНКИ', search_query)
     try:
@@ -155,8 +155,9 @@ def video(service_request):
 
 
 def search_by_image(service_request, encoded_image):
+    # Функция поиска по фото 
     folderid = os.getenv('FOLDERID')
-    api_key = os.getenv('API_KEY')  # Замените на ваш API-ключ
+    api_key = os.getenv('API_KEY')
     print(service_request.GET.get('section'))
     section = service_request.GET.get('section')
     page = service_request.GET.get('page', 1)
@@ -194,7 +195,8 @@ def search_by_image(service_request, encoded_image):
 
 
 def convert_webm_to_ogg(input_path: str, output_path: str):
-    ffmpeg_path = '/usr/bin/ffmpeg'  # Укажите путь на вашей машине
+     # Преобразование формата аудиофайла webm в ogg
+    ffmpeg_path = '/usr/bin/ffmpeg'
     print('Вывести команду')
     command = [
         ffmpeg_path,
@@ -214,6 +216,7 @@ def convert_webm_to_ogg(input_path: str, output_path: str):
 
 
 def voice_search(file):
+    # Голосовой поиск
     folderid = os.getenv('FOLDERID')
     api_key = os.getenv('API_KEY')
     url = f'https://stt.api.cloud.yandex.net/speech/v1/stt:recognize?topic=general&folderId={folderid}'
@@ -224,7 +227,7 @@ def voice_search(file):
     file.seek(0)
     data = file.read()
     input_webm = 'audio.webm'
-    # Запись бинарных данных во входной вебм-файл
+    # Запись бинарных данных во входной файл
     with open(input_webm, 'wb') as f_out:
         f_out.write(data)
     convert_webm_to_ogg(input_webm, 'audio.ogg')

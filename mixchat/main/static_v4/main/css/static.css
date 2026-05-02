@@ -5,7 +5,6 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         body {
-
             margin: 0;
             padding: 20px;
             background-color: rgba(0, 0, 45, 11);
@@ -140,6 +139,152 @@
         .message .sender {
             font-weight: bold;
         }
+
+        .option-form {
+            position: absolute;
+            top: 1%;
+            right: 70%;
+            margin-top: 8px;
+            width: 30%;
+            height: 80%;
+            background: rgba(0, 22, 44, 11);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+            min-width: 200px;
+            padding: 24px;
+            z-index: 1000;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        }
+
+        .option-form h3 {
+            color: white;
+            margin: 0 0 20px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .option-form p {
+            color: white;
+            margin: 20px 0 20px 0;
+            font-size: 14px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .create-group-btn {
+            display: block;
+            background: #0F344A;
+            border-radius: 10px;
+            color: white;
+            width: 90%;
+            text-align: left;
+            padding: 15px;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .create-group-btn:hover {
+            background: #1B5F85;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(40, 80, 141, 0.6);
+        }
+
+        .logout-btn {
+            display: block;
+            background: #0F344A;
+            border-radius: 10px;
+            color: white;
+            width: 90%;
+            text-align: left;
+            padding: 15px;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .logout-btn:hover {
+            background: #1B5F85;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(40, 80, 141, 0.6);
+        }
+
+        .privacy_policy {
+            display: block;
+            background: #0F344A;
+            border-radius: 10px;
+            color: white;
+            width: 90%;
+            text-align: left;
+            padding: 15px;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .privacy_policy a {
+            text-decoration: none;
+        }
+
+        .privacy_policy:hover {
+            background: #1B5F85;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(40, 80, 141, 0.6);
+        }
+
+        .agreement {
+            display: block;
+            background: #0F344A;
+            border-radius: 10px;
+            color: white;
+            width: 90%;
+            text-align: left;
+            padding: 15px;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .agreement a {
+            text-decoration: none;
+        }
+
+        .agreement:hover {
+            background: #1B5F85;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(40, 80, 141, 0.6);
+        }
+
+        .project_support {
+            display: block;
+            background: #0F344A;
+            border-radius: 10px;
+            color: white;
+            width: 90%;
+            text-align: left;
+            padding: 15px;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .project_support a {
+            text-decoration: none;
+        }
+
+        .project_support:hover {
+            background: #1B5F85;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(40, 80, 141, 0.6);
+        }
+
+        .open-mqtt {
+            background: #0F344A;
+            border-radius: 10px;
+            color: white;
+            width: 18%;
+            height: 8%;
+            text-align: left;
+            padding: 15px;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .open-mqtt:hover {
+            background: #1B5F85;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(40, 80, 141, 0.6);
+        }
+
         .form-group{
              width: 90%;
              display: flex;
@@ -147,9 +292,85 @@
              border: 1px solid rgba(255, 255, 255, 0.05);
              border-radius: 40px;
              justify-content: space-between;
-             position: relative; /* или static */
+             position: relative;
              padding: 0 10px;
              box-sizing: border-box;
+        }
+
+        .mqtt-form{
+             width: 90%;
+             max-width: 500px;
+             top: 50%;
+             left: 50%;
+             transform: translate(-50%, -50%);
+             display: flex;
+             background: #131F2E;
+             border: 1px solid rgba(255, 255, 255, 0.05);
+             border-radius: 40px;
+             justify-content: space-between;
+             position: fixed;
+             padding: 28px;
+             box-sizing: border-box;
+             z-index: 1000;
+        }
+
+        .mqtt-form h3 {
+            color: white;
+            margin: 0 0 20px 0;
+            font-size: 18px;
+            text-align: center;
+        }
+
+        .mqtt-form input {
+            background: rgba(100, 150, 200, 0.07);
+            border-radius: 40px;
+            border: none;
+            padding: 14px 20px;
+            color: white;
+            font-size: 14px;
+            width: 100%;
+            outline: none;
+        }
+
+        .mqtt-form label {
+            color: #D9FFFD;
+            font-size: 14px;
+            margin-bottom: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .mqtt-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .mqtt-buttons .save-mqtt {
+            background: #1F9494;
+            border-radius: 10px;
+            color: white;
+            width: 50%;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .mqtt-buttons .cancel-mqtt {
+            background: #e24a4a;
+            border-radius: 10px;
+            color: white;
+            width: 50%;
+            box-shadow: 0 6px 14px rgba(31, 148, 148, 0.3);
+        }
+
+        .mqtt-buttons .save-mqtt:hover {
+            background: #3f6aff;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(31, 148, 148, 0.5);
+        }
+
+        .mqtt-buttons .cancel-mqtt:hover {
+            background: #c0392b;
+            transform: scale(1.02);
+            box-shadow: 0 10px 22px rgba(148, 41, 41, 0.5);
         }
 
         .input-panel {
@@ -730,6 +951,14 @@
                 border-bottom: 1px solid rgba(255,255,255,0.05);
             }
 
+            .option-form {
+                width: 90%;
+                left: 0;
+                max-height: 95%;
+                border-right: none;
+                border-bottom: 1px solid rgba(255,255,255,0.05);
+            }
+
             .main-chat {
                 position: absolute;
                 left: 0;
@@ -765,4 +994,3 @@
                 font-size: 15px;
             }
         }
-

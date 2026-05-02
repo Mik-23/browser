@@ -2,13 +2,13 @@ const CACHE_VERSION = 'v1.0.1';
 console.log(`[SW] Service Worker версии ${CACHE_VERSION} загружен`);
 
 self.addEventListener('install', (event) => {
-  console.log('📦 install event');
-  self.skipWaiting(); // Это заставит новый сервис-воркер немедленно активироваться
+  console.log('install event');
+  self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  console.log('📦 activate event');
-  event.waitUntil(clients.claim()); // Это позволяет новому сервис-воркеру взять под контроль уже открытые вкладки
+  console.log('activate event');
+  event.waitUntil(clients.claim());
 });
 
 self.addEventListener('message', event => {
@@ -18,7 +18,7 @@ self.addEventListener('message', event => {
 });
 
 self.addEventListener('push', function(event) {
-  console.log('🎯 push event получен!');
+  console.log('push event получен!');
 
   let data = {};
   if (event.data) {

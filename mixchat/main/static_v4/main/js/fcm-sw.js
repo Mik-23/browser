@@ -8,18 +8,15 @@ getToken(messaging, {vapidKey: 'BISnUtSCVp9xdEpjULSIJVAmSSxDpZyjddQdR7NHlko2tAZN
        method: 'PUT',
        headers: {
            'Content-Type': 'application/json',
-           'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
+           'Authorization': 'Bearer ' + localStorage.getItem('access_token')
        },
        body: JSON.stringify({"token": currentToken})
    })
   } else {
-    // Show permission request UI
     console.log('No registration token available. Request permission to generate one.');
-    // ...
   }
 }).catch((err) => {
   console.log('An error occurred while retrieving token. ', err);
-  // ...
 });
 
 
