@@ -33,6 +33,10 @@ getCurrentUser().then(currentUser => {
     avatar.src = currentUser.photo;
     avatar.style.width = '50px';
     avatar.style.height = '50px';
+    const menu_photo = document.getElementById('menu-photo');
+    menu_photo.src = avatar.src;
+    menu_photo.style.width = '50px';
+    menu_photo.style.height = '50px';
 })
 
 
@@ -185,6 +189,7 @@ function loadMessages(chatId) {
     if (transmissionButton) {
        transmissionButton.style.display = 'none'
     }
+    document.querySelector('.sent').style.display = 'block'
     document.getElementById('messageContent').value = '';
     document.querySelector('.message-dropdown').style.display = 'none'
     document.querySelector('.delete-form').style.display = 'none'
@@ -195,8 +200,9 @@ function loadMessages(chatId) {
     let button = document.querySelector('button');
     let mediaButton = document.getElementById('mediaButton');
     messageList.innerHTML = ''; // Очистить предыдущие сообщения
+    console.log(chatId)
 
-    const url = `/api/message/?chat_id=${chatId}`;
+    const url = `/api/message/?chat_id=${chatId}`; // Эндпоинт для просметра сообщений
 
     fetch(url, {
         method: 'GET',
@@ -211,10 +217,31 @@ function loadMessages(chatId) {
             const bgColor = window.getComputedStyle(li).backgroundColor;
             return bgColor === 'rgb(31, 148, 148)';
         });
-
         const img = document.querySelector('.user-name img');
         const p = document.querySelector('.user-name p');
-
+        if (p.textContent === 'SmartMix') {
+            document.getElementById('openMqtt').style.display = 'block'
+            fetch('/api/check_mqtt/', {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                    },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === 'Вы не подключены к MQTT. Введите данные.') {
+                        document.querySelector('.mqtt-text-panel').style.display = 'block'
+                        document.querySelector('.input-panel').style.display = 'none'
+                    } else {
+                        document.querySelector('.mqtt-text-panel').style.display = 'none'
+                        document.querySelector('.input-panel').style.display = 'flex'
+                    }
+                })
+        } else {
+            document.querySelector('.open-mqtt').style.display = 'none'
+            document.querySelector('.mqtt-text-panel').style.display = 'none'
+            document.querySelector('.input-panel').style.display = 'flex'
+        }
         if (targetElement) {
             const current_img = targetElement.querySelector('img').src;
             const current_p = targetElement.querySelector('span').textContent;
@@ -223,6 +250,7 @@ function loadMessages(chatId) {
             img.src = current_img;
             img.style.width = '50px';
             img.style.height = '50px';
+            img.style.borderRadius = "30px"
         }
 
         userName.appendChild(img);
@@ -297,14 +325,18 @@ function loadMessages(chatId) {
             if (message.content) {
                 if (message.content.includes("https://")) {
                     const textSpan = document.createElement('span');
+                    const title = document.createElement('span');
+                    title.style.fontSize = '12px';
+                    title.style.color = '#99BEFF';
+                    title.style.fontWeight = 'bold';
+                    title.textContent = message.sender_bot;
+
                     textSpan.textContent = message.sender_bot;
                     textSpan.style.maxWidth = '300px';
                     textSpan.style.wordWrap = 'break-word';
-                    //let jsonString = message.content.replace(/"/g, '#');
-                    //jsonString = jsonString.replace(/'/g, '"');
-
                     let contentArray = JSON.parse(message.content);
                     messageContainer.appendChild(textSpan);
+                    li.appendChild(title)
                     console.log(contentArray);
 
                     for (let key in contentArray) {
@@ -324,6 +356,33 @@ function loadMessages(chatId) {
                             messageContainer.appendChild(textSpan);
                         }
                     }
+                } else if (message.sender_bot === 'Mixrobot'){
+                    const textSpan = document.createElement('span');
+                    const title = document.createElement('span');
+                    textSpan.style.maxWidth = '300px';
+                    textSpan.style.wordWrap = 'break-word';
+                    title.style.fontSize = '12px';
+                    title.style.color = '#99BEFF';
+                    title.style.fontWeight = 'bold';
+                    title.textContent = message.sender_bot;
+                    textSpan.style.whiteSpace = 'pre-line'
+                    textSpan.textContent = message.content;
+                    console.log(textSpan);
+                    li.appendChild(title);
+                    messageContainer.appendChild(textSpan);
+                } else if (message.sender_bot === 'SmartMix'){
+                    const textSpan = document.createElement('span');
+                    const title = document.createElement('span');
+                    textSpan.style.maxWidth = '300px';
+                    textSpan.style.wordWrap = 'break-word';
+                    title.style.fontSize = '12px';
+                    title.style.color = '#99BEFF';
+                    title.style.fontWeight = 'bold';
+                    title.textContent = message.sender_bot;
+                    textSpan.style.whiteSpace = 'pre-line'
+                    textSpan.textContent = message.content;
+                    li.appendChild(title);
+                    messageContainer.appendChild(textSpan);
                 } else {
                     const textSpan = document.createElement('span');
                     const title = document.createElement('span');
@@ -333,12 +392,12 @@ function loadMessages(chatId) {
                     title.style.color = '#99BEFF';
                     title.style.fontWeight = 'bold';
                     title.textContent = message.sender_user;
+
                     textSpan.textContent = message.content;
                     li.appendChild(title);
                     messageContainer.appendChild(textSpan);
                 }
             }
-
             // Проверяем наличие изображения
             if (message.image) {
                 const messageWrapper = document.createElement('div');
@@ -541,7 +600,6 @@ function loadMessages(chatId) {
                 msgId = e.currentTarget.getAttribute('data-message-id');
                 msgContent = e.currentTarget.getAttribute('data-message-content');
                 msgChatId = e.currentTarget.getAttribute('data-chat-id');
-                console.log(dropdown)
                 if (dropdown.style.display === 'block') {
                     dropdown.style.display = 'none';
                 } else {
@@ -738,7 +796,7 @@ function loadMessageToEdit(content, chat_id, messageId) {
 }
 
 function editMessage(content, chat_id, message_id) {
-    fetch('/api/message/', { // Эндпоинт для создания нового чата
+    fetch('/api/message/', { // Эндпоинт для редактирования сообщения
        method: 'PUT',
        headers: {
            'Content-Type': 'application/json',
@@ -757,10 +815,14 @@ function deleteMessage(message_ids, content, chat_id, delete_type) {
     for (let i = 0; i <= message_ids.length - 1; i++) {
        formData.append(`message_ids[${i}]`, message_ids[i]);;
     }
-    formData.append('content', content)
+    if (content === '') {
+        formData.append('content', 'Media')
+    } else {
+        formData.append('content', content)
+    }
     formData.append('chat_id', chat_id)
     formData.append('delete_type', delete_type)
-    fetch('/api/message/', { // Эндпоинт для создания нового чата
+    fetch('/api/message/', { // Эндпоинт для удаления сообщения
        method: 'DELETE',
        headers: {
            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
@@ -803,11 +865,13 @@ function createChat(groupUsers, name, bio, photo, chat_type) {
 
    formData.append('name', name);
    formData.append('bio', bio);
-   if (photo_group_input.files.length > 0) {
-      for (let i = 0; i < photo_group_input.files.length; i++) {
-          console.log(photo_group_input.files[i])
-          formData.append('photo', photo_group_input.files[i]);
-      }
+   if (photo) {
+       if (photo_group_input.files.length > 0) {
+           for (let i = 0; i < photo_group_input.files.length; i++) {
+               console.log(photo_group_input.files[i])
+               formData.append('photo', photo_group_input.files[i]);
+           }
+       }
    }
    formData.append('type', chat_type);
    fetch('/api/chat/', { // Эндпоинт для создания нового чата
@@ -834,7 +898,6 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
    const video = document.getElementById('videoInput').value;
    const audio = document.getElementById('audioInput').value;
    const formData = new FormData();
-   console.log(content)
    formData.append('content', content);
    // Добавляем файлы, если они выбраны
    if (imageInput.files.length > 0) {
@@ -855,7 +918,7 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
    // Добавляем остальные параметры
    formData.append('chat_id', currentChatId);
    formData.append('type', type);
-   fetch('/api/message/', {
+   fetch('/api/message/', { // Эндпоинт для создания сообщения
        method: 'POST',
        headers: {
            'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
@@ -883,13 +946,6 @@ mediaIcons.addEventListener('mouseleave', () => {
     mediaIcons.style.display = 'none'
 
 });
-
-//const dropdown = document.querySelector('.message-dropdow')
-//dropdown.addEventListener('mouseleave', () => {
-//    dropdown.style.display = 'none'
-//});
-
-
 
 // Функция для получения списка чатов
 function fetchChats() {
@@ -922,6 +978,7 @@ function displayChats(chats) {
         img.src = chat.photo;
         img.style.width = '50px'
         img.style.height = '50px'
+        img.style.borderRadius = "30px"
         if (chat.content.length > 13) {
             p.textContent = chat.sender_name + chat.content.substring(0, 14) + '...';
         } else {
@@ -931,6 +988,7 @@ function displayChats(chats) {
             const listChat = document.getElementById('chats')
             const allLists = listChat.querySelectorAll('li')
             const mediaIcons = document.getElementById('media')
+            document.querySelector('.option-form').style.display = 'none';
             for (const lis of allLists) {
                 lis.style.backgroundColor = '#3a3a3a';
                 mediaIcons.style.display = 'none'
@@ -963,6 +1021,7 @@ function selectChatForTransmission(chats, msgContent, msgId, msgChatId) {
         img.src = chat.photo;
         img.style.width = '50px'
         img.style.height = '50px'
+        img.style.borderRadius = "30px"
         li.onclick = () => {
             const listChat = document.getElementById('chats_for_transmission')
             const allLists = listChat.querySelectorAll('li')
