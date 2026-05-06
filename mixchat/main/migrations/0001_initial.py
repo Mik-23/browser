@@ -131,6 +131,7 @@ class Migration(migrations.Migration):
                 ('audio', models.FileField(blank=True, null=True, upload_to='messages/audios/', verbose_name='Аудио')),
                 ('timestamp', models.DateTimeField(auto_now_add=True, verbose_name='Дата')),
                 ('is_edit', models.BooleanField(blank=True, null=True, verbose_name='Редактировано?')),
+                ('is_forwarded', models.BooleanField(null=True, verbose_name='Переслано?')),
                 ('answer_to', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, to='main.message')),
                 ('chat', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='messages', to='main.chat')),
                 ('sender_bot', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.CASCADE, related_name='sent_messages', to='main.bot', verbose_name='Бот отправитель')),
