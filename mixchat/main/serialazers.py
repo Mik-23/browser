@@ -101,24 +101,3 @@ class ChatSerializer(serializers.Serializer):
 class GetChatsSerializer(serializers.Serializer):
     pass
 
-
-class SendMessageToChatSerializer(serializers.Serializer):
-    chat_id = serializers.IntegerField()
-    sender_id = serializers.IntegerField()
-    recipient_id = serializers.IntegerField()
-    content = serializers.CharField()
-
-
-class CreateChannelSerializer(serializers.Serializer):
-    name = serializers.CharField()
-
-
-class SubscribeToChannelSerializer(serializers.Serializer):
-    user_id = serializers.IntegerField()
-    channel_id = serializers.IntegerField()
-
-
-class SendMessageToChannelSerializer(serializers.Serializer):
-    chanel_id = serializers.IntegerField()
-    sender_id = serializers.IntegerField()
-    content = serializers.CharField()
