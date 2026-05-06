@@ -200,9 +200,20 @@ function loadMessages(chatId) {
     let button = document.querySelector('button');
     let mediaButton = document.getElementById('mediaButton');
     messageList.innerHTML = ''; // Очистить предыдущие сообщения
-    console.log(chatId)
+    let chat_type = ''
+    for (chat of chatObj) {
+        if (chat.id === Number(chatId)) {
+             chat_type = chat.type
+        }
+    }
+    let message_url = ''
+    if (chat_type === 'user' || chat_type === 'group') {
+         message_url = '/api/message/'
+    } else if (chat_type === 'bot') {
+         message_url = '/api/message_bot/'
+    }
 
-    const url = `/api/message/?chat_id=${chatId}`; // Эндпоинт для просметра сообщений
+    const url = `${message_url}?chat_id=${chatId}`; // Эндпоинт для просметра сообщений
 
     fetch(url, {
         method: 'GET',
@@ -510,10 +521,8 @@ function loadMessages(chatId) {
             }
 
             let answer_message = {}
-            const message_id_answer = message.id_for_answer
-            const message_id_transmission = message.id_for_transmission
-            const is_forwarded = message.is_forwarded
-            if (message_id_answer || message_id_transmission) {
+            const answer_to = message.answer_to
+            if (answer_to) {
                 const replyWrapper = document.createElement('div');
                 replyWrapper.style.display = 'flex';
                 replyWrapper.style.alignItems = 'stretch';
@@ -533,7 +542,7 @@ function loadMessages(chatId) {
                 replyInfo.style.flex = '1';
                 let found = false;
                 for (let mess of data.messages) {
-                    if (message_id_answer && mess.id === message_id_answer) {
+                    if (mess.id === answer_to) {
                         answer_message = mess;
                         const name = document.createElement('div');
                         name.style.fontSize = '11px';
@@ -550,13 +559,13 @@ function loadMessages(chatId) {
                         replyInfo.appendChild(preview);
                         found = true;
                         break
-                    } else if (message_id_transmission && is_forwarded) {
+                    } else if (mess.is_forwarded) {
                         answer_message = message;
                         const name = document.createElement('div');
                         name.style.fontSize = '11px';
                         name.style.color = '#90C5FF';
                         name.style.marginBottom = '2px';
-                        name.textContent = `Переслано от ${answer_message.sender_user}`;
+                        name.textContent = `Переслано от ${answer_message.transmission_by}`;
 
                         const preview = document.createElement('div');
                         preview.style.fontSize = '11px';
@@ -578,6 +587,7 @@ function loadMessages(chatId) {
                 }
             }
 
+
             // Добавляем время в конец сообщения
             if (messageTime) {
                 timeContainer.textContent = messageTime;
@@ -592,9 +602,6 @@ function loadMessages(chatId) {
                 messageContainer.appendChild(editedSpan);
             }
 
-             if (message.delete_at_home && message.sender_user_id === senderId) {
-                li.style.display = 'none'
-             }
             menuBtn.onclick = (e) => {
                 e.stopPropagation();
                 msgId = e.currentTarget.getAttribute('data-message-id');
@@ -841,7 +848,6 @@ if ('serviceWorker' in navigator) {
 
       console.log('ServiceWorker registration successful with scope: ', registration.scope);
     }, function(err) {
-      // registration failed :(
       console.log('ServiceWorker registration failed: ', err);
     });
   });
@@ -917,8 +923,19 @@ document.getElementById('sendMessageButton').addEventListener('click', () => {
    }
    // Добавляем остальные параметры
    formData.append('chat_id', currentChatId);
-   formData.append('type', type);
-   fetch('/api/message/', { // Эндпоинт для создания сообщения
+   let chat_type = ''
+   for (chat of chatObj) {
+       if (chat.id === currentChatId) {
+            chat_type = chat.type
+       }
+   }
+   let message_url = ''
+   if (chat_type === 'user' || chat_type === 'group') {
+        message_url = '/api/message/'
+   } else if (chat_type === 'bot') {
+        message_url = '/api/message_bot/'
+   }
+   fetch(message_url, { // Эндпоинт для создания сообщения
        method: 'POST',
        headers: {
            'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа

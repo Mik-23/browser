@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from django.utils import timezone
 from django.http import JsonResponse, HttpResponse
 from django.views import View
-from django.conf import settings
+from django.db.models import Q
 from rest_framework import generics
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.views import APIView
@@ -18,11 +18,10 @@ from django.urls import reverse
 from .firebase import send_push_notification
 from .microservice_functions import mixrech, send_to_mqtt, get_mqtt
 from .cifer import gen_key, encrypt_text, decrypt_text
-from .models import Message, Chat, Channel, ChannelMembership, ChatUser, Bot, ChatMembership
+from .models import Message, Chat, ChatUser, Bot, ChatMembership, MessageHistory, DeletedMessage
 from .serialazers import (send_code_to_email, UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer, AnswerAndTransmissionSerializer,
-                          CreateChannelSerializer, SubscribeToChannelSerializer,
-                          SendMessageToChannelSerializer, ProfileformSerializer, SaveMqttSerializer)
+                          ProfileformSerializer, SaveMqttSerializer)
 
 
 load_dotenv()
@@ -143,7 +142,7 @@ class ProfileformView(generics.GenericAPIView):
         user_id = request.GET.get('user_id')
         user = ChatUser.objects.filter(id=user_id).first()
         if not user:
-            return Response({"error": "Ошибка. Такого пользователя не существует"})
+            return Response({"error": "Ошибка. Такого пользователя не существует"}, status=404)
         # Собираем список чатов с текущим пользователем
         member = [chat.chat_id for chat in ChatMembership.objects.filter(user_id=request.user.id)]
         # Проверяем, существует ли чат текущего пользователя и выбранного
@@ -152,7 +151,7 @@ class ProfileformView(generics.GenericAPIView):
             user_id=user_id
         ).exists()
         if not is_member:
-            return Response({"error": "Невозможно просмотреть профиль, если отсутствует чат."})
+            return Response({"error": "Невозможно просмотреть профиль, если отсутствует чат."}, status=403)
         else:
             return Response({"photo": user.photo.url,
                              "name": user.username,
@@ -247,7 +246,7 @@ class LoadMediaView(View):
                 response['X-Accel-Redirect'] = f'/defense_media/{file_name}'
                 return response
         else:
-            return HttpResponse("Ошибка. Пользователя нет в чате.")
+            return HttpResponse("Ошибка. Пользователя нет в чате.", status=404)
 
 
 class SaveMqttView(generics.GenericAPIView):
@@ -270,7 +269,7 @@ class SaveMqttView(generics.GenericAPIView):
         for value in mqtt_values:
             if value == server or value == mqtt_username:
                 return Response({"message": "Ошибка. Пользователь не может подключиться"
-                                 " к другому серверу"})
+                                 " к другому серверу"}, status=403)
         key = gen_key(user, salt)
         request.session[f'server_{user}'] = encrypt_text(server, key).decode('utf-8')
         request.session[f'port_{user}'] = port
@@ -298,7 +297,7 @@ class CheckMqttView(generics.GenericAPIView):
                 mqtt_password, topic_sent, topic_subscribe]):
             return Response({"message": "Вы подключены к MQTT."})
         else:
-            return Response({"message": "Вы не подключены к MQTT. Введите данные."})
+            return Response({"message": "Вы не подключены к MQTT. Введите данные."}, status=401)
 
 
 class MessageView(generics.GenericAPIView):
@@ -308,147 +307,93 @@ class MessageView(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
-        # Отправить сообщение
+        # Отправить сообщение в чат с двумя пользователями или в группу
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        # Получаем текущего пользователя
-        sender_id = request.user.id
         # Получаем отправителя
+        sender_id = request.user.id
         content = serializer.validated_data['content']
         chat_id = serializer.validated_data['chat_id']
-        member = ChatMembership.objects.filter(user_id=sender_id, chat_id=chat_id)
+        member = ChatMembership.objects.filter(user_id=sender_id, chat_id=chat_id).first()
         if not member:
-            return Response({"error": "Ошибка. Невозможно отправлять сообщения, где вас нет в чате"})
+            return Response({"error": "Ошибка. Невозможно отправлять сообщения, "
+                                      "где вас нет в чате"}, status=403)
+        if member.user_role == 'Заблокирован':
+            return Response({"error": "Ошибка. Пользователь вас заблокировал. "
+                                      "Вы не можете отправлять сообщения."}, status=403)
         chat = Chat.objects.filter(id=chat_id).first()
         if not chat:
-            return Response({"error": "Чат не найден"})
-        chat_type = chat.type
-        # type = serializer.validated_data['type']
+            return Response({"error": "Чат не найден"}, status=404)
         # Получаем файлы фото, видео и аудио
         image_file = request.FILES.get('image')
         video_file = request.FILES.get('video')
         audio_file = request.FILES.get('audio')
         key = gen_key(chat_id, salt)
-        if chat_type == 'user' or chat_type == 'group':
-            message = Message(
-                sender_user_id=sender_id,
-                content=encrypt_text(content, key),
-                chat_id=chat_id
-            )
-
-            # Сохраняем фото в БД если оно есть
-            if image_file != None:
-                message.image.save(image_file.name, image_file)
-            else:
-                message.image = None
-            # Сохраняем видео в БД если оно есть
-            if video_file:
-                message.video.save(video_file.name, video_file)
-            else:
-                message.video = None
-
-            # Сохраняем аудио в БД если оно есть
-            if audio_file:
-                message.audio.save(audio_file.name, audio_file)
-            else:
-                message.audio = None
-            membership = ChatMembership.objects.filter(chat_id=chat_id)
-            membership = membership.exclude(user_id=sender_id).first()
-            if membership:
-                users = ChatUser.objects.filter(id=membership.user_id).all()
-            else:
-                users = ChatUser.objects.filter(id=sender_id).all()
-            message.save()
-            # Отправляем уведомление получателю
-            for user in users:
-                if message.sender_user.username != user.username:
-                    send_push_notification(user.fcm_token, message.sender_user.username, content, message.sender_user.photo.url)
-            return Response({
-                'sender_id': sender_id,
-                'content': content,
-                'image': message.image.url if message.image else None,
-                'video': message.video.url if message.video else None,
-                'audio': message.audio.url if message.audio else None,
-                'message_id': message.id
-            })
-        elif chat_type == 'bot':
-            user = ChatUser.objects.filter(id=sender_id).first()
-            sender = user.username
-            membership = ChatMembership.objects.filter(chat_id=chat_id)
-            membership = membership.exclude(user_id=sender_id).first()
-            bot = Bot.objects.filter(id=membership.user_id).first()
-            recipient = bot.name
-            message = Message(
-                sender_user_id=sender_id,
-                content=encrypt_text(content, key),
-                chat_id=chat_id
-            )
-
-            # Сохраняем фото в БД если оно есть
-            if image_file:
-                message.image.save(image_file.name, image_file)
-            else:
-                message.image = None
-
-            message.save()
-            message_content = ''
-            if recipient == 'Mixrobot':
-                message_content = mixrech(content)
-            elif recipient == 'SmartMix':
-                mqtt_dict = dict(request.session.items())
-                send_to_mqtt(mqtt_dict, sender_id, content)
-                message_content = get_mqtt(mqtt_dict, sender_id)
-            message_bot = Message(
-                sender_bot_id=bot.id,
-                content=encrypt_text(message_content, key),
-                chat_id=chat_id,
-            )
-            message_bot.save()
-            return Response({
-                'sender_id': sender_id,
-                'content': content,
-                'image': image_file,
-                'message_id': message.id
-            })
+        if chat.type == 'bot':
+            return Response({"error": "Неверный эндпоинт. Это не чат с ботом"}, status=400)
+        message = Message(
+            sender_user_id=sender_id,
+            content=encrypt_text(content, key),
+            chat_id=chat_id
+        )
+        # Сохраняем фото в БД если оно есть
+        if image_file != None:
+            message.image.save(image_file.name, image_file)
+        else:
+            message.image = None
+        # Сохраняем видео в БД если оно есть
+        if video_file:
+            message.video.save(video_file.name, video_file)
+        else:
+            message.video = None
+        # Сохраняем аудио в БД если оно есть
+        if audio_file:
+            message.audio.save(audio_file.name, audio_file)
+        else:
+            message.audio = None
+        membership = ChatMembership.objects.filter(chat_id=chat_id)
+        membership = membership.exclude(user_id=sender_id).first()
+        if membership:
+            users = ChatUser.objects.filter(id=membership.user_id).all()
+        else:
+            users = ChatUser.objects.filter(id=sender_id).all()
+        message.save()
+        # Отправляем уведомление получателю
+        for user in users:
+            if message.sender_user.username != user.username:
+                send_push_notification(user.fcm_token, message.sender_user.username, content, message.sender_user.photo.url)
+        return Response({
+            'sender_id': sender_id,
+            'content': content,
+            'image': message.image.url if message.image else None,
+            'video': message.video.url if message.video else None,
+            'audio': message.audio.url if message.audio else None,
+            'message_id': message.id
+        })
 
     def get(self, request, *args, **kwargs):
-        # Получение сообщений
+        # Получение сообщений из чата с двумя пользователями или группы
         chat_id = request.GET.get('chat_id')
         key = gen_key(chat_id, salt)
         member = ChatMembership.objects.filter(user_id=request.user.id, chat_id=chat_id)
         if not member:
-            return Response({"error": "Ошибка. Невозможно просматривать сообщения в чате, где вас нет"})
+            return Response({"error": "Ошибка. Невозможно просматривать сообщения в чате, "
+                                      "где вас нет"}, status=404)
         messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
+        deleted_messages = [message.message_id for message in DeletedMessage.objects.all() if
+                            message.delete_type == 'У всех']
+        deleted_at_home_messages = [message.message_id for message in DeletedMessage.objects.all() if
+                            message.delete_type == 'Только у себя' and message.deleted == request.user]
+        deleted_messages.extend(deleted_at_home_messages)
+        messages = list(filter(lambda x: x.id not in deleted_messages, messages))
         chat = Chat.objects.filter(id=chat_id).first()
         if chat.type == 'bot':
-            membership = ChatMembership.objects.filter(chat_id=chat_id)
-            membership = membership.exclude(user_id=request.user.id).first()
-            bot = Bot.objects.filter(id=membership.user_id).first()
-            if list(messages) == [] and bot.name == 'SmartMix':
-                content = ('Привет! Я SmartMix.\n'
-                           'Я могу управлять умным домом.'
-                           'Отправьте мне любую команду, и я выполню действие '
-                           'по управлению вашим умным домом. '
-                           'Для работы со мной, введите параметры вашего MQTT сервера по кнопке вверху.\n'
-                           '- led_on - Включить светодиод,\n'
-                           '- led_off - Выключить светодиод,\n'
-                           '- temp - Вывести температуру окружающец среды.')
-                message = Message.objects.create(sender_bot_id=bot.id,
-                                                 content= encrypt_text(content, key),
-                                                 chat_id=chat_id)
-            elif list(messages) == [] and bot.name == 'Mixrobot':
-                content = ('Привет! Я MixRobot.\n'
-                           'Напишите мне любое слово, и я вам выдам '
-                           'результаты поиска по нему в интернете.')
-                message = Message.objects.create(sender_bot_id=bot.id,
-                                                 content= encrypt_text(content, key),
-                                               chat_id=chat_id)
+            return Response({"error": "Неверный эндпоинт. Это не чат с ботом"}, status=400)
+
         list_messages = [{
                 "id": message.id,
                 "sender_user": str(message.sender_user),
                 "sender_user_id": str(message.sender_user_id),
-                "sender_bot": str(message.sender_bot),
-                "sender_bot_id": str(message.sender_bot_id),
                 "content": decrypt_text(message.content[2:-1].encode('utf-8'), key) if message.content else '',
                 "image": message.image.url if message.image else None,
                 "video": message.video.url if message.video else None,
@@ -457,12 +402,11 @@ class MessageView(generics.GenericAPIView):
                 "time": timezone.localtime(message.timestamp).strftime('%H:%M'),
                 "chat_id": message.chat_id,
                 "is_edit": message.is_edit,
-                "delete_at_home": message.delete_at_home,
-                "id_for_answer": message.id_for_answer,
+                "answer_to": message.answer_to_id,
                 "is_forwarded": message.is_forwarded,
-                "transmission_content": decrypt_text(message.transmission_content[2:-1].encode('utf-8'),
-                                        gen_key(Message.objects.get(id=message.id_for_transmission).chat_id, salt)) if message.transmission_content else '',
-                "id_for_transmission": message.id_for_transmission
+                "transmission_content": decrypt_text(message.answer_to.content[2:-1].encode('utf-8'), gen_key(message.answer_to.chat_id, salt))
+                                        if message.answer_to else None,
+                "transmission_by": message.answer_to.sender_user.username if message.answer_to else None
             } for message in messages]
         return Response({
             'messages': list_messages
@@ -476,22 +420,35 @@ class MessageView(generics.GenericAPIView):
         chat_id = serializer.validated_data['chat_id']
         message_id = serializer.validated_data['message_id']
         key = gen_key(chat_id, salt)
-        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
+        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id).first()
         if not member:
-            return Response({"error": "Ошибка. Невозможно редактировать сообщения, где вас нет в чате"})
+            return Response({"error": "Ошибка. Невозможно редактировать сообщения, "
+                                      "где вас нет в чате"}, status=403)
+        if member.user_role == 'Заблокирован':
+            return Response({"error": "Ошибка. Пользователь вас заблокировал. "
+                                      "Вы не можете редактировать сообщения."}, status=403)
         chat = Chat.objects.filter(id=chat_id).first()
         if not chat:
-            return Response({"error": "Чат не найден"})
+            return Response({"error": "Чат не найден"}, status=404)
         message = Message.objects.filter(id=message_id).first()
         if not message:
-            return Response({"error": "Сообщение не найдено"})
+            return Response({"error": "Сообщение не найдено"}, status=404)
 
         if message.sender_user_id != request.user.id:
-            return Response({"error": "Вы можете редактировать только свои сообщения"})
-
+            return Response({"error": "Вы можете редактировать только свои сообщения"}, status=403)
+        # Создаём объект истории сообщений
+        message_history = MessageHistory.objects.create(old_message=message.content,
+                                                        new_message=content,
+                                                        chat_id=chat_id,
+                                                        message_id=message_id,
+                                                        old_date=message.timestamp,
+                                                        edited=request.user)
         message.content = encrypt_text(content, key)
         message.is_edit = True
         message.save()
+        # Устанавливаем в истории сообщений значение изменённого текста
+        message_history.new_message = message.content
+        message_history.save()
         return Response({
             'content': content,
             'image': message.image.url if message.image else None,
@@ -507,29 +464,154 @@ class MessageView(generics.GenericAPIView):
         chat_id = serializer.validated_data['chat_id']
         message_ids = serializer.validated_data['message_ids']
         delete_type = serializer.validated_data['delete_type']
-        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
+        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id).first()
         if not member:
-            return Response({"error": "Ошибка. Невозможно удалить сообщения, где вас нет в чате"})
+            return Response({"error": "Ошибка. Невозможно удалить сообщения, "
+                                      "где вас нет в чате"}, status=403)
         chat = Chat.objects.filter(id=chat_id).first()
         if not chat:
-            return Response({"error": "Чат не найден"})
+            return Response({"error": "Чат не найден"}, status=404)
         for message_id in message_ids:
-            message = Message.objects.filter(id=message_id).first()
             if delete_type == 'Только у себя':
-                message.delete_at_home = True
-                message.save()
-                return Response({'message': 'Вы удалили сообщение у себя.'})
+                deleted_message = DeletedMessage.objects.create(delete_type='Только у себя',
+                                                                message_id=message_id,
+                                                                chat_id=chat_id,
+                                                                deleted=request.user)
             elif delete_type == 'У всех':
-                if message.image != '':
-                    os.remove(message.image.path)
-                elif message.video != '':
-                    os.remove(message.video.path)
-                elif message.audio != '':
-                    os.remove(message.audio.path)
-                message.delete()
-                return Response({'message': 'Вы удалили сообщение у всех.'})
+                if member.user_role == 'Заблокирован':
+                    return Response({"error": "Ошибка. Пользователь вас заблокировал. "
+                                              "Вы не можете удалить сообщения у всех."}, status=403)
+                deleted_message = DeletedMessage.objects.create(delete_type='У всех',
+                                                                message_id=message_id,
+                                                                chat_id=chat_id,
+                                                                deleted=request.user)
             else:
-                return Response({'message': 'Ошибка. Не выбран тип удаления.'})
+                return Response({'message': 'Ошибка. Не выбран тип удаления.'}, status=400)
+            return Response({'message': f'Удалено сообщений: {len(message_ids)}'})
+
+
+class MessageBotView(generics.GenericAPIView):
+    # API сообщений с ботами
+    serializer_class = MessageSerializer
+    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, *args, **kwargs):
+        # Отправить сообщение в чат с ботом
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        # Получаем отправителя
+        sender_id = request.user.id
+        content = serializer.validated_data['content']
+        chat_id = serializer.validated_data['chat_id']
+        member = ChatMembership.objects.filter(user_id=sender_id, chat_id=chat_id).first()
+        if not member:
+            return Response({"error": "Ошибка. Невозможно отправлять сообщения, "
+                                      "где вас нет в чате"}, status=403)
+        if member.user_role == 'Заблокирован':
+            return Response({"error": "Ошибка. Пользователь вас заблокировал. "
+                                      "Вы не можете отправлять сообщения."}, status=403)
+        chat = Chat.objects.filter(id=chat_id).first()
+        if not chat:
+            return Response({"error": "Чат не найден"}, status=404)
+        if chat.type != 'bot':
+            return Response({"error": "Неверный эндпоинт. Это чат с ботом"}, status=400)
+        # Получаем файлы фото
+        image_file = request.FILES.get('image')
+        key = gen_key(chat_id, salt)
+        membership = ChatMembership.objects.filter(chat_id=chat_id)
+        membership = membership.exclude(user_id=sender_id).first()
+        bot = Bot.objects.filter(id=membership.user_id).first()
+        message = Message(
+            sender_user_id=sender_id,
+            content=encrypt_text(content, key),
+            chat_id=chat_id
+        )
+
+        # Сохраняем фото в БД если оно есть
+        if image_file:
+            message.image.save(image_file.name, image_file)
+        else:
+            message.image = None
+
+        message.save()
+        message_content = ''
+        if bot.name == 'Mixrobot':
+            # Mixrobot отправляет сообщение
+            message_content = mixrech(content)
+        elif bot.name == 'SmartMix':
+            # SmartMix отправляет сообщение
+            mqtt_dict = dict(request.session.items())
+            send_to_mqtt(mqtt_dict, sender_id, content)
+            message_content = get_mqtt(mqtt_dict, sender_id)
+        message_bot = Message(
+            sender_bot_id=bot.id,
+            content=encrypt_text(message_content, key),
+            chat_id=chat_id,
+        )
+        message_bot.save()
+        return Response({
+            'sender_id': sender_id,
+            'content': content,
+            'image': image_file,
+            'message_id': message.id
+        })
+
+    def get(self, request, *args, **kwargs):
+        # Получение сообщений в чатах с ботами
+        chat_id = request.GET.get('chat_id')
+        key = gen_key(chat_id, salt)
+        member = ChatMembership.objects.filter(user_id=request.user.id, chat_id=chat_id)
+        if not member:
+            return Response({"error": "Ошибка. Невозможно просматривать сообщения в чате, "
+                                      "где вас нет"}, status=404)
+        messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
+        chat = Chat.objects.filter(id=chat_id).first()
+        if chat.type != 'bot':
+            return Response({"error": "Неверный эндпоинт. Это чат с ботом"}, status=400)
+        membership = ChatMembership.objects.filter(chat_id=chat_id)
+        membership = membership.exclude(user_id=request.user.id).first()
+        bot = Bot.objects.filter(id=membership.user_id).first()
+        if list(messages) == [] and bot.name == 'SmartMix':
+            content = ('Привет! Я SmartMix.\n'
+                       'Я могу управлять умным домом.'
+                       'Отправьте мне любую команду, и я выполню действие '
+                       'по управлению вашим умным домом. '
+                       'Для работы со мной, введите параметры вашего MQTT сервера по кнопке вверху.\n'
+                       '- led_on - Включить светодиод,\n'
+                       '- led_off - Выключить светодиод,\n'
+                       '- temp - Вывести температуру окружающец среды.')
+            message = Message.objects.create(sender_bot_id=bot.id,
+                                             content=encrypt_text(content, key),
+                                             chat_id=chat_id)
+        elif list(messages) == [] and bot.name == 'Mixrobot':
+            content = ('Привет! Я MixRobot.\n'
+                       'Напишите мне любое слово, и я вам выдам '
+                       'результаты поиска по нему в интернете.')
+            message = Message.objects.create(sender_bot_id=bot.id,
+                                             content=encrypt_text(content, key),
+                                             chat_id=chat_id)
+
+        list_messages = [{
+            "id": message.id,
+            "sender_user": str(message.sender_user),
+            "sender_user_id": str(message.sender_user_id),
+            "sender_bot": str(message.sender_bot),
+            "sender_bot_id": str(message.sender_bot_id),
+            "content": decrypt_text(message.content[2:-1].encode('utf-8'), key) if message.content else '',
+            "image": message.image.url if message.image else None,
+            "video": message.video.url if message.video else None,
+            "audio": message.audio.url if message.audio else None,
+            "date": message.timestamp.date(),
+            "time": timezone.localtime(message.timestamp).strftime('%H:%M'),
+            "chat_id": message.chat_id,
+            "is_edit": message.is_edit,
+            "answer_to": message.answer_to_id,
+            "is_forwarded": message.is_forwarded
+        } for message in messages]
+        return Response({
+            'messages': list_messages
+        })
 
 
 class AnswerMessageView(generics.GenericAPIView):
@@ -546,17 +628,20 @@ class AnswerMessageView(generics.GenericAPIView):
         answer = serializer.validated_data['answer']
         key = gen_key(chat_id, salt)
         chat = Chat.objects.filter(id=chat_id).first()
-        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
+        member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id).first()
         if not member:
             return Response({"error": "Ошибка. Невозможно ответить на сообщение, где вас нет в чате"})
+        if member.user_role == 'Заблокирован':
+            return Response({"error": "Ошибка. Пользователь вас заблокировал. "
+                                      "Вы не можете ответить на сообщение."}, status=403)
         if not chat:
             return Response({"error": "Чат не найден"})
 
         new_message = Message.objects.create(sender_user_id=request.user.id, content=encrypt_text(answer, key),
-                                             id_for_answer=message_id, chat_id=chat_id)
+                                             answer_to_id=message_id, chat_id=chat_id)
         return Response({
             'answer': answer,
-            'id_for_answer': new_message.id_for_answer
+            'answer_to': new_message.answer_to_id
         })
 
 
@@ -576,20 +661,22 @@ class MessageTransmissionView(generics.GenericAPIView):
         key = gen_key(to_chat_id, salt)
         current_chat = Chat.objects.filter(id=chat_id).first()
         to_chat = Chat.objects.filter(id=to_chat_id).first()
-        message = Message.objects.filter(id=message_id).first()
         member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id)
         if not member:
             return Response({"error": "Ошибка. Невозможно переслать сообщение из чата, где вас нет."})
+        to_member = ChatMembership.objects.filter(chat_id=to_chat, user_id=request.user.id).first()
+        if to_member.user_role == 'Заблокирован':
+            return Response({"error": "Ошибка. Пользователь вас заблокировал. "
+                                      "Вы не можете переслать ему сообщение."}, status=403)
         if not current_chat:
             return Response({"error": "Чат не найден"})
         if not to_chat:
             return Response({"error": "Чат для пересылки не найден"})
         new_message = Message.objects.create(sender_user_id=request.user.id, content=encrypt_text(answer, key),
-                                             id_for_transmission=message_id, chat_id=to_chat_id,
-                                             is_forwarded=True, transmission_content=message.content)
+                                             answer_to_id=message_id, chat_id=to_chat_id, is_forwarded=True)
         return Response({
             'answer': answer,
-            'id_for_transmission': new_message.id_for_transmission,
+            'answer_to': new_message.answer_to_id,
             'old_chat_id': chat_id,
             'to_chat_id': new_message.chat_id
         })
@@ -738,10 +825,11 @@ class ChatView(generics.GenericAPIView):
             return Response({"error": "Чат не найден"})
         # Проверяем: является ли чат групповым
         if type_chat == 'group':
-            membership = ChatMembership.objects.filter(chat_id=chat_id, user_role='Создатель').first()
+            membership = ChatMembership.objects.filter(Q(chat_id=chat_id, user_role='Создатель') |
+                                                       Q(chat_id=chat_id, user_role='Администратор')).first()
             if not membership:
                 return Response({"error": "Участник чата не найден"})
-            # Проверяем: является ли текущий пользователь создателем группы
+            # Проверяем: является ли текущий пользователь создателем или администратором группы
             if membership.user_id == request.user.id and chat.type == type_chat:
                 # Если да, то изменяем информацию о группе
                 chat.name = name
@@ -923,51 +1011,3 @@ class GetChatsView(generics.GenericAPIView):
             'chats': chat_with_user
         })
 
-
-class GreateChannelView(generics.GenericAPIView):
-    serializer_class = CreateChannelSerializer
-    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        name = serializer.validated_data['name']
-        channel = Channel.objects.create(name=name)
-        return Response({
-            'message': f'Канал с именем {name} создан'
-        })
-
-
-class SubscribeToChannelView(generics.GenericAPIView):
-    serializer_class = SubscribeToChannelSerializer
-    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        user_id = serializer.validated_data['user_id']
-        channel_id = serializer.validated_data['channel_id']
-        membership = ChannelMembership.objects.create(user_id=user_id, channel_id=channel_id)
-        return Response({
-            'message': f'Пользователь с id {user_id} подписался на канал с id {channel_id}.'
-        })
-
-
-class SendMessageToChannelView(generics.GenericAPIView):
-    serializer_class = SendMessageToChannelSerializer
-    authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def post(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        serializer.is_valid(raise_exception=True)
-        channel_id = serializer.validated_data['channel_id']
-        sender_id = serializer.validated_data['sender_id']
-        content = serializer.validated_data['content']
-        message = Message.objects.create(sender_id=sender_id, content=content)
-        message.channel_id = channel_id
-        return Response({
-            'message': f'Сообщение отправлено в канал с id {channel_id}.'
-        })
