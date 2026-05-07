@@ -31,7 +31,7 @@ jobs:
 
        - name: Deploy to server
          run: |
-           ssh ${{ secrets.USERNAME }}@${{ secrets.IP_ADRESS }} "cd /root/browser && git pull && docker-compose down && docker volume rm browser_redis_data && docker-compose up --build -d && docker cp browser_mixrech_1:/mixrech/staticfiles ./mixrech && docker cp browser_mixchat_1:/mixchat/staticfiles ./mixchat"
+           ssh ${{ secrets.USERNAME }}@${{ secrets.IP_ADRESS }} "cd /root/browser && git pull && docker-compose down && docker volume rm browser_redis_data && docker-compose up --build -d"
            
 
      logs:
