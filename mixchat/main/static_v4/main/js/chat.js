@@ -140,7 +140,9 @@ function openUserChat(userId) {
        }
     }
     if (selected_chat) {
+        currentChatId = selected_chat.id
         openChat(selected_chat.id)
+        chatUserView(selected_chat.id)
     } else {
         createChat([senderId, userId], name, bio, photo, selectedUser.type)
     }
@@ -889,7 +891,6 @@ function createChat(groupUsers, name, bio, photo, chat_type) {
    })
    .then(response => response.json())
    .then(data => {
-       console.log(data); // Сообщение о создании чата
        currentChatId = data.id;
        loadMessages(currentChatId); // Загружаем сообщения нового чата
        fetchChats()
