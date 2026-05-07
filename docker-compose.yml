@@ -6,6 +6,7 @@ services:
       command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120"
       volumes:
       - .:/app
+      - mixrech_static:/mixrech/main/static_v1/
       env_file:
       - .env
       ports:
@@ -16,6 +17,7 @@ services:
       command: sh -c "python manage.py migrate && python manage.py collectstatic --noinput --verbosity 2 && gunicorn mixchat.wsgi:application --bind 0.0.0.0:8001 --timeout 120"
       volumes:
       - .:/app
+      - mixchat_static:/mixchat/main/static_v4/
       - media_data:/mixchat/main/media_v4/
       environment:
       - MEDIA_ROOT=/mixchat/main/media_v4/
@@ -43,8 +45,8 @@ services:
       volumes:
          - ./nginx.conf:/etc/nginx/nginx.conf:ro
          - media_data:/app/media/
-         - ./mixrech/staticfiles:/app/staticfiles/mixrech/
-         - ./mixchat/staticfiles:/app/staticfiles/mixchat/
+         - mixrech_static:/app/staticfiles/mixrech/
+         - mixchat_static:/app/staticfiles/mixchat/
          - /etc/letsencrypt/live/mixrech.com/fullchain.pem:/etc/letsencrypt/live/mixrech.com/fullchain.pem
          - /etc/letsencrypt/live/mixrech.com/privkey.pem:/etc/letsencrypt/live/mixrech.com/privkey.pem
          
@@ -56,5 +58,7 @@ services:
         - "443:443"
 
 volumes:
+   mixrech_static:
+   mixchat_static:
    media_data:
    redis_data:
