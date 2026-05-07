@@ -3,7 +3,7 @@ version: '3.8'
 services:
    mixrech:
       build: ./mixrech
-      command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120"
+      command: sh -c "python manage.py makemigrations && python manage.py migrate --fake-initial && python manage.py collectstatic --noinput && gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120"
       volumes:
       - .:/app
       env_file:
