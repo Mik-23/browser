@@ -58,7 +58,7 @@ class Channel(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.TextField("Название")
     photo = models.ImageField(upload_to='photo/profilephoto/', default='photo/profilephoto/default.png', null=True,
-                              blank=True, verbose_name="Фотография чата")
+                              blank=True, verbose_name="Фотография канала")
     bio = models.TextField("Описание")
 
 
@@ -82,7 +82,7 @@ class Message(models.Model):
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
     is_edit = models.BooleanField("Редактировано?", null=True, blank=True)
     answer_to = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
-    is_forwarded = models.BooleanField("Переслано?", null=True)
+    is_forwarded = models.BooleanField("Пересылка?", null=True)
 
     def __str__(self):
         return f"Message from {self.sender_user} to chat {self.chat.id}"
