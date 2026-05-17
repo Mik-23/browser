@@ -7,6 +7,8 @@ services:
       volumes:
       - .:/app
       - mixrech_static:/mixrech/main/static_v1/
+      - mixrech_search_static:/mixrech/search/static_v2/
+      
       env_file:
       - .env
       ports:
@@ -46,6 +48,7 @@ services:
          - ./nginx.conf:/etc/nginx/nginx.conf:ro
          - media_data:/app/media/
          - mixrech_static:/app/staticfiles/mixrech/
+         - mixrech_search_static:/app/staticfiles/mixrech
          - mixchat_static:/app/staticfiles/mixchat/
          - /etc/letsencrypt/live/mixrech.com/fullchain.pem:/etc/letsencrypt/live/mixrech.com/fullchain.pem
          - /etc/letsencrypt/live/mixrech.com/privkey.pem:/etc/letsencrypt/live/mixrech.com/privkey.pem
@@ -59,6 +62,7 @@ services:
 
 volumes:
    mixrech_static:
+   mixrech_search_static:
    mixchat_static:
    media_data:
    redis_data:
