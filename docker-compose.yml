@@ -6,8 +6,7 @@ services:
       command: sh -c "python manage.py makemigrations && python manage.py migrate && python manage.py collectstatic --noinput && gunicorn mixrech.wsgi:application --bind 0.0.0.0:8000 --timeout 120"
       volumes:
       - .:/app
-      - mixrech_static:/mixrech/main/static_v1/
-      - mixrech_static:/mixrech/search/static_v2/
+      - mixrech_static:/mixrech/staticfiles/
       
       env_file:
       - .env
