@@ -203,10 +203,16 @@ class LoadMediaView(View):
         # Если это фото для пользователей или чатов
         if file_name.startswith('photo'):
             user = ChatUser.objects.filter(photo=file_name).first()
+            bot = Bot.objects.filter(photo=file_name).first()
             # Если пользователь с фото найден
             if user:
-                # Открываем фото профиля
+                # Открываем фото пользователя
                 with open(user.photo.path, 'rb') as f:
+                    data = f.read()
+                    return HttpResponse(data, content_type='image/jpeg')
+            elif bot:
+                # Открываем фото бота
+                with open(bot.photo.path, 'rb') as f:
                     data = f.read()
                     return HttpResponse(data, content_type='image/jpeg')
             else:
