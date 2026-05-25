@@ -18,7 +18,7 @@ from django.urls import reverse
 from .firebase import send_push_notification
 from .microservice_functions import mixrech, send_to_mqtt, get_mqtt
 from .cifer import gen_key, encrypt_text, decrypt_text
-from .models import Message, Chat, ChatUser, Bot, ChatMembership, MessageHistory, DeletedMessage
+from .models import Message, Chat, ChatUser, Bot, ChatMembership
 from .serialazers import (send_code_to_email, UserSerializer, SendCodeSerializer, LoginSerializer, MessageSerializer,
                           SearchUserSerializer,ChatSerializer, GetChatsSerializer, AnswerAndTransmissionSerializer,
                           ProfileformSerializer, SaveMqttSerializer)
@@ -386,12 +386,8 @@ class MessageView(generics.GenericAPIView):
             return Response({"error": "Ошибка. Невозможно просматривать сообщения в чате, "
                                       "где вас нет"}, status=404)
         messages = Message.objects.filter(chat_id=chat_id).order_by('timestamp')
-        deleted_messages = [message.message_id for message in DeletedMessage.objects.all() if
-                            message.delete_type == 'У всех']
-        deleted_at_home_messages = [message.message_id for message in DeletedMessage.objects.all() if
-                            message.delete_type == 'Только у себя' and message.deleted == request.user]
-        deleted_messages.extend(deleted_at_home_messages)
-        messages = list(filter(lambda x: x.id not in deleted_messages, messages))
+
+        messages = list(filter(lambda x: x.is_change != 'Только у себя', messages))
         chat = Chat.objects.filter(id=chat_id).first()
         if chat.type == 'bot':
             return Response({"error": "Неверный эндпоинт. Это не чат с ботом"}, status=400)
@@ -407,7 +403,7 @@ class MessageView(generics.GenericAPIView):
                 "date": message.timestamp.date(),
                 "time": timezone.localtime(message.timestamp).strftime('%H:%M'),
                 "chat_id": message.chat_id,
-                "is_edit": message.is_edit,
+                "is_edit": message.is_change,
                 "answer_to": message.answer_to_id,
                 "is_forwarded": message.is_forwarded,
                 "transmission_content": decrypt_text(message.answer_to.content[2:-1].encode('utf-8'), gen_key(message.answer_to.chat_id, salt))
@@ -442,19 +438,9 @@ class MessageView(generics.GenericAPIView):
 
         if message.sender_user_id != request.user.id:
             return Response({"error": "Вы можете редактировать только свои сообщения"}, status=403)
-        # Создаём объект истории сообщений
-        message_history = MessageHistory.objects.create(old_message=message.content,
-                                                        new_message=content,
-                                                        chat_id=chat_id,
-                                                        message_id=message_id,
-                                                        old_date=message.timestamp,
-                                                        edited=request.user)
         message.content = encrypt_text(content, key)
-        message.is_edit = True
+        message.is_change = True
         message.save()
-        # Устанавливаем в истории сообщений значение изменённого текста
-        message_history.new_message = message.content
-        message_history.save()
         return Response({
             'content': content,
             'image': message.image.url if message.image else None,
@@ -470,6 +456,7 @@ class MessageView(generics.GenericAPIView):
         chat_id = serializer.validated_data['chat_id']
         message_ids = serializer.validated_data['message_ids']
         delete_type = serializer.validated_data['delete_type']
+        content = serializer.validated_data['content']
         member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id).first()
         if not member:
             return Response({"error": "Ошибка. Невозможно удалить сообщения, "
@@ -478,19 +465,21 @@ class MessageView(generics.GenericAPIView):
         if not chat:
             return Response({"error": "Чат не найден"}, status=404)
         for message_id in message_ids:
+            message = Message.objects.get(id=message_id)
             if delete_type == 'Только у себя':
-                deleted_message = DeletedMessage.objects.create(delete_type='Только у себя',
-                                                                message_id=message_id,
-                                                                chat_id=chat_id,
-                                                                deleted=request.user)
+                message.is_change = 'Только у себя'
             elif delete_type == 'У всех':
                 if member.user_role == 'Заблокирован':
                     return Response({"error": "Ошибка. Пользователь вас заблокировал. "
                                               "Вы не можете удалить сообщения у всех."}, status=403)
-                deleted_message = DeletedMessage.objects.create(delete_type='У всех',
-                                                                message_id=message_id,
-                                                                chat_id=chat_id,
-                                                                deleted=request.user)
+                message.delete()
+                if content == 'Media':
+                    if message.image:
+                        os.remove(message.image.path)
+                    elif message.video:
+                        os.remove(message.video.path)
+                    elif message.audio:
+                        os.remove(message.audio.path)
             else:
                 return Response({'message': 'Ошибка. Не выбран тип удаления.'}, status=400)
             return Response({'message': f'Удалено сообщений: {len(message_ids)}'})
@@ -586,7 +575,7 @@ class MessageBotView(generics.GenericAPIView):
                        'Для работы со мной, введите параметры вашего MQTT сервера по кнопке вверху.\n'
                        '- led_on - Включить светодиод,\n'
                        '- led_off - Выключить светодиод,\n'
-                       '- temp - Вывести температуру окружающец среды.')
+                       '- temp - Вывести температуру окружающей среды.')
             message = Message.objects.create(sender_bot_id=bot.id,
                                              content=encrypt_text(content, key),
                                              chat_id=chat_id)
@@ -611,7 +600,7 @@ class MessageBotView(generics.GenericAPIView):
             "date": message.timestamp.date(),
             "time": timezone.localtime(message.timestamp).strftime('%H:%M'),
             "chat_id": message.chat_id,
-            "is_edit": message.is_edit,
+            "is_edit": message.is_change,
             "answer_to": message.answer_to_id,
             "is_forwarded": message.is_forwarded
         } for message in messages]
