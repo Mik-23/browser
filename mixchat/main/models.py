@@ -80,30 +80,12 @@ class Message(models.Model):
     audio = models.FileField("Аудио", upload_to='messages/audios/', null=True, blank=True)
     timestamp = models.DateTimeField("Дата", auto_now_add =True)
     chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='messages')
-    is_edit = models.BooleanField("Редактировано?", null=True, blank=True)
+    is_change = models.BooleanField("Изменён?", null=True, blank=True)
     answer_to = models.ForeignKey("self", null=True, blank=True, on_delete=models.SET_NULL)
     is_forwarded = models.BooleanField("Пересылка?", null=True)
 
     def __str__(self):
         return f"Message from {self.sender_user} to chat {self.chat.id}"
-
-
-class MessageHistory(models.Model):
-    old_message = models.TextField("Старое сообщение")
-    new_message = models.TextField("Новое сообщение")
-    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='message_history')
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='edit_chat_messages')
-    old_date = models.DateTimeField("Старая дата")
-    new_date = models.DateTimeField("Новая дата", auto_now_add =True)
-    edited = models.ForeignKey(ChatUser, verbose_name="Отредактировал", null=True, blank=True, on_delete=models.CASCADE, related_name='edited_user')
-
-
-class DeletedMessage(models.Model):
-    delete_type = models.TextField("Тип удаления")
-    message = models.ForeignKey(Message, on_delete=models.CASCADE, related_name='message_deleted')
-    chat = models.ForeignKey(Chat, on_delete=models.CASCADE, related_name='delete_chat_messages')
-    delete_date = models.DateTimeField("Дата удаления", auto_now_add =True)
-    deleted = models.ForeignKey(ChatUser, verbose_name="Удалил", null=True, blank=True, on_delete=models.CASCADE, related_name='deleted_user')
 
 
 class ChannelMessage(models.Model):
