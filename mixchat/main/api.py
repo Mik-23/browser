@@ -112,7 +112,7 @@ class LoginView(generics.GenericAPIView):
                 httponly=True,
                 secure=True,
                 samesite='Lax',
-                max_age=30 * 60
+                max_age=24 * 3600
             )
             return response
         except AttributeError:
