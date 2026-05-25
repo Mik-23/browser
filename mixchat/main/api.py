@@ -456,6 +456,7 @@ class MessageView(generics.GenericAPIView):
         chat_id = serializer.validated_data['chat_id']
         message_ids = serializer.validated_data['message_ids']
         delete_type = serializer.validated_data['delete_type']
+        content = serializer.validated_data['content']
         member = ChatMembership.objects.filter(chat_id=chat_id, user_id=request.user.id).first()
         if not member:
             return Response({"error": "Ошибка. Невозможно удалить сообщения, "
@@ -472,6 +473,13 @@ class MessageView(generics.GenericAPIView):
                     return Response({"error": "Ошибка. Пользователь вас заблокировал. "
                                               "Вы не можете удалить сообщения у всех."}, status=403)
                 message.delete()
+                if content == 'Media':
+                    if message.image:
+                        os.remove(message.image.path)
+                    elif message.video:
+                        os.remove(message.video.path)
+                    elif message.audio:
+                        os.remove(message.audio.path)
             else:
                 return Response({'message': 'Ошибка. Не выбран тип удаления.'}, status=400)
             return Response({'message': f'Удалено сообщений: {len(message_ids)}'})
