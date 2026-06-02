@@ -36,20 +36,19 @@
             </div>
         </div>
         <ul>
-            {% if images %}
+            {% if videos %}
             <div>
-                {% for image in images %}
+                {% for video in videos %}
                     <div class="result-card">
                         <div class="video-title">
-                            <a href="{{ image.link }}" target="_blank">
-                                <img src="{{ image.url }}" alt="Image" style="max-width: 300px; max-height: 300px;">
+                            <a href="{{ video.url }}" target="_blank">
+                                {{ video.title }}
+                                {% if video.thumbnail %}
+                                <img src="{{ video.thumbnail }}" alt="Thumbnail" class="card-img-top" style="max-width: 100%; height: auto;">
+                                {% endif %}
                             </a>
                         </div>
-                        <div class="video-url">
-                            <a href="{{ image.link }}">
-                            {{ image.link }}
-                            </a>
-                        </div>
+
                     </div>
                 {% endfor %}
             </div>

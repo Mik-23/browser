@@ -13,12 +13,13 @@ def search_view(request):
     except ValueError:
         page_number = 1
     try:
-        results = search(search_query, page)
+        results = search(search_query, page_number)
         len_results = len(results)
         return render(request, 'search/result.html',
                           {'results': results, 'query': search_query, 'page': page_number, 'total_results': len_results})
     except Exception:
         return render(request, 'main/site.html')
+
 
 def image_view(request):
     # Функция поиска фото
@@ -29,7 +30,7 @@ def image_view(request):
         page_number = int(page)
     except ValueError:
         page_number = 1
-    images = image(request, search_query)
+    images = image(page_number, search_query)
     return render(request, 'search/images.html',
                       {'images': images, 'query': search_query, 'page': page_number})
 
@@ -43,10 +44,9 @@ def video_view(request):
         page_number = int(page)
     except ValueError:
         page_number = 1
-    video_query = 'видео' + search_query
-    images = image(request, video_query)
+    videos = video(page_number, search_query)
     return render(request, 'search/videos.html',
-                  {'images': images, 'query': search_query, 'page': page_number})
+                  {'videos': videos, 'query': search_query, 'page': page_number})
 
 
 def search_by_image_view(request):
@@ -72,15 +72,15 @@ def search_by_image_view(request):
 def news_view(request):
     # Функция поиска в браузере
     query = request.GET.get('query', '')
-    print('ПОИСКОВЫЙ ЗАПРОС', query)
+    print('ПОИСКОВЫЙ ЗАПРОС НОВОСТИ', query)
     page = request.GET.get('page', 1)  # Текущая страница (по умолчанию 1)
     try:
         page_number = int(page)
     except ValueError:
         page_number = 1
     news_query = 'Новости' + query
-    results = search(news_query, page)
+    results = search(news_query, page_number)
     len_results = len(results)
-    return render(request, 'search/result.html',
+    return render(request, 'search/news.html',
                       {'results': results, 'query': query, 'page': page_number, 'total_results': len_results})
 
