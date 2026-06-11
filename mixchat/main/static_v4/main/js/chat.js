@@ -39,7 +39,6 @@ getCurrentUser().then(currentUser => {
     menu_photo.style.height = '50px';
 })
 
-
 document.querySelector('.user-name img').addEventListener('click', () => {
     const name = document.querySelector('.user-name p').textContent
     let current_chat = {}
@@ -51,8 +50,8 @@ document.querySelector('.user-name img').addEventListener('click', () => {
     }
     if (current_chat.type === 'user') {
         for (let user of users) {
-            if (user.username === name && user.type === 'user') {
-                window.location.href = `/profile_other_user/${user.username}`;
+            if ((user.username === name || current_chat.username === name) && user.type === 'user') {
+                window.location.href = `/chat_profile/${current_chat.id}`;
             }
         }
     } else if (current_chat.type === 'group') {
@@ -658,7 +657,6 @@ function loadMessages(chatId) {
             li.appendChild(messageContainer);
             messageList.appendChild(li);
         });
-
         messageContainer.scrollTop = messageContainer.scrollHeight;
     })
 
