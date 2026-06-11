@@ -795,6 +795,9 @@ class ChatView(generics.GenericAPIView):
                 if str(membership.user_id) == str(request.user.id) and type == 'group':
                     membership.user_role = 'Создатель'
                     membership.save()
+            memberships = ChatMembership.objects.filter(chat_id=chat.id).all()
+            if memberships[0].user_id == memberships[1].user_id:
+                chat.name = 'Избранное'
             return Response({
                 'id': chat.id,
                 'name': chat.name,
