@@ -19,9 +19,9 @@ services:
       volumes:
       - .:/app
       - mixchat_static:/mixchat/staticfiles/
-      - media_data:/app/mixchat/main/media_v4/
+      - media_data:/mixchat/main/media_v4/
       environment:
-      - MEDIA_ROOT=/app/mixchat/main/media_v4/
+      - MEDIA_ROOT=/mixchat/main/media_v4/
       env_file:
       - .env
       ports:
