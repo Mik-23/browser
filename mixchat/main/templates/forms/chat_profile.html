@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta charset="UTF-8">
+    <title>Чат с пользователем {{ username }}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    {% load static %}
+    <link rel="stylesheet" href="{% static 'main/css/forms.css' %}">
+    <link rel="icon" href="{% static 'main/png/favicon.ico' %}">
+</head>
+<body>
+    <form class="profile-form" id="profileForm" enctype="multipart/form-data" method="POST">
+        {% csrf_token %}
+        <div class="form-profile"><img src="" id="photoProfile"></div>
+        Фотография профиля
+        <div class="form-profile">
+            <label for="name_input">Имя</label>
+            <input type="text" id="name_input" name="name" disabled>
+        </div>
+        <button type="button" class="profile-btn" id="userProfile">Открыть профиль {{ username }}</button>
+        <div class="media">
+            <button type="button" class="photo-video" id="PhotoVideo">Фото/Видео</button>
+            <button type="button" class="audio" id="Audio">Аудио</button>
+        </div>
+        <div id="message" class="message-list active" style="display: flex;">
+            <ul class="image-message-list"></ul>
+            <ul class="audio-message-list"></ul><!-- Здесь будут отображаться сообщения -->
+        </div>
+        <script>
+            document.querySelector('.photo-video').addEventListener('click', () => {
+                document.querySelector('.image-message-list').style.display = 'grid';
+                document.querySelector('.audio-message-list').style.display = 'none';
+            });
+            document.querySelector('.audio').addEventListener('click', () => {
+                document.querySelector('.image-message-list').style.display = 'none';
+                document.querySelector('.audio-message-list').style.display = 'flex';
+            });
+            document.querySelector('.profile-btn').addEventListener('click', () => {
+                window.location.href = `/profile_other_user/${chat_user}`
+            })
+        </script>
+        <div class="profile-form-buttons">
+            <a href="{% url 'chat_url' %}">
+                <button type="button" class="cancel-btn" id="cancelProfile">Назад</button>
+            </a>
+        </div>
+        <script>
+            const path = window.location.pathname;
+            const begin_name = path.split("/").pop()
+            const name = begin_name.replace('%20', ' ')
+            function fetchChats() {
+                fetch('/api/get_chats/', { // Замените на ваш реальный эндпоинт
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token') // Используйте токен доступа
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                     chatUserView(name)
+                })
+                .catch(error => console.error('Ошибка при получении чатов:', error));
+            }
+
+            fetchChats()
+        </script>
+        <script>
+            let chat_user = null
+            function getCurrentUser() {
+                return fetch('/api/current_user/', {
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                    }
+                })
+                .then(res => res.json())
+                .then(userData => {
+                    return userData;
+                });
+            }
+
+            function chatUserView(chatId) {
+                fetch(`/api/chat/?chat_id=${chatId}`, {
+                   method: 'GET',
+                   headers: {
+                       'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                     },
+                })
+                .then(response => response.json())
+                .then(data => {
+                    loadmessages(chatId)
+                    getCurrentUser().then(currentUser => {
+                        for (user of data.users) {
+                            let name_user = document.getElementById('name_input');
+                            name_user.value = user[0];
+                            chat_user = name_user.value
+                            console.log(data)
+                            if (currentUser.name != user[0] && data.name != 'Избранное') {
+                                let photo = document.getElementById('photoProfile');
+                                photo.src = user[1];
+                                photo.style.width = '150px';
+                                photo.style.height = '150px';
+                            } else if (data.name === 'Избранное') {
+                                let photo = document.getElementById('photoProfile');
+                                photo.src = data.photo;
+                                photo.style.width = '150px';
+                                photo.style.height = '150px';
+                            }
+                        }
+                    })
+                })
+            }
+        </script>
+        <script>
+            function loadmessages(chatId) {
+                const imagemessageList = document.querySelector('.image-message-list');
+                const audiomessageList = document.querySelector('.audio-message-list');
+                let message_url = ''
+                //if (chat_type === 'user' || chat_type === 'group') {
+                //     message_url = '/api/message/'
+                //} else if (chat_type === 'bot') {
+                //     message_url = '/api/message_bot/'
+                //}
+
+                const url = `/api/message/?chat_id=${chatId}`; // Эндпоинт для просметра сообщений
+
+                fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+
+                    data.messages.forEach(message => {
+                        const li = document.createElement('li');
+                        if (message.image) {
+                            const messageWrapper = document.createElement('div');
+                            const imageLink = document.createElement('a');
+                            imageLink.href = message.image;
+                            messageWrapper.style.display = 'flex';
+                            messageWrapper.style.alignItems = 'center';
+                            messageWrapper.style.marginBottom = '10px';
+                            messageWrapper.style.flexDirection = 'column';
+                            messageWrapper.style.gap = '5px';
+
+                            const img = document.createElement('img');
+                            img.src = message.image;
+                            img.style.maxWidth = '150px';
+                            img.style.height = 'auto';
+                            img.style.display = 'block';
+                            img.style.borderRadius = '10px';
+                            img.alt = `${message.sender}`;
+
+                            const senderName = document.createElement('span');
+                            senderName.textContent = message.sender;
+                            senderName.style.fontSize = '14px';
+                            senderName.style.fontWeight = 'bold';
+
+                            messageWrapper.appendChild(senderName);
+                            imageLink.appendChild(img);
+                            messageWrapper.appendChild(imageLink);
+                            li.appendChild(messageWrapper)
+                            imagemessageList.appendChild(li);
+                        }
+
+                        // Проверяем наличие видео
+                        if (message.video) {
+                            const mediaWrapper = document.createElement('div');
+                            mediaWrapper.style.display = 'flex';
+                            mediaWrapper.style.alignItems = 'center';
+                            mediaWrapper.style.flexDirection = 'column';
+                            mediaWrapper.style.gap = '5px';
+
+                            const video = document.createElement('video');
+                            video.src = message.video;
+                            video.controls = true;
+                            video.style.maxWidth = '150px';
+                            video.style.height = '150px';
+                            video.style.borderRadius = '10px';
+
+                            const senderName = document.createElement('span');
+                            senderName.textContent = message.sender_name;
+                            senderName.style.fontSize = '14px';
+
+                            mediaWrapper.appendChild(video);
+                            mediaWrapper.appendChild(senderName);
+                            li.appendChild(mediaWrapper)
+                            imagemessageList.appendChild(li);
+                        }
+
+                        // Проверяем наличие аудио
+                        if (message.audio) {
+                            if (!document.getElementById('audio-styles')) {
+                                const style = document.createElement('style');
+                                style.id = 'audio-styles';
+                                style.textContent = `
+                                    audio::-webkit-media-controls-panel {
+                                        background: #50ADA9 !important;
+                                    }
+                                    audio::-webkit-media-controls-play-button {
+                                        background-color: #E31C24 !important;
+                                        filter: brightness(1) invert(1) !important;
+                                        border-radius: 50% !important;
+                                        transform: scale(1.3) !important;
+                                    }
+                                    audio::-webkit-media-controls-current-time-display,
+                                    audio::-webkit-media-controls-time-remaining-display {
+                                        color: white !important;
+                                    }
+                                    audio::-webkit-media-controls-timeline {
+                                        background-color: #AD4D51 !important;
+                                        filter: brightness(1) invert(1) !important;
+                                        border-radius: 10px !important;
+                                    }
+
+                                     audio::-webkit-media-controls-mute-button,
+                                     audio::-webkit-media-controls-volume-slider {
+                                        background-color: transparent !important;
+                                        filter: brightness(0) invert(1) !important;
+                                    }
+                                    audio::-webkit-media-controls-toggle-closed-captions-button {
+                                        background-color: transparent !important;
+                                        filter: brightness(0) invert(1) !important;
+                                    }
+                                `;
+                                document.head.appendChild(style);
+                            }
+                            const mediaWrapper = document.createElement('div');
+                            mediaWrapper.style.display = 'flex';
+                            mediaWrapper.style.alignItems = 'center';
+                            mediaWrapper.style.flexDirection = 'column';
+                            mediaWrapper.style.gap = '5px';
+
+                            const audio = document.createElement('audio');
+                            audio.src = message.audio;
+                            audio.controls = true;
+                            audio.style.maxWidth = '250px';
+
+                            const senderName = document.createElement('span');
+                            senderName.textContent = message.sender_user;
+                            senderName.style.fontSize = '14px';
+
+                            mediaWrapper.appendChild(senderName);
+                            mediaWrapper.appendChild(audio);
+                            li.appendChild(mediaWrapper)
+                            audiomessageList.appendChild(li);
+                        }
+
+                    })
+                })
+            }
+        </script>
+    </form>
+</body>
+</html>
