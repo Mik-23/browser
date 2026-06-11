@@ -32,14 +32,37 @@
                 Добавить участника
             </button>
         </div>
+        <div class="media">
+            <button type="button" class="memberships">Участники</button>
+            <button type="button" class="photo-video" id="PhotoVideo">Фото/Видео</button>
+            <button type="button" class="audio" id="Audio">Аудио</button>
+        </div>
         <div class="profile-group-form users-list">
-            <label>Участники</label>
             <ul id="groupUsersEdit" style="list-style-type: none;"></ul>
+            <ul class="image-message-list"></ul>
+            <ul class="audio-message-list"></ul>
         </div>
         <div class="profile-group-buttons">
             <button type="button" class="edit-group" style="display: none">Изменить</button>
             <button type="button" class="cancel-group" id="cancelGroup">Отмена</button>
         </div>
+        <script>
+            document.querySelector('.memberships').addEventListener('click', () => {
+                document.querySelector('.image-message-list').style.display = 'none';
+                document.querySelector('.audio-message-list').style.display = 'none';
+                document.getElementById('groupUsersEdit').style.display = 'block';
+            });
+            document.querySelector('.photo-video').addEventListener('click', () => {
+                document.querySelector('.image-message-list').style.display = 'grid';
+                document.querySelector('.audio-message-list').style.display = 'none';
+                document.getElementById('groupUsersEdit').style.display = 'none';
+            });
+            document.querySelector('.audio').addEventListener('click', () => {
+                document.querySelector('.image-message-list').style.display = 'none';
+                document.querySelector('.audio-message-list').style.display = 'flex';
+                document.getElementById('groupUsersEdit').style.display = 'none';
+            });
+        </script>
         <script>
             const path = window.location.pathname;
             const begin_name = path.split("/").pop()

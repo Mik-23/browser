@@ -137,7 +137,7 @@ function editChat(groupUsers, chat_id, name, bio, photo, type) {
 }
 
 function chatUserView(chatId) {
-    fetch(`/api/chat/?chat_id=${chatId}`, {
+    fetch(`/api/group/?chat_id=${chatId}`, {
        method: 'GET',
        headers: {
            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
@@ -145,6 +145,7 @@ function chatUserView(chatId) {
     })
     .then(response => response.json())
     .then(data => {
+        loadmessages(chatId)
         const userList = document.getElementById('groupUsersEdit');
         userList.innerHTML = ''; // Очистить список
         const usersGroup = data.users
@@ -211,7 +212,7 @@ function chatUserView(chatId) {
                 const button = document.createElement('button')
                 button.id = 'delete-user'
                 button.textContent = 'Удалить';
-                //button.disabled = 1;
+                button.disabled = 1;
                 button.style.backgroundColor = 'transparent';
                 button.style.color = 'red';
                 button.style.borderRadius = '20px';
@@ -255,5 +256,123 @@ function deleteUserFromGroup(chat_id, user_id) {
    .then(response => response.json())
 }
 
+function loadmessages(chatId) {
+    const imagemessageList = document.querySelector('.image-message-list');
+    const audiomessageList = document.querySelector('.audio-message-list');
+    let message_url = ''
+    const url = `/api/message/?chat_id=${chatId}`; // Эндпоинт для просметра сообщений
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'Authorization': 'Bearer ' + localStorage.getItem('access_token')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        data.messages.forEach(message => {
+            const li = document.createElement('li');
+            if (message.image) {
+                const messageWrapper = document.createElement('div');
+                const imageLink = document.createElement('a');
+                imageLink.href = message.image;
+                messageWrapper.style.display = 'flex';
+                messageWrapper.style.alignItems = 'center';
+                messageWrapper.style.marginBottom = '10px';
+                messageWrapper.style.flexDirection = 'column';
+                messageWrapper.style.gap = '5px';
+                const img = document.createElement('img');
+                img.src = message.image;
+                img.style.maxWidth = '150px';
+                img.style.height = 'auto';
+                img.style.display = 'block';
+                img.style.borderRadius = '10px';
+                img.alt = `${message.sender}`;
+                const senderName = document.createElement('span');
+                senderName.textContent = message.sender;
+                senderName.style.fontSize = '14px';
+                senderName.style.fontWeight = 'bold';
+                messageWrapper.appendChild(senderName);
+                imageLink.appendChild(img);
+                messageWrapper.appendChild(imageLink);
+                li.appendChild(messageWrapper)
+                imagemessageList.appendChild(li);
+            }
+            // Проверяем наличие видео
+            if (message.video) {
+                const mediaWrapper = document.createElement('div');
+                mediaWrapper.style.display = 'flex';
+                mediaWrapper.style.alignItems = 'center';
+                mediaWrapper.style.flexDirection = 'column';
+                mediaWrapper.style.gap = '5px';
+                const video = document.createElement('video');
+                video.src = message.video;
+                video.controls = true;
+                video.style.maxWidth = '150px';
+                video.style.height = '150px';
+                video.style.borderRadius = '10px';
+                const senderName = document.createElement('span');
+                senderName.textContent = message.sender_name;
+                senderName.style.fontSize = '14px';
+                mediaWrapper.appendChild(video);
+                mediaWrapper.appendChild(senderName);
+                li.appendChild(mediaWrapper)
+                imagemessageList.appendChild(li);
+            }
+            // Проверяем наличие аудио
+            if (message.audio) {
+                if (!document.getElementById('audio-styles')) {
+                    const style = document.createElement('style');
+                    style.id = 'audio-styles';
+                    style.textContent = `
+                        audio::-webkit-media-controls-panel {
+                            background: #50ADA9 !important;
+                        }
+                        audio::-webkit-media-controls-play-button {
+                            background-color: #E31C24 !important;
+                            filter: brightness(1) invert(1) !important;
+                            border-radius: 50% !important;
+                            transform: scale(1.3) !important;
+                        }
+                        audio::-webkit-media-controls-current-time-display,
+                        audio::-webkit-media-controls-time-remaining-display {
+                            color: white !important;
+                        }
+                        audio::-webkit-media-controls-timeline {
+                            background-color: #AD4D51 !important;
+                            filter: brightness(1) invert(1) !important;
+                            border-radius: 10px !important;
+                        }
+                         audio::-webkit-media-controls-mute-button,
+                         audio::-webkit-media-controls-volume-slider {
+                            background-color: transparent !important;
+                            filter: brightness(0) invert(1) !important;
+                        }
+                        audio::-webkit-media-controls-toggle-closed-captions-button {
+                            background-color: transparent !important;
+                            filter: brightness(0) invert(1) !important;
+                        }
+                    `;
+                    document.head.appendChild(style);
+                }
+                const mediaWrapper = document.createElement('div');
+                mediaWrapper.style.display = 'flex';
+                mediaWrapper.style.alignItems = 'center';
+                mediaWrapper.style.flexDirection = 'column';
+                mediaWrapper.style.gap = '5px';
+                const audio = document.createElement('audio');
+                audio.src = message.audio;
+                audio.controls = true;
+                audio.style.width = '250px';
+                const senderName = document.createElement('span');
+                senderName.textContent = message.sender_user;
+                senderName.style.fontSize = '14px';
+                mediaWrapper.appendChild(senderName);
+                mediaWrapper.appendChild(audio);
+                li.appendChild(mediaWrapper)
+                audiomessageList.appendChild(li);
+            }
+        })
+    })
+}
 
 fetchUsers()

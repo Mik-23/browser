@@ -3,7 +3,6 @@ from .models import ChatUser
 from django.shortcuts import render, redirect
 
 
-# Create your views here.
 def chat(request):
     return render(request, 'main/chat.html')
 
@@ -53,3 +52,7 @@ def create_group(request):
 
 def edit_group(request, name):
     return render(request, 'forms/edit_group.html', {'name': name})
+
+
+def chat_profile(request, name):
+    return render(request, 'forms/chat_profile.html', {'name': name})
