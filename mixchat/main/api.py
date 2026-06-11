@@ -753,6 +753,9 @@ class ChatView(generics.GenericAPIView):
         if str(chat_id) not in current_user_chat:
             return Response({"error": "Невозможно просматривать чаты в которых нет текущего пользователя"})
         memberships = ChatMembership.objects.filter(chat_id=chat.id).all()
+        if memberships[0].user_id == memberships[1].user_id:
+            chat.photo = 'photo/profilephoto/избранное.png'
+            chat.save()
         users_and_bots = list(ChatUser.objects.all())
         bots = list(Bot.objects.all())
         users_and_bots.extend(bots)
@@ -769,6 +772,7 @@ class ChatView(generics.GenericAPIView):
             'name': chat.name,
             'bio': chat.bio,
             'photo': photo,
+            'type': chat.type,
             'users': users
         })
 
@@ -846,6 +850,17 @@ class ChatView(generics.GenericAPIView):
             return Response({'message': 'Ошибка. Возможно изменять только группы.'})
 
 
+class GroupView(ChatView):
+    # API групп
+
+    def get(self, request, *args, **kwargs):
+        resp = super().get(request)
+        if resp.data['type'] == 'group':
+            return resp
+        else:
+            return Response({'message': 'Это группа, а не обычный чат'})
+
+
 class DeleteUserFromGroup(generics.GenericAPIView):
     # Удаляем пользователя из группы
     authentication_classes = [JWTAuthentication, CsrfExemptSessionAuthentication]
@@ -905,9 +920,12 @@ class GetChatsView(generics.GenericAPIView):
             else:
                 content = ''
                 sender_name = ''
-
-            if user.photo is not None or user.photo == '':
+            if (user.photo is not None or user.photo == '') and len(memberships) != 0:
                 photo = user.photo.url
+                name = user.username
+            elif len(memberships) == 0:
+                photo = chat.photo.url
+                name = chat.name
             else:
                 photo = ''
             try:
@@ -917,7 +935,7 @@ class GetChatsView(generics.GenericAPIView):
 
             chat_with_user.append({
                 "id": chat.id,
-                "username": user.username,
+                "username": name,
                 "content": content,
                 "photo": photo,
                 "bio": chat.bio,
